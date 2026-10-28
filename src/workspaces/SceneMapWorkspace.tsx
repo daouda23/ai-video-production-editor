@@ -623,9 +623,9 @@ const SceneMapWorkspace: React.FC<SceneMapWorkspaceProps> = ({
                 }
 
                 .scene-tab.active {
-                    background: var(--accent-primary, #6366f1);
+                    background: var(--app-accent);
                     color: #fff;
-                    border-color: var(--accent-primary, #6366f1);
+                    border-color: var(--app-accent);
                 }
 
                 .scene-tab.add-tab {
@@ -832,8 +832,8 @@ const SceneMapWorkspace: React.FC<SceneMapWorkspaceProps> = ({
                 }
 
                 .shot-chip.linked {
-                    background: var(--accent-primary, #6366f1);
-                    border-color: var(--accent-primary, #6366f1);
+                    background: var(--app-accent);
+                    border-color: var(--app-accent);
                     color: #fff;
                 }
 

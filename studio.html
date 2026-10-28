@@ -7,6 +7,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Video Production Editor</title>
     <script defer src="https://cdn.tailwindcss.com"></script>
+<script>
+  // Pro theme (DaVinci-style): neutral graphite greys, one orange accent,
+  // roomier padding and gaps. Blue/indigo/violet utilities resolve to the accent.
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!window.tailwind) return;
+    var graphite = { 50: '#f5f5f5', 100: '#e6e6e6', 200: '#d0d0d1', 300: '#b4b4b6', 400: '#929295', 500: '#737376', 600: '#56565a', 700: '#3e3e41', 800: '#2b2b2d', 900: '#222223', 950: '#18181a' };
+    var accent = { 50: '#fff5eb', 100: '#fde6cc', 200: '#fbcb98', 300: '#f6ad62', 400: '#f0973f', 500: '#e8892f', 600: '#cf7120', 700: '#ab5a18', 800: '#874616', 900: '#6d3a15', 950: '#3d1f0a' };
+    var roomy = { px: '1px', 0: '0px', 0.5: '0.15625rem', 1: '0.3125rem', 1.5: '0.46875rem', 2: '0.625rem', 2.5: '0.78125rem', 3: '0.9375rem', 3.5: '1.09375rem', 4: '1.25rem', 5: '1.5rem', 6: '1.75rem' };
+    window.tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gray: graphite, slate: graphite, zinc: graphite, neutral: graphite, stone: graphite,
+            indigo: accent, violet: accent, purple: accent, blue: accent, sky: accent,
+          },
+          padding: roomy,
+          gap: roomy,
+          space: roomy,
+          borderRadius: { md: '0.3rem', lg: '0.375rem', xl: '0.5rem', '2xl': '0.625rem', '3xl': '0.75rem' },
+          fontFamily: { sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'] },
+        },
+      },
+    };
+  });
+</script>
 <script type="importmap">
 {
   "imports": {

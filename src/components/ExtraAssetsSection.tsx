@@ -492,9 +492,9 @@ const ExtraAssetsSection: React.FC<ExtraAssetsSectionProps> = ({
                 }
 
                 .category-tab.active {
-                    background: var(--accent-primary, #6366f1);
+                    background: var(--app-accent);
                     color: #fff;
-                    border-color: var(--accent-primary, #6366f1);
+                    border-color: var(--app-accent);
                     box-shadow: 0 8px 18px rgba(99,102,241,0.35);
                 }
 
@@ -532,11 +532,11 @@ const ExtraAssetsSection: React.FC<ExtraAssetsSectionProps> = ({
                 }
 
                 .asset-card:hover {
-                    border-color: var(--accent-primary, #6366f1);
+                    border-color: var(--app-accent);
                 }
 
                 .asset-card.selected {
-                    border-color: var(--accent-primary, #6366f1);
+                    border-color: var(--app-accent);
                     box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.4), 0 16px 40px rgba(0,0,0,0.4);
                 }
 
@@ -580,7 +580,7 @@ const ExtraAssetsSection: React.FC<ExtraAssetsSectionProps> = ({
                     width: 24px;
                     height: 24px;
                     border: 2px solid rgba(255,255,255,0.2);
-                    border-top-color: var(--accent-primary, #6366f1);
+                    border-top-color: var(--app-accent);
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
                 }
@@ -630,8 +630,8 @@ const ExtraAssetsSection: React.FC<ExtraAssetsSectionProps> = ({
                 }
 
                 .add-asset-card:hover {
-                    border-color: var(--accent-primary, #6366f1);
-                    color: var(--accent-primary, #6366f1);
+                    border-color: var(--app-accent);
+                    color: var(--app-accent);
                 }
 
                 .plus-icon {
@@ -723,12 +723,12 @@ const ExtraAssetsSection: React.FC<ExtraAssetsSectionProps> = ({
                 }
 
                 .aspect-btn:hover {
-                    border-color: var(--accent-primary, #6366f1);
+                    border-color: var(--app-accent);
                 }
 
                 .aspect-btn.active {
-                    background: var(--accent-primary, #6366f1);
-                    border-color: var(--accent-primary, #6366f1);
+                    background: var(--app-accent);
+                    border-color: var(--app-accent);
                     color: #fff;
                 }
 
@@ -753,13 +753,13 @@ const ExtraAssetsSection: React.FC<ExtraAssetsSectionProps> = ({
 
                 .concept-chip:hover,
                 .shot-chip:hover {
-                    border-color: var(--accent-primary, #6366f1);
+                    border-color: var(--app-accent);
                 }
 
                 .concept-chip.linked,
                 .shot-chip.linked {
-                    background: var(--accent-primary, #6366f1);
-                    border-color: var(--accent-primary, #6366f1);
+                    background: var(--app-accent);
+                    border-color: var(--app-accent);
                     color: #fff;
                 }
 
@@ -783,7 +783,7 @@ const ExtraAssetsSection: React.FC<ExtraAssetsSectionProps> = ({
                 }
 
                 .version-thumb.active {
-                    border-color: var(--accent-primary, #6366f1);
+                    border-color: var(--app-accent);
                 }
 
                 .version-thumb img {
@@ -817,7 +817,7 @@ const ExtraAssetsSection: React.FC<ExtraAssetsSectionProps> = ({
                 }
 
                 .action-btn.generate {
-                    background: var(--accent-primary, #6366f1);
+                    background: var(--app-accent);
                     color: #fff;
                     flex: 1;
                 }

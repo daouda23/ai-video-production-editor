@@ -178,7 +178,7 @@ const DetailHeader: React.FC<{ name: string; placeholder: string; onName: (value
   <div className="wb-detail__head">
     {onColor && (
       <label className="wb-swatch" title="Colour" style={{ background: color || 'var(--app-accent)' }}>
-        <input type="color" value={/^#[0-9a-f]{6}$/i.test(color || '') ? color : '#7c8cff'} onChange={(event) => onColor(event.target.value)} />
+        <input type="color" value={/^#[0-9a-f]{6}$/i.test(color || '') ? color : '#e8892f'} onChange={(event) => onColor(event.target.value)} />
       </label>
     )}
     <input className="wb-detail__name" value={name} onChange={(event) => onName(event.target.value)} placeholder={placeholder} />

@@ -2,54 +2,52 @@
 
 ## 1. Visual Theme & Atmosphere
 
-This product should feel like a calm creative workspace rather than a technical control panel.
+This product should feel like a professional post-production suite (DaVinci Resolve is the reference), not a consumer web app.
 
-- Primary inspiration: Notion-style productivity UI
-- Product adaptation: slightly more cinematic and studio-oriented than pure document software
-- Emotional tone: clear, editorial, approachable, organized
-- Interface density: medium
-- Interaction tone: quiet, confident, low-noise
-
-The UI should help users move through complex AI workflows without making the product feel like it is built only for engineers.
+- Primary inspiration: DaVinci Resolve and other pro editing / grading tools
+- Emotional tone: focused, neutral, precise; the footage carries the colour, the chrome does not
+- Interface density: medium-dense, but every panel keeps consistent breathing room
+- Interaction tone: quiet, flat, predictable
 
 ## 2. Color Palette & Roles
 
-### Core Neutrals
+Neutral graphite with zero hue, one orange accent. No gradients, glows or tinted backgrounds.
 
-- `Canvas`: `#0f1115`
-- `Surface`: `#171a20`
-- `Surface Raised`: `#1d2128`
-- `Surface Soft`: `#232831`
-- `Border`: `#2f3742`
-- `Border Strong`: `#3c4653`
-- `Text Primary`: `#f3f4f6`
-- `Text Secondary`: `#b3bbc7`
-- `Text Tertiary`: `#8d97a6`
+### Core Neutrals (dark, default)
 
-### Warm Editorial Accents
+- `Canvas`: `#1b1b1c`
+- `Panel`: `#232324`
+- `Card / raised`: `#2b2b2d`
+- `Border`: `#353537`
+- `Border Strong`: `#47474a`
+- `Text Primary`: `#e2e2e2`
+- `Text Muted`: `#9a9a9e`
 
-- `Accent`: `#7c8cff`
-- `Accent Soft`: `#aab4ff`
-- `Accent Glow`: `rgba(124, 140, 255, 0.16)`
-- `Warm Highlight`: `#d8b46a`
-- `Success`: `#57b894`
-- `Danger`: `#dd7c7c`
+### Roles
+
+- `Accent` (selection, primary action, active page): `#e8892f`, hover/strong `#f2a55c`
+- `Playhead`: `#e5413a`
+- `Warm Highlight`: `#d6ad55`
+- `Success`: `#5fae6e`
+- `Danger`: `#de5b52`
+
+Colour must mean something: one primary per bar, selection in accent, everything else grey.
 
 ### Light Theme Translation
 
-- `Canvas`: `#f4f1ea`
-- `Surface`: `#ffffff`
-- `Surface Raised`: `#fbf8f2`
-- `Surface Soft`: `#f2eee6`
-- `Border`: `#ddd6ca`
-- `Border Strong`: `#c5bbac`
-- `Text Primary`: `#23272f`
-- `Text Secondary`: `#5f6877`
-- `Text Tertiary`: `#7f8897`
+- `Canvas`: `#dcdcdd`, `Panel`: `#ececed`, `Card`: `#f7f7f8`
+- `Border`: `#c6c6c9`, `Border Strong`: `#a9a9ad`
+- `Text Primary`: `#1d1d1f`, `Text Muted`: `#56565b`
+- `Accent`: `#b85d10` (darker for contrast on light surfaces)
+
+### Tailwind mapping
+
+`studio.html` remaps the Tailwind palettes so legacy utility classes follow the theme:
+`gray`, `slate`, `zinc`, `neutral`, `stone` resolve to the graphite ramp; `indigo`, `violet`, `purple`, `blue`, `sky` resolve to the accent ramp. Padding, gap and space steps up to `6` are about 25% larger than Tailwind's defaults, and radii are tighter (`lg` 0.375rem, `xl` 0.5rem). New code should still prefer the `--app-*` tokens.
 
 ## 3. Typography Rules
 
-- Primary UI font: `Instrument Sans`, fallback to high-quality sans-serif stack
+- Primary UI font: `Inter`, fallback to the system sans-serif stack
 - Monospace font: `IBM Plex Mono`
 - Typography should feel editorial, not dashboard-heavy
 - Avoid overly tight uppercase labels everywhere

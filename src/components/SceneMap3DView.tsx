@@ -398,7 +398,7 @@ const SceneMap3DView: React.FC<SceneMap3DViewProps> = ({ scene, selectedElementI
       group.traverse((child) => {
         const mesh = child as THREE.Mesh;
         if (mesh.isMesh && mesh.material instanceof THREE.MeshStandardMaterial) {
-          mesh.material.emissive = new THREE.Color(id === selectedElementId ? '#7c8cff' : active ? '#3b4a80' : '#000000');
+          mesh.material.emissive = new THREE.Color(id === selectedElementId ? '#e8892f' : active ? '#5a3a1c' : '#000000');
           mesh.material.emissiveIntensity = id === selectedElementId ? 0.55 : active ? 0.3 : 0;
         }
       });
