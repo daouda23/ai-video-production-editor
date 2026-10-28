@@ -152,7 +152,7 @@ const rpcResult = (id, result) => ({ jsonrpc: '2.0', id, result });
 const rpcError = (id, code, message) => ({ jsonrpc: '2.0', id, error: { code, message } });
 
 const INSTRUCTIONS = [
-  'These tools operate the AI Video Production Editor that is open on this machine. Everything you change is saved in the open project and shows up in the editor immediately, so the user can watch and take over.',
+  'These tools operate the AI Film Maker Studio that is open on this machine. Everything you change is saved in the open project and shows up in the editor immediately, so the user can watch and take over.',
   'Start with project_get_overview. Project Space tools (project_*) read and write the script, story bible, world, cast/locations/props (references) and storyboard shots; project_open_phase shows a phase to the user.',
   'The open project belongs to the user: if it already has content and they did not ask you to change it, start your own with project_new (it saves and closes theirs first).',
   'To attach media you made elsewhere, pass an https URL, a data URL or a local file path (imagePath / videoPath).',

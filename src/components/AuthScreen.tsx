@@ -118,7 +118,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
                 </div>
 
                 <div className="absolute bottom-6 text-xs text-gray-600">
-                    AI Video Production Editor &copy; 2026
+                    AI Film Maker Studio &copy; 2026
                 </div>
             </div>
         </div>

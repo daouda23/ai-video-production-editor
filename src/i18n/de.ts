@@ -66,7 +66,7 @@ export const de = {
   contact_commercial: "Open-Source- und Commercial-Anfragen",
   contact_company: "Projekt",
 
-  footer_studio: "AI Video Production Editor",
+  footer_studio: "AI Film Maker Studio",
   footer_copyright: "© 2026 Ludwig Maximillian Kienle",
   footer_legal_title: "Rechtliches",
   footer_legal_imprint: "Impressum",

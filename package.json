@@ -11,12 +11,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LudwigKienle/ai-video-production-editor.git"
+    "url": "git+https://github.com/daouda23/ai-video-production-editor.git"
   },
   "bugs": {
-    "url": "https://github.com/LudwigKienle/ai-video-production-editor/issues"
+    "url": "https://github.com/daouda23/ai-video-production-editor/issues"
   },
-  "homepage": "https://github.com/LudwigKienle/ai-video-production-editor#readme",
+  "homepage": "https://github.com/daouda23/ai-video-production-editor#readme",
   "keywords": [
     "ai-video",
     "electron",
@@ -90,8 +90,8 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.aivideoproductioneditor.app",
-    "productName": "AI Video Production Editor",
+    "appId": "com.aifilmmakerstudio.app",
+    "productName": "AI Film Maker Studio",
     "directories": {
       "output": "release"
     },

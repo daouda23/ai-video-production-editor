@@ -307,7 +307,7 @@ const PricingScreen: React.FC<PricingScreenProps> = ({
                     License Required
                 </h1>
                 <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                    AI Video Production Editor is a premium tool. <br />
+                    AI Film Maker Studio is a premium tool. <br />
                     Purchase a lifetime license to unlock the full production suite.
                 </p>
             </div>

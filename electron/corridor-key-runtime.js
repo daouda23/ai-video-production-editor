@@ -99,7 +99,7 @@ const probeCorridorKeyEnvironment = async ({ repoPath } = {}) => {
   if (!repoAvailable) {
     error = 'Selected folder does not look like a CorridorKey checkout.';
   } else if (!runnerAvailable) {
-    error = 'AI Video Production Editor CorridorKey runner is missing.';
+    error = 'AI Film Maker Studio CorridorKey runner is missing.';
   } else if (!uv) {
     error = 'uv is required to run CorridorKey locally.';
   }

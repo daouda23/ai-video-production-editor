@@ -13924,7 +13924,7 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
                 <body>
                     <main class="report">
                         <section class="summary">
-                            <div class="eyebrow">AI Video Production Editor</div>
+                            <div class="eyebrow">AI Film Maker Studio</div>
                             <h1>${escapeHtml(projectTitle)} Storyboard</h1>
                             ${logline ? `<p class="logline">${escapeHtml(logline)}</p>` : ''}
                             <div class="summary-grid">

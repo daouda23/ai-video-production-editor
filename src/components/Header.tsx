@@ -174,7 +174,7 @@ const Header: React.FC<HeaderProps> = ({
                     >
                         <SidebarToggleIcon className="w-[18px] h-[18px]" />
                     </button>
-                    <div className="app-toolbar__brand" title="AI Video Production Editor">
+                    <div className="app-toolbar__brand" title="AI Film Maker Studio">
                         <AppLogoIcon className="w-[18px] h-[18px] app-logo" />
                     </div>
                     <div className="app-toolbar__crumbs" aria-label="Current workspace">

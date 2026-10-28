@@ -197,7 +197,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <MagicWandIcon className="w-7 h-7 text-indigo-300" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold">Welcome to AI Video Production Editor</h2>
+            <h2 className="text-xl font-bold">Welcome to AI Film Maker Studio</h2>
             <p className="text-xs app-muted mt-0.5">
               Step {step + 1} of {totalSteps} · {stepTitle}
             </p>

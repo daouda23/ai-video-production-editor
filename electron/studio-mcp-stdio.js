@@ -62,7 +62,7 @@ const write = (message) => process.stdout.write(`${JSON.stringify(message)}\n`);
 const offline = (id) => ({
   jsonrpc: '2.0',
   id,
-  error: { code: -32000, message: 'The AI Video Production Editor is not running. Open the app and try again.' },
+  error: { code: -32000, message: 'The AI Film Maker Studio is not running. Open the app and try again.' },
 });
 
 const rl = readline.createInterface({ input: process.stdin });

@@ -18,7 +18,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ user, onClose }) => {
             </div>
             <div>
               <h2 className="text-xl font-bold">About Software</h2>
-              <p className="text-xs app-muted">AI Video Production Editor</p>
+              <p className="text-xs app-muted">AI Film Maker Studio</p>
             </div>
           </div>
           <button onClick={onClose} className="app-muted hover:text-white">
@@ -48,7 +48,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ user, onClose }) => {
               Check for the latest features and bug fixes on the official product page.
             </p>
             <a
-              href="https://gumroad.com"
+              href="https://github.com/daouda23/ai-video-production-editor/releases"
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full app-button app-primary text-center text-xs"
@@ -69,7 +69,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ user, onClose }) => {
         </div>
 
         <div className="bg-black/20 p-4 text-center text-[10px] app-muted">
-          &copy; 2025 AI Video Production Editor. All rights reserved.
+          Based on <a href="https://github.com/LudwigKienle/ai-video-production-editor" target="_blank" rel="noopener noreferrer" className="underline">AI Video Production Editor</a> by Ludwig Kienle. Licensed under GPL-3.0.
         </div>
       </div>
     </div>

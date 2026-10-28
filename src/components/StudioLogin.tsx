@@ -18,9 +18,9 @@ const StudioLogin: React.FC<StudioLoginProps> = ({ onLogin, onRefresh, onProvide
         <div className="absolute inset-0 bg-gradient-to-br from-amber-700/20 via-neutral-900 to-black opacity-90 z-10" />
         <div className="relative z-20 p-12 text-left max-w-md">
           <div className="text-xs uppercase tracking-[0.3em] text-amber-300 mb-6">
-            AI Video Production Editor
+            AI Film Maker Studio
           </div>
-          <h1 className="text-5xl font-black mb-4 tracking-tight">AI Video Production Editor</h1>
+          <h1 className="text-5xl font-black mb-4 tracking-tight">AI Film Maker Studio</h1>
           <p className="text-base text-neutral-300 leading-relaxed">
             Login required for the web app. 7‑day trial + Bring‑Your‑Own‑Keys lifetime
             access for 29€ or hosted credits via subscription.

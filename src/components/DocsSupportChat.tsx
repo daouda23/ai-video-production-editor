@@ -52,7 +52,7 @@ const buildPrompt = (question: string, chunks: DocsChunk[], history: ChatMessage
     .map((message) => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`)
     .join('\n');
 
-  return `You are AI Video Production Editor Docs Support Assistant.
+  return `You are AI Film Maker Studio Docs Support Assistant.
 
 Rules:
 - Answer only based on provided context and question.
@@ -142,7 +142,7 @@ const DocsSupportChat: React.FC = () => {
       id: 'welcome',
       role: 'assistant',
       content:
-        'Hi, I can answer AI Video Production Editor documentation and workflow questions. Ask about setup, model choice, troubleshooting, tutorials, or feature usage.',
+        'Hi, I can answer AI Film Maker Studio documentation and workflow questions. Ask about setup, model choice, troubleshooting, tutorials, or feature usage.',
     },
   ]);
 

@@ -652,7 +652,7 @@ const DEFAULT_COST_SETTINGS: CostSettings = {
     },
     includeSoftwareFee: true,
     softwareFee: 10,
-    softwareLabel: 'AI Video Production Editor License',
+    softwareLabel: 'AI Film Maker Studio License',
     rates: [...DEFAULT_MODEL_RATES, ...DEFAULT_COST_RATES],
     extraLineItems: [],
     invoiceNotes: '',

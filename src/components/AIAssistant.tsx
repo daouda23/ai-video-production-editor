@@ -63,7 +63,7 @@ const API_SETUP_GUIDE = [
   'Sonauto: https://sonauto.ai/developers',
 ].join('\n');
 
-const ASSISTANT_SYSTEM_INSTRUCTION = `You are the AI Studio Assistant for AI Video Production Editor.
+const ASSISTANT_SYSTEM_INSTRUCTION = `You are the AI Studio Assistant for AI Film Maker Studio.
 You are available in every workspace and should act like a practical production copilot.
 When the user asks for an action, execute available tools directly whenever possible.
 Only use studioAgent tools when the user explicitly asks for the agent or says to run something via the agent.
