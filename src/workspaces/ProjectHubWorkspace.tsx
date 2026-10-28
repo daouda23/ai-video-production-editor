@@ -47,7 +47,7 @@ import { generateImageWithZTurbo, generateImageWithZImage, generateImageWithFlux
 import { generateImageWithGrok, generateVideoWithGrok } from '../services/xaiService';
 import { editImageWithFalGptImage2, editImageWithFalNanoBanana2, editImageWithFalQwenMultiAngle, editImageWithFalGrokImagine, editImageWithFalWanV27Pro, generateImageWithFalGptImage2, generateImageWithFalGrokImagine, generateImageWithFalNanoBanana2, generateImageWithFalQwenImageMax, generateImageWithFalQwenImage21, editImageWithFalQwenImage21, generateImageWithFalSeedreamV5Lite, generateImageWithFalSeedreamV5Pro, editImageWithFalSeedreamV5Pro, generateImageWithFalKrea2, generateImageWithFalIdeogramV4, generateImageWithFalWanV27Pro, generateVideoWithFalKlingO3, generateVideoWithFalKlingV3Image, generateVideoWithFalKlingV3Text, generateVideoWithFalCreatifyAurora, generateVideoWithFalGrokImagineI2V, generateVideoWithFalPixverseC1Reference, generateVideoWithFalSeedanceImage, generateVideoWithFalSeedanceReference, generateVideoWithFalSeedance25Image, generateVideoWithFalSeedance25Reference, generateVideoWithFalSeedance25Text, generateVideoWithFalWanV27Image, generateVideoWithFalWanV27Text, generateImageWithFalKrea3, editImageWithFalKrea3, generateImageWithFalFlux3, editImageWithFalFlux3, toFlux3Options, editImageWithFalGptImage25, generate3dWithFalHunyuan3dV3, generate3dWithFalRodinV25, generate3dWithFalTrellis2 } from '../services/falAiService';
 import { getMidjourneyConcurrency, generateImagesWithMidjourney, type MidjourneyReference } from '../services/midjourneyAgentService';
-import type { StyleReference, CharacterAgeVariant } from '../types';
+import type { StyleReference, CharacterAgeVariant, Workspace } from '../types';
 import { getLocalModel, runLocalModel, sizeForAspect } from '../services/localModelService';
 import { generateImageWithDrawThings, isDrawThingsEditModel, probeDrawThings } from '../services/drawThingsService';
 import { generateImageWithMachgen } from '../services/machgenService';
@@ -216,6 +216,12 @@ interface ProjectHubWorkspaceProps {
     allowedPhases?: ProductionPhase[];
     initialPhase?: ProductionPhase;
     requestedPhase?: ProductionPhase | null;
+    /** Opens a phase from the app navigation; a new nonce re-applies the same phase. */
+    phaseRequest?: { phase: ProductionPhase; nonce: number } | null;
+    /** Opens another app workspace from the overview (Edit, Color, Export …). */
+    onOpenWorkspace?: (workspace: Workspace) => void;
+    /** Counts the overview cannot read from its own props. */
+    pipelineStats?: { mediaCount: number; timelineClipCount: number };
     collaborativeLocks?: ProjectCollaborativeLock[];
     onActivityChange?: (activity: {
         activePhase: ProductionPhase;
@@ -230,7 +236,7 @@ interface ProjectHubWorkspaceProps {
     teamMode?: boolean;
 }
 
-type ProductionPhase = 'library' | 'script' | 'worldbuilding' | 'director' | 'concept' | 'scene_wall' | 'storyboard' | 'filming' | 'review' | 'marketing' | 'team';
+type ProductionPhase = 'overview' | 'library' | 'script' | 'worldbuilding' | 'director' | 'concept' | 'scene_wall' | 'storyboard' | 'filming' | 'review' | 'marketing' | 'team';
 type ConceptEntityTab = 'characters' | 'environments' | 'props' | 'branding';
 type ConceptCharacterSubtab = 'base_ref' | 'angles' | 'outfits' | 'ages';
 type ConceptEnvironmentSubtab = 'base_ref' | 'angles' | 'time_of_day';
@@ -887,21 +893,23 @@ const REFERENCE_MODEL_OPTIONS: Array<{ id: ReferenceImageModel; label: string; p
  */
 type PhaseKind = 'step' | 'tool';
 const ALL_PHASES: Array<{ id: ProductionPhase; label: string; icon: React.ComponentType<{ className?: string }>; kind: PhaseKind; parent?: ProductionPhase }> = [
+    { id: 'overview', label: 'Overview', icon: ClapperboardIcon, kind: 'tool' },
     { id: 'library', label: 'Projects', icon: FolderIcon, kind: 'tool', parent: 'script' },
     { id: 'script', label: 'Script', icon: ScriptIcon, kind: 'step' },
-    { id: 'worldbuilding', label: 'World', icon: LandscapeIcon, kind: 'step' },
-    { id: 'concept', label: 'Concept', icon: UserCircleIcon, kind: 'step' },
+    { id: 'worldbuilding', label: 'Lore', icon: LandscapeIcon, kind: 'step' },
+    { id: 'concept', label: 'Cast & Sets', icon: UserCircleIcon, kind: 'step' },
     { id: 'storyboard', label: 'Storyboard', icon: GridIcon, kind: 'step' },
     { id: 'director', label: 'Director', icon: ClapperboardIcon, kind: 'tool', parent: 'storyboard' },
     { id: 'scene_wall', label: 'Scene Wall', icon: ListIcon, kind: 'tool', parent: 'storyboard' },
-    { id: 'filming', label: 'Filming', icon: FilmIcon, kind: 'step' },
-    { id: 'review', label: 'Review', icon: ClipboardCheckIcon, kind: 'step' },
+    { id: 'filming', label: 'Film the Shots', icon: FilmIcon, kind: 'step' },
+    { id: 'review', label: 'Continuity Check', icon: ClipboardCheckIcon, kind: 'step' },
     { id: 'marketing', label: 'Marketing', icon: SparklesIcon, kind: 'step' },
     { id: 'team', label: 'Team', icon: UserCircleIcon, kind: 'tool', parent: 'script' },
 ];
 const getPhaseMeta = (phase: ProductionPhase) => ALL_PHASES.find((entry) => entry.id === phase);
 
 const PHASE_DESCRIPTIONS: Record<ProductionPhase, string> = {
+    overview: 'Where the film stands and what to do next',
     library: 'Open or switch projects',
     script: 'Write the story base',
     worldbuilding: 'World rules and lore · optional',
@@ -4031,6 +4039,9 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
     allowedPhases,
     initialPhase,
     requestedPhase = null,
+    phaseRequest = null,
+    onOpenWorkspace,
+    pipelineStats,
     collaborativeLocks = [],
     onActivityChange,
     onBindStudioAutomation,
@@ -4080,7 +4091,7 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
         : nextFromWorldbuildingPhase;
 
     const initialPhaseValue = useMemo<ProductionPhase>(() => {
-        const preferred = initialPhase || 'script';
+        const preferred = initialPhase || 'overview';
         if (allowedPhaseIds.includes(preferred)) return preferred;
         return allowedPhaseIds[0] || 'script';
     }, [allowedPhaseIds, initialPhase]);
@@ -4120,6 +4131,11 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
         return preferred && allowedPhaseIds.includes(preferred) ? preferred : initialPhaseValue;
     });
     const lastAppliedRequestedPhaseRef = useRef<ProductionPhase | null>(null);
+    useEffect(() => {
+        if (teamMode || !phaseRequest) return;
+        if (allowedPhaseIds.includes(phaseRequest.phase)) setActivePhase(phaseRequest.phase);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [phaseRequest?.nonce]);
     const [storyboardFocusShot, setStoryboardFocusShot] = useState<number | null>(null);
     const [hubSceneNumber, setHubSceneNumber] = useState<number | null>(() => (typeof storedUiPrefs.selectedSceneNumber === 'number' ? storedUiPrefs.selectedSceneNumber : null));
     const [styleRefsOpen, setStyleRefsOpen] = useState(false);
@@ -14104,6 +14120,7 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
         });
     })();
     /** Content-based, not positional: a step is done when it produced something. */
+    const showOverview = !teamMode && activePhase === 'overview';
     const phaseDone: Partial<Record<ProductionPhase, boolean>> = {
         script: Boolean(storyBible.script?.trim()),
         worldbuilding: hasWorldbuildingContent,
@@ -14163,6 +14180,81 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
     const nextReadinessItem = readinessItems.find((item) => !item.complete);
     const currentPhaseIndex = Math.max(0, phases.findIndex((phase) => phase.id === (activeToolParent || activePhase)));
     const nextPhase = phases[currentPhaseIndex + 1] || null;
+
+    /** The overview: one card per production stage, with what is done and where to continue. */
+    const renderPipelineOverview = () => {
+        const count = (type: ReferenceItem['type']) => references.filter((ref) => ref.type === type).length;
+        const scriptWords = (storyBible.script || '').trim().split(/\s+/).filter(Boolean).length;
+        const framed = shotPrompts.filter((shot) => Boolean(shot.imageUrl)).length;
+        const filmed = shotPrompts.filter((shot) => Boolean(shot.videoUrl)).length;
+        const clips = pipelineStats?.timelineClipCount ?? 0;
+        const stages: Array<{ id: string; name: string; detail: string; done: boolean; started: boolean; action: string; open: () => void }> = [
+            {
+                id: 'development', name: 'Development',
+                detail: scriptWords ? `${scriptWords.toLocaleString()} words of script${hasWorldbuildingContent ? ' · lore written' : ''}` : 'No script yet',
+                done: Boolean(phaseDone.script), started: scriptWords > 0,
+                action: scriptWords ? 'Open script' : 'Write the script', open: () => setActivePhase('script'),
+            },
+            {
+                id: 'preproduction', name: 'Pre-production',
+                detail: `${count('character')} characters · ${count('environment')} sets · ${count('prop') + count('product')} props · ${shotPrompts.length} shots`,
+                done: Boolean(phaseDone.concept) && shotPrompts.length > 0, started: references.length > 0 || shotPrompts.length > 0,
+                action: references.length === 0 ? 'Cast & sets' : 'Storyboard', open: () => setActivePhase(references.length === 0 ? 'concept' : 'storyboard'),
+            },
+            {
+                id: 'shoot', name: 'Shoot',
+                detail: shotPrompts.length ? `${framed}/${shotPrompts.length} frames · ${filmed}/${shotPrompts.length} shots filmed` : 'Needs a shot list first',
+                done: shotPrompts.length > 0 && filmed === shotPrompts.length, started: framed > 0 || filmed > 0,
+                action: 'Film the shots', open: () => setActivePhase('filming'),
+            },
+            {
+                id: 'edit', name: 'Edit',
+                detail: clips ? `${clips} clip${clips === 1 ? '' : 's'} in the timeline` : 'Timeline is empty',
+                done: false, started: clips > 0,
+                action: 'Open timeline', open: () => onOpenWorkspace?.('EDIT'),
+            },
+            {
+                id: 'finishing', name: 'Finishing',
+                detail: 'Color, retouch, upscale and mix',
+                done: false, started: false,
+                action: 'Open color', open: () => onOpenWorkspace?.('POST'),
+            },
+            {
+                id: 'delivery', name: 'Delivery',
+                detail: `${phaseDone.review ? 'Continuity checked' : 'Not reviewed yet'}${phaseDone.marketing ? ' · promo made' : ''}`,
+                done: Boolean(phaseDone.review), started: Boolean(phaseDone.review || phaseDone.marketing),
+                action: 'Open export', open: () => onOpenWorkspace?.('EXPORT'),
+            },
+        ];
+        const current = stages.find((stage) => !stage.done) || stages[stages.length - 1];
+        return (
+            <section className="pipeline-overview" aria-label="Production stages">
+                <div className="pipeline-overview__head">
+                    <div className="project-hub-kicker">Production</div>
+                    <h3>Where the film stands</h3>
+                    <p>Six stages from the idea to the release. Continue where the film is now, or open any stage from the bar at the bottom.</p>
+                </div>
+                <ol className="pipeline-overview__stages" role="list">
+                    {stages.map((stage, index) => {
+                        const state = stage.done ? 'done' : stage === current ? 'current' : stage.started ? 'started' : 'todo';
+                        return (
+                            <li key={stage.id} className={`pipeline-stage pipeline-stage--${state}`}>
+                                <div className="pipeline-stage__top">
+                                    <span className="pipeline-stage__num">{stage.done ? '✓' : index + 1}</span>
+                                    <span className="pipeline-stage__name">{stage.name}</span>
+                                    {state === 'current' && <span className="pipeline-stage__badge">Now</span>}
+                                </div>
+                                <p className="pipeline-stage__detail">{stage.detail}</p>
+                                <button type="button" className={`app-button text-xs ${state === 'current' ? 'app-primary' : 'app-tertiary'}`} onClick={stage.open} data-studio-action={`pipeline-stage:${stage.id}`}>
+                                    {stage.action}
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ol>
+            </section>
+        );
+    };
 
     /** Same parts as the storyboard generation prompt, for the inspector preview. */
     const previewStoryboardPrompt = (shot: ShotPrompt) => {
@@ -14269,7 +14361,7 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
                 )}
 
                 <div className="h-full overflow-y-auto project-hub__scroll custom-scrollbar">
-                    <div className="project-hub__inner">
+                    <div className={`project-hub__inner ${showOverview ? '' : 'project-hub__inner--solo'}`}>
                         {error && (
                             <div className="pk-alert pk-alert--danger mb-4 flex justify-between items-start gap-3" role="alert">
                                 <span className="min-w-0 break-words">{error.length > 400 ? `${error.slice(0, 400)}…` : error}</span>
@@ -14277,12 +14369,13 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
                             </div>
                         )}
 
-                        <aside className="project-hub__nav" aria-label="Project navigation">
+                        {showOverview && (
+                        <aside className="project-hub__nav" aria-label="Project overview">
                             <div className="project-hub__nav-head">
                                 <div className="project-hub-kicker">Project</div>
                                 <h2 className="project-hub__title">{projectLabel}</h2>
                                 {!teamMode && allowedPhaseIds.includes('library') && (
-                                    <button type="button" className="project-hub__switch" onClick={() => setActivePhase('library')} aria-pressed={activePhase === 'library'}>Switch project ›</button>
+                                    <button type="button" className="project-hub__switch" onClick={() => setActivePhase('library')}>Switch project ›</button>
                                 )}
                                 <div className="project-hub__progress" title={`${quickstartStatus.completedCount} of ${quickstartStatus.totalCount} setup steps done`}>
                                     <span style={{ width: `${progressPercent}%` }} />
@@ -14307,32 +14400,6 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
                                 <span className="project-hub__format-hint">{getProductionFormat(storyBible.productionFormat).tagline} — {getProductionFormat(storyBible.productionFormat).description}</span>
                             </label>
 
-                            <ol className="project-hub__phases" role="list">
-                                {phases.map((phase, index) => {
-                                    const isActive = activePhase === phase.id || activeToolParent === phase.id;
-                                    const isPast = Boolean(phaseDone[phase.id]);
-                                    const emphasised = getProductionFormat(storyBible.productionFormat).emphasisPhases.includes(phase.id);
-                                    return (
-                                        <li key={phase.id}>
-                                            <button
-                                                type="button"
-                                                onClick={() => setActivePhase(phase.id as ProductionPhase)}
-                                                data-studio-action={`project-phase:${phase.id}`}
-                                                className={`project-hub__phase ${isActive ? 'project-hub__phase--active' : ''} ${isPast && !isActive ? 'project-hub__phase--done' : ''}`}
-                                                title={PHASE_DESCRIPTIONS[phase.id]}
-                                            >
-                                                <span className="project-hub__phase-step">{isPast && !isActive ? '✓' : index + 1}</span>
-                                                <phase.icon className="project-hub__phase-icon" />
-                                                <span className="project-hub__phase-text">
-                                                    <span className="project-hub__phase-label">{phase.label}</span>
-                                                    <span className="project-hub__phase-hint">{PHASE_DESCRIPTIONS[phase.id]}</span>
-                                                </span>
-                                                {emphasised && <span className="project-hub__phase-dot" title="Key phase for this format" />}
-                                            </button>
-                                        </li>
-                                    );
-                                })}
-                            </ol>
 
                             <div className={`project-hub__next ${nextReadinessItem ? 'project-hub__next--attention' : 'project-hub__next--ready'}`}>
                                 <div className="project-hub-kicker">{nextReadinessItem ? 'Next step' : 'Ready to produce'}</div>
@@ -14386,11 +14453,15 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
 
                             {!teamMode && allowedPhaseIds.includes('team') && (
                                 <div className="project-hub__tools">
-                                    <button type="button" className={`app-button app-tertiary text-xs ${activePhase === 'team' ? 'is-active' : ''}`} onClick={() => setActivePhase('team')}>Team &amp; sync</button>
+                                    <button type="button" className="app-button app-tertiary text-xs" onClick={() => setActivePhase('team')}>Team &amp; sync</button>
                                 </div>
                             )}
                         </aside>
+                        )}
 
+                        {activePhase === 'overview' && renderPipelineOverview()}
+
+                        {activePhase !== 'overview' && (
                         <header className="project-hub__phase-head">
                             <div>
                                 <div className="project-hub-kicker">{isToolPhase && activeToolParent ? `${getPhaseLabel(activeToolParent)} · tool` : `Step ${currentPhaseIndex + 1} of ${phases.length}`}</div>
@@ -14412,6 +14483,7 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
                                 )}
                             </div>
                         </header>
+                        )}
 
 
                         {/* Library Phase */}

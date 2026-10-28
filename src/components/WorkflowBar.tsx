@@ -1,6 +1,5 @@
 import React from 'react';
-import type { Workspace } from '../types';
-import type { ResolvedWorkspaceNav, WorkspaceNavGroup } from '../config/workspaceNav';
+import { navItemKey, type ResolvedWorkspaceNav, type WorkspaceNavGroup, type WorkspaceNavItem } from '../config/workspaceNav';
 import { ChevronRightIcon, SettingsIcon } from './icons';
 
 /**
@@ -12,16 +11,14 @@ import { ChevronRightIcon, SettingsIcon } from './icons';
  * stage's modules.
  */
 
-/** The module a stage opens: the last one used in it, else its first. */
-export const resolveStageTarget = (group: WorkspaceNavGroup, lastByGroup: Record<string, Workspace>): Workspace => {
-  const last = lastByGroup[group.id];
-  return last && group.items.some((item) => item.id === last) ? last : group.items[0].id;
-};
+/** The entry a stage opens: the last one used in it, else its first. */
+export const resolveStageTarget = (group: WorkspaceNavGroup, lastByGroup: Record<string, string>): WorkspaceNavItem =>
+  group.items.find((item) => navItemKey(item) === lastByGroup[group.id]) || group.items[0];
 
 const WorkflowBar: React.FC<{
   nav: ResolvedWorkspaceNav;
-  lastByGroup: Record<string, Workspace>;
-  onSelect: (workspace: Workspace) => void;
+  lastByGroup: Record<string, string>;
+  onSelect: (item: WorkspaceNavItem) => void;
   onOpenSettings?: () => void;
   summary?: string;
 }> = ({ nav, lastByGroup, onSelect, onOpenSettings, summary }) => {

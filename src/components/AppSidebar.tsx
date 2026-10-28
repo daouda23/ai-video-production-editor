@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Workspace } from '../types';
 import type { UIMode } from '../config/uiModes';
-import type { ResolvedWorkspaceNav } from '../config/workspaceNav';
+import { navItemKey, type ResolvedWorkspaceNav, type WorkspaceNavItem } from '../config/workspaceNav';
 import { FolderIcon, SettingsIcon } from './icons';
 
 export type SidebarProjectStatus = {
@@ -12,7 +12,7 @@ export type SidebarProjectStatus = {
 interface AppSidebarProps {
   nav: ResolvedWorkspaceNav;
   activeWorkspace: Workspace;
-  onSwitch: (workspace: Workspace) => void;
+  onSwitch: (item: WorkspaceNavItem) => void;
   uiMode: UIMode;
   collapsed: boolean;
   projectName?: string | null;
@@ -46,7 +46,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
           ...(nav.activeGroup ? [nav.activeGroup] : nav.stages),
           ...(nav.utility && nav.activeGroup !== nav.utility ? [nav.utility] : []),
         ].map((group) => {
-          const groupActive = group.items.some((item) => item.id === activeWorkspace);
+          const groupActive = group.id === nav.activeGroup?.id;
           return (
             <section
               key={group.id}
@@ -58,14 +58,14 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
               </div>
               <ul className="app-sidebar__list" role="list">
                 {group.items.map((item) => {
-                  const isActive = item.id === activeWorkspace;
+                  const isActive = navItemKey(item) === (nav.activeItem && navItemKey(nav.activeItem));
                   const Icon = item.icon;
                   return (
-                    <li key={item.id}>
+                    <li key={navItemKey(item)}>
                       <button
                         type="button"
-                        onClick={() => onSwitch(item.id)}
-                        data-studio-action={`workspace:${String(item.id).toLowerCase()}`}
+                        onClick={() => onSwitch(item)}
+                        data-studio-action={`workspace:${navItemKey(item).toLowerCase()}`}
                         aria-current={isActive ? 'page' : undefined}
                         title={collapsed ? `${item.name} · ${item.description}` : item.description}
                         className={`app-sidebar__item ${isActive ? 'app-sidebar__item--active' : ''}`}
@@ -84,7 +84,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
                 tabIndex={-1}
                 aria-hidden="true"
                 data-studio-action={`workspace-group:${group.id.toLowerCase()}`}
-                onClick={() => onSwitch(group.items[0].id)}
+                onClick={() => onSwitch(group.items[0])}
               />
             </section>
           );

@@ -68,7 +68,7 @@ import PresenceBar from './components/PresenceBar';
 import RemoteCursorOverlay from './components/RemoteCursorOverlay';
 import StudioAgentStrip from './components/StudioAgentStrip';
 import AppSidebar from './components/AppSidebar';
-import { resolveWorkspaceNav, WORKSPACE_NAV_GROUPS, type ResolvedWorkspaceNav } from './config/workspaceNav';
+import { resolveWorkspaceNav, WORKSPACE_NAV_GROUPS, activeNavKey, navItemKey, type ResolvedWorkspaceNav, type WorkspaceNavItem } from './config/workspaceNav';
 import { STUDIO_AGENT_STATUS_STYLES } from './components/StudioAgentStrip';
 import ActivityCenter from './components/ActivityCenter';
 import { useTaskCenter } from './hooks/useTaskCenter';
@@ -246,6 +246,7 @@ type ProjectSyncStatus = {
 };
 
 type ProjectHubPhase =
+    | 'overview'
     | 'library'
     | 'script'
     | 'worldbuilding'
@@ -259,6 +260,7 @@ type ProjectHubPhase =
     | 'team';
 
 const PROJECT_HUB_PHASES: ProjectHubPhase[] = [
+    'overview',
     'library',
     'script',
     'worldbuilding',
@@ -918,13 +920,6 @@ function App() {
     // Application State
     const lastHistoryDomainRef = useRef<AppHistoryDomain | null>(null);
     const [activeWorkspace, setActiveWorkspace] = useState<Workspace>('PROJECT');
-    // Last module opened in each workflow stage, so a stage reopens where you left it.
-    const [lastWorkspaceByStage, setLastWorkspaceByStage] = useState<Record<string, Workspace>>({});
-    const workspaceStagesRef = useRef<{ nav: ResolvedWorkspaceNav; lastByStage: Record<string, Workspace> } | null>(null);
-    useEffect(() => {
-        const stage = WORKSPACE_NAV_GROUPS.find((group) => group.items.some((item) => item.id === activeWorkspace));
-        if (stage) setLastWorkspaceByStage((prev) => (prev[stage.id] === activeWorkspace ? prev : { ...prev, [stage.id]: activeWorkspace }));
-    }, [activeWorkspace]);
     const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
         if (typeof window === 'undefined') return false;
         try {
@@ -975,6 +970,16 @@ function App() {
     const [collaborativeLocks, setCollaborativeLocks] = useState<ProjectCollaborativeLock[]>([]);
     const [projectHubActivePhase, setProjectHubActivePhase] = useState<ProjectHubPhase | null>(null);
     const [projectHubRequestedPhase, setProjectHubRequestedPhase] = useState<ProjectHubPhase | null>(null);
+    // A hub step opened from the app navigation; the nonce re-applies the same step.
+    const [hubPhaseRequest, setHubPhaseRequest] = useState<{ phase: ProjectHubPhase; nonce: number } | null>(null);
+    // Last entry opened in each workflow stage, so a stage reopens where you left it.
+    const [lastWorkspaceByStage, setLastWorkspaceByStage] = useState<Record<string, string>>({});
+    const workspaceStagesRef = useRef<{ nav: ResolvedWorkspaceNav; lastByStage: Record<string, string>; open: (item: WorkspaceNavItem) => void } | null>(null);
+    useEffect(() => {
+        const key = activeNavKey(activeWorkspace, projectHubActivePhase);
+        const stage = WORKSPACE_NAV_GROUPS.find((group) => group.items.some((item) => navItemKey(item) === key));
+        if (stage) setLastWorkspaceByStage((prev) => (prev[stage.id] === key ? prev : { ...prev, [stage.id]: key }));
+    }, [activeWorkspace, projectHubActivePhase]);
     const [projectHubActiveShotNumber, setProjectHubActiveShotNumber] = useState<number | null>(null);
     const [studioAgentAssistantControlActive, setStudioAgentAssistantControlActive] = useState(false);
     const [studioAgentTasks, setStudioAgentTasks] = useState<StudioAgentTask[]>([]);
@@ -7820,7 +7825,7 @@ function App() {
                 const stage = stages?.nav.stages[Number(event.code.slice(5)) - 1];
                 if (stages && stage) {
                     event.preventDefault();
-                    setActiveWorkspace(resolveStageTarget(stage, stages.lastByStage));
+                    stages.open(resolveStageTarget(stage, stages.lastByStage));
                 }
             } else if (event.key === ',' && !event.shiftKey) {
                 event.preventDefault();
@@ -8738,6 +8743,9 @@ function App() {
                         onBuildSceneWallFromContext={(sourceName) => buildSceneWallFromCurrentProject(sourceName || 'Project Context')}
                         collaborativeLocks={activeCollaborativeLocks}
                         requestedPhase={projectHubRequestedPhase}
+                        phaseRequest={teamMode ? null : hubPhaseRequest}
+                        onOpenWorkspace={handleManualWorkspaceSwitch}
+                        pipelineStats={{ mediaCount: mediaItems.length, timelineClipCount: timelineClips.length }}
                         onBindStudioAutomation={(bindings) => {
                             projectHubAutomationRef.current = bindings;
                         }}
@@ -9103,12 +9111,17 @@ function App() {
 
     const workspaceNav = resolveWorkspaceNav({
         activeWorkspace,
+        activeHubPhase: projectHubActivePhase,
         uiMode,
         allowedWorkspaces,
         showReview: isDirector,
         showRequests: !isDirector,
     });
-    workspaceStagesRef.current = { nav: workspaceNav, lastByStage: lastWorkspaceByStage };
+    const openNavItem = (item: WorkspaceNavItem) => {
+        handleManualWorkspaceSwitch(item.id);
+        if (item.phase && isProjectHubPhase(item.phase)) setHubPhaseRequest({ phase: item.phase, nonce: Date.now() });
+    };
+    workspaceStagesRef.current = { nav: workspaceNav, lastByStage: lastWorkspaceByStage, open: openNavItem };
     const agentStatusMeta = STUDIO_AGENT_STATUS_STYLES[studioAgentState.status];
     const onlineCount = realtimePresence.length;
     const taskSummary = summarizeTasks(taskCenterTasks);
@@ -9243,7 +9256,7 @@ function App() {
                 <AppSidebar
                     nav={workspaceNav}
                     activeWorkspace={activeWorkspace}
-                    onSwitch={handleManualWorkspaceSwitch}
+                    onSwitch={openNavItem}
                     uiMode={uiMode}
                     collapsed={sidebarCollapsed}
                     projectName={projectName || storyBible.title}
@@ -9288,7 +9301,7 @@ function App() {
                     <WorkflowBar
                         nav={workspaceNav}
                         lastByGroup={lastWorkspaceByStage}
-                        onSelect={handleManualWorkspaceSwitch}
+                        onSelect={openNavItem}
                         onOpenSettings={() => setShowSettings(true)}
                         summary={`${timelineClips.length} clip${timelineClips.length === 1 ? '' : 's'} · ${mediaItems.length} media${selectedClipId ? ' · clip selected' : ''}`}
                     />

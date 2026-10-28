@@ -37,7 +37,19 @@ export type WorkspaceNavItem = {
   name: string;
   description: string;
   icon: WorkspaceNavIcon;
+  /** A step of the Project hub (PROJECT workspace) that this entry opens. */
+  phase?: string;
 };
+
+/** Stable key of a nav entry: the workspace, plus the hub phase when it has one. */
+export const navItemKey = (item: Pick<WorkspaceNavItem, 'id' | 'phase'>) => (item.phase ? `${item.id}:${item.phase}` : item.id);
+
+/** Hub tool phases are shown under the step they belong to. */
+const HUB_PHASE_PARENT: Record<string, string> = { director: 'storyboard', scene_wall: 'storyboard', library: 'overview', team: 'overview' };
+
+/** Key of the nav entry for what is on screen (workspace + hub phase). */
+export const activeNavKey = (workspace: Workspace, hubPhase: string | null | undefined) =>
+  workspace === 'PROJECT' ? `PROJECT:${HUB_PHASE_PARENT[hubPhase || ''] || hubPhase || 'overview'}` : workspace;
 
 export type WorkspaceNavGroup = {
   id: string;
@@ -61,7 +73,9 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
     description: 'Write the film: project, story, research, look',
     icon: ScriptIcon,
     items: [
-      { id: 'PROJECT', name: 'Project', description: 'Story, shots, production plan', icon: ClapperboardIcon },
+      { id: 'PROJECT', phase: 'overview', name: 'Overview', description: 'Where the film stands and what to do next', icon: ClapperboardIcon },
+      { id: 'PROJECT', phase: 'script', name: 'Script', description: 'Write the story base', icon: ScriptIcon },
+      { id: 'PROJECT', phase: 'worldbuilding', name: 'Lore', description: 'World rules and history of the story', icon: MapIcon },
       { id: 'MICRODRAMA', name: 'Microdrama', description: 'Mobile-first 9:16 series pipeline', icon: FilmIcon },
       { id: 'NOTEBOOKLM', name: 'Research', description: 'Source notes and context', icon: BrainIcon },
       { id: 'MOODBOARD', name: 'Moodboard', description: 'Visual direction and references', icon: PaletteIcon },
@@ -73,6 +87,8 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
     description: 'Cast, sets and camera plan',
     icon: CameraIcon,
     items: [
+      { id: 'PROJECT', phase: 'concept', name: 'Cast & Sets', description: 'Characters, environments, props and style', icon: UserCircleIcon },
+      { id: 'PROJECT', phase: 'storyboard', name: 'Storyboard', description: 'Shots and frames, scene by scene', icon: GridIcon },
       { id: 'AVATAR', name: 'Avatar', description: 'Characters and presenters with a voice', icon: UserCircleIcon },
       { id: 'SET_DESIGN', name: 'Set Design', description: 'Build the set in 3D: props, lights, cameras', icon: CameraIcon },
       { id: 'WORLD_GEN', name: '3D World', description: 'Generate explorable 3D worlds', icon: LandscapeIcon },
@@ -85,8 +101,9 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
     description: 'Make every shot: images, video, voice, music',
     icon: VideoIcon,
     items: [
-      { id: 'IMAGE_GEN', name: 'Images', description: 'Create stills and frames', icon: WandSparklesIcon },
-      { id: 'VIDEO_GEN', name: 'Video', description: 'Generate motion clips', icon: VideoIcon },
+      { id: 'PROJECT', phase: 'filming', name: 'Film the Shots', description: 'Turn every storyboard shot into video', icon: FilmIcon },
+      { id: 'IMAGE_GEN', name: 'Image Workshop', description: 'Free image generation outside the shot list', icon: WandSparklesIcon },
+      { id: 'VIDEO_GEN', name: 'Video Workshop', description: 'Free video generation outside the shot list', icon: VideoIcon },
       { id: 'SOUND_GEN', name: 'Voice & Music', description: 'Generate voice, music and sound effects', icon: MusicNoteIcon },
       { id: 'NODES', name: 'Nodes', description: 'Build advanced AI chains', icon: LayersIcon },
       { id: 'IMPORT', name: 'Import', description: 'Bring in real footage and audio', icon: UploadIcon },
@@ -121,10 +138,12 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
     description: 'Check, render and promote',
     icon: ExportIcon,
     items: [
+      { id: 'PROJECT', phase: 'review', name: 'Continuity Check', description: 'AI continuity review and quality score', icon: ClipboardCheckIcon },
       { id: 'ANALYSIS', name: 'Analysis', description: 'Find pacing and quality issues', icon: BrainCircuitIcon },
       { id: 'REVIEW', name: 'Approvals', description: 'Approve and annotate work', icon: ClipboardCheckIcon },
       { id: 'REQUESTS', name: 'Requests', description: 'Handle change requests', icon: ListIcon },
       { id: 'EXPORT', name: 'Export', description: 'Choose format and render', icon: ExportIcon },
+      { id: 'PROJECT', phase: 'marketing', name: 'Marketing', description: 'Posters, thumbnails and promo from the project', icon: SparklesIcon },
       { id: 'DESIGN', name: 'Posters & Promo', description: 'Posters, thumbnails and social assets', icon: ImageIcon },
     ],
   },
@@ -145,6 +164,8 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
 
 export type ResolveWorkspaceNavParams = {
   activeWorkspace: Workspace;
+  /** Active Project hub phase, so hub entries can be highlighted. */
+  activeHubPhase?: string | null;
   uiMode: UIMode;
   allowedWorkspaces?: Workspace[];
   showReview?: boolean;
@@ -172,7 +193,7 @@ export type ResolvedWorkspaceNav = {
  */
 export const resolveWorkspaceNav = ({
   activeWorkspace,
-  uiMode,
+  activeHubPhase,
   allowedWorkspaces,
   showReview = true,
   showRequests = true,
@@ -193,9 +214,10 @@ export const resolveWorkspaceNav = ({
     .filter((group) => group.items.length > 0);
 
   const items = groups.flatMap((group) => group.items);
-  const activeGroup = groups.find((group) => group.items.some((item) => item.id === activeWorkspace));
-  const activeItem = activeGroup?.items.find((item) => item.id === activeWorkspace);
-  const activeIndex = items.findIndex((item) => item.id === activeWorkspace);
+  const activeKey = activeNavKey(activeWorkspace, activeHubPhase);
+  const activeGroup = groups.find((group) => group.items.some((item) => navItemKey(item) === activeKey));
+  const activeItem = activeGroup?.items.find((item) => navItemKey(item) === activeKey);
+  const activeIndex = items.findIndex((item) => navItemKey(item) === activeKey);
 
   return {
     groups,
