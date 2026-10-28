@@ -68,7 +68,7 @@ import PresenceBar from './components/PresenceBar';
 import RemoteCursorOverlay from './components/RemoteCursorOverlay';
 import StudioAgentStrip from './components/StudioAgentStrip';
 import AppSidebar from './components/AppSidebar';
-import { resolveWorkspaceNav } from './config/workspaceNav';
+import { resolveWorkspaceNav, WORKSPACE_NAV_GROUPS, type ResolvedWorkspaceNav } from './config/workspaceNav';
 import { STUDIO_AGENT_STATUS_STYLES } from './components/StudioAgentStrip';
 import ActivityCenter from './components/ActivityCenter';
 import { useTaskCenter } from './hooks/useTaskCenter';
@@ -124,7 +124,7 @@ import NotebookLMWorkspace from './workspaces/NotebookLMWorkspace';
 import MicrodramaWorkspace from './workspaces/MicrodramaWorkspace';
 import PluginsWorkspace from './workspaces/PluginsWorkspace';
 import LocalAiWorkspace from './workspaces/LocalAiWorkspace';
-import PostPageBar, { POST_PAGES } from './components/PostPageBar';
+import WorkflowBar, { resolveStageTarget } from './components/WorkflowBar';
 import PricingScreen from './components/PricingScreen';
 import OptionsModal, { EstimateResult, OptionsModalConfig, PricingResult } from './components/OptionsModal';
 import AuthScreen from './components/AuthScreen';
@@ -918,6 +918,13 @@ function App() {
     // Application State
     const lastHistoryDomainRef = useRef<AppHistoryDomain | null>(null);
     const [activeWorkspace, setActiveWorkspace] = useState<Workspace>('PROJECT');
+    // Last module opened in each workflow stage, so a stage reopens where you left it.
+    const [lastWorkspaceByStage, setLastWorkspaceByStage] = useState<Record<string, Workspace>>({});
+    const workspaceStagesRef = useRef<{ nav: ResolvedWorkspaceNav; lastByStage: Record<string, Workspace> } | null>(null);
+    useEffect(() => {
+        const stage = WORKSPACE_NAV_GROUPS.find((group) => group.items.some((item) => item.id === activeWorkspace));
+        if (stage) setLastWorkspaceByStage((prev) => (prev[stage.id] === activeWorkspace ? prev : { ...prev, [stage.id]: activeWorkspace }));
+    }, [activeWorkspace]);
     const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
         if (typeof window === 'undefined') return false;
         try {
@@ -7807,12 +7814,13 @@ function App() {
             if (event.key === '\\' && !isTyping) {
                 event.preventDefault();
                 setSidebarCollapsed((value) => !value);
-            } else if (event.shiftKey && !isTyping && /^Digit[1-7]$/.test(event.code)) {
+            } else if (event.shiftKey && !isTyping && /^Digit[1-9]$/.test(event.code)) {
                 // event.code, not event.key: with Shift held the key reports "!", "@"… on most layouts.
-                const page = POST_PAGES[Number(event.code.slice(5)) - 1];
-                if (page) {
+                const stages = workspaceStagesRef.current;
+                const stage = stages?.nav.groups[Number(event.code.slice(5)) - 1];
+                if (stages && stage) {
                     event.preventDefault();
-                    setActiveWorkspace(page.id);
+                    setActiveWorkspace(resolveStageTarget(stage, stages.lastByStage));
                 }
             } else if (event.key === ',' && !event.shiftKey) {
                 event.preventDefault();
@@ -9097,6 +9105,7 @@ function App() {
         showReview: isDirector,
         showRequests: !isDirector,
     });
+    workspaceStagesRef.current = { nav: workspaceNav, lastByStage: lastWorkspaceByStage };
     const agentStatusMeta = STUDIO_AGENT_STATUS_STYLES[studioAgentState.status];
     const onlineCount = realtimePresence.length;
     const taskSummary = summarizeTasks(taskCenterTasks);
@@ -9273,9 +9282,9 @@ function App() {
                     <main className={`app-main-surface ${blockForBilling ? 'pointer-events-none opacity-45' : ''}`}>
                         {renderWorkspace()}
                     </main>
-                    <PostPageBar
-                        active={activeWorkspace}
-                        allowed={new Set(allowedWorkspaces)}
+                    <WorkflowBar
+                        nav={workspaceNav}
+                        lastByGroup={lastWorkspaceByStage}
                         onSelect={handleManualWorkspaceSwitch}
                         onOpenSettings={() => setShowSettings(true)}
                         summary={`${timelineClips.length} clip${timelineClips.length === 1 ? '' : 's'} · ${mediaItems.length} media${selectedClipId ? ' · clip selected' : ''}`}

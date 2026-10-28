@@ -22,8 +22,9 @@ interface AppSidebarProps {
 }
 
 /**
- * macOS-style source list: grouped rows, quiet section labels, a single
- * tinted selection. Collapses to an icon rail so the canvas gets the room.
+ * Source list for the active workflow stage: the bottom workflow bar picks the
+ * stage, the sidebar lists that stage's modules. Collapses to an icon rail so
+ * the canvas gets the room.
  */
 const AppSidebar: React.FC<AppSidebarProps> = ({
   nav,
@@ -41,7 +42,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
       aria-label="Workspaces"
     >
       <div className="app-sidebar__scroll">
-        {nav.groups.map((group) => {
+        {(nav.activeGroup ? [nav.activeGroup] : nav.groups).map((group) => {
           const groupActive = group.items.some((item) => item.id === activeWorkspace);
           return (
             <section
