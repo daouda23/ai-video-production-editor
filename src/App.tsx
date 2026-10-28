@@ -124,7 +124,7 @@ import NotebookLMWorkspace from './workspaces/NotebookLMWorkspace';
 import MicrodramaWorkspace from './workspaces/MicrodramaWorkspace';
 import PluginsWorkspace from './workspaces/PluginsWorkspace';
 import LocalAiWorkspace from './workspaces/LocalAiWorkspace';
-import PostPageBar, { POST_PAGES, isPostPage } from './components/PostPageBar';
+import PostPageBar, { POST_PAGES } from './components/PostPageBar';
 import PricingScreen from './components/PricingScreen';
 import OptionsModal, { EstimateResult, OptionsModalConfig, PricingResult } from './components/OptionsModal';
 import AuthScreen from './components/AuthScreen';
@@ -7807,8 +7807,9 @@ function App() {
             if (event.key === '\\' && !isTyping) {
                 event.preventDefault();
                 setSidebarCollapsed((value) => !value);
-            } else if (event.shiftKey && !isTyping && /^[1-8]$/.test(event.key)) {
-                const page = POST_PAGES[Number(event.key) - 1];
+            } else if (event.shiftKey && !isTyping && /^Digit[1-7]$/.test(event.code)) {
+                // event.code, not event.key: with Shift held the key reports "!", "@"… on most layouts.
+                const page = POST_PAGES[Number(event.code.slice(5)) - 1];
                 if (page) {
                     event.preventDefault();
                     setActiveWorkspace(page.id);
@@ -9272,14 +9273,13 @@ function App() {
                     <main className={`app-main-surface ${blockForBilling ? 'pointer-events-none opacity-45' : ''}`}>
                         {renderWorkspace()}
                     </main>
-                    {isPostPage(activeWorkspace) && (
-                        <PostPageBar
-                            active={activeWorkspace}
-                            allowed={new Set(allowedWorkspaces)}
-                            onSelect={handleManualWorkspaceSwitch}
-                            summary={`${timelineClips.length} clip${timelineClips.length === 1 ? '' : 's'} · ${mediaItems.length} media${selectedClipId ? ' · clip selected' : ''}`}
-                        />
-                    )}
+                    <PostPageBar
+                        active={activeWorkspace}
+                        allowed={new Set(allowedWorkspaces)}
+                        onSelect={handleManualWorkspaceSwitch}
+                        onOpenSettings={() => setShowSettings(true)}
+                        summary={`${timelineClips.length} clip${timelineClips.length === 1 ? '' : 's'} · ${mediaItems.length} media${selectedClipId ? ' · clip selected' : ''}`}
+                    />
                 </div>
             </div>
             {blockForBilling && (
