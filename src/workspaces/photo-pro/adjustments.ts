@@ -26,11 +26,11 @@ export type AdjustmentType = Adjustment['type'];
 
 export const ADJUSTMENT_LABELS: Record<AdjustmentType, string> = {
   brightnessContrast: 'Helligkeit/Kontrast',
-  hueSaturation: 'Farbton/Sättigung',
-  exposure: 'Belichtung',
-  curves: 'Gradationskurven',
-  colorBalance: 'Farbbalance',
-  invert: 'Umkehren',
+  hueSaturation: 'Hue/Saturation',
+  exposure: 'Exposure',
+  curves: 'Tone curves',
+  colorBalance: 'Color balance',
+  invert: 'Reverse',
   look: 'Neural-Look',
 };
 

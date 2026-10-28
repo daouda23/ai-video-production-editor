@@ -64,10 +64,10 @@ export type ColorPageProps = SharedSequenceProps & {
 type CenterTab = 'curves' | 'qualifier' | 'window' | 'blur' | 'key' | 'sizing' | 'looks' | 'ai';
 
 const CENTER_TABS: Array<{ id: CenterTab; label: string; icon: React.ReactNode }> = [
-  { id: 'curves', label: 'Kurven', icon: <Spline /> },
+  { id: 'curves', label: 'Curves', icon: <Spline /> },
   { id: 'qualifier', label: 'Qualifier', icon: <Pipette /> },
-  { id: 'window', label: 'Fenster', icon: <Circle /> },
-  { id: 'blur', label: 'Weichzeichnen', icon: <Droplet /> },
+  { id: 'window', label: 'Window', icon: <Circle /> },
+  { id: 'blur', label: 'Blur', icon: <Droplet /> },
   { id: 'key', label: 'Key', icon: <KeyRound /> },
   { id: 'sizing', label: 'Sizing', icon: <Crop /> },
   { id: 'looks', label: 'LUT & Looks', icon: <Film /> },
@@ -75,8 +75,8 @@ const CENTER_TABS: Array<{ id: CenterTab; label: string; icon: React.ReactNode }
 ];
 
 const PRIMARY_TABS: Array<{ id: PrimariesMode; label: string; icon: React.ReactNode }> = [
-  { id: 'wheels', label: 'Farbräder', icon: <Aperture /> },
-  { id: 'bars', label: 'Balken', icon: <Columns2 /> },
+  { id: 'wheels', label: 'Color wheels', icon: <Aperture /> },
+  { id: 'bars', label: 'Bars', icon: <Columns2 /> },
   { id: 'log', label: 'Log', icon: <SunMedium /> },
 ];
 
@@ -183,7 +183,7 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
     const base = stack.length ? stack : [createGradeNode()];
     const { stack: next, index } = addSerialNode(base, stack.length ? nodeIndex : 0);
     commitStack(next, index);
-    setToast(`Node ${String(index + 1).padStart(2, '0')} hinzugefügt`);
+    setToast(`Node ${String(index + 1).padStart(2, '0')} added`);
   }, [commitStack, nodeIndex, selectedClip, stack]);
 
   const addEffectNode = (effectId: string) => {
@@ -222,17 +222,17 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
   const copyGrade = useCallback(() => {
     if (!selectedClip) return;
     setClipboard(extractGrade(selectedClip));
-    setToast('Grade kopiert');
+    setToast('Grade copied');
   }, [selectedClip]);
 
   const pasteGrade = useCallback(() => {
     if (!clipboard) return;
-    applyGrade(clipboard, targetIds(), 'Grade eingefügt');
+    applyGrade(clipboard, targetIds(), 'Grade pasted');
   }, [applyGrade, clipboard, targetIds]);
 
   const applyToAll = () => {
     if (!selectedClip) return;
-    applyGrade(extractGrade(selectedClip), visualClips.filter((clip) => clip.id !== selectedClip.id).map((clip) => clip.id), 'Grade auf alle');
+    applyGrade(extractGrade(selectedClip), visualClips.filter((clip) => clip.id !== selectedClip.id).map((clip) => clip.id), 'Grade to all');
   };
 
   const grabStill = useCallback(() => {
@@ -324,7 +324,7 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
   // ------------------------------------------------------------------ render
   const nonGradePanel = currentNode && !isGradeNode(currentNode) ? (
     <div style={{ overflow: 'auto', height: '100%' }}>
-      <p className="cp-note">Node {String(nodeIndex + 1).padStart(2, '0')} ist ein Effekt-Node. Seine Parameter:</p>
+      <p className="cp-note">Node {String(nodeIndex + 1).padStart(2, '0')}is an effect node. Its parameters:</p>
       <FxStackPanel
         stack={[currentNode]}
         compact
@@ -337,7 +337,7 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
     </div>
   ) : null;
 
-  const disabledNote = !selectedClip ? <div className="cp-empty">Wähle unten einen Clip aus.</div> : null;
+  const disabledNote = !selectedClip ? <div className="cp-empty">Choose a clip below.</div> : null;
 
   const centerPalette = () => {
     if (disabledNote) return disabledNote;
@@ -363,19 +363,19 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
         {pageTabs}
         {!altContent && (
           <>
-            <span className="cp-bar__title" style={{ marginLeft: 8 }}>{selectedMedia?.name ?? 'Kein Clip'}</span>
-            <span className="cp-bar__meta">{clipNumber ? `Clip ${String(clipNumber).padStart(2, '0')} · ${stack.length} Node(s)` : ''}{inClip || !selectedClip ? '' : ' · erster Frame'}</span>
+            <span className="cp-bar__title" style={{ marginLeft: 8 }}>{selectedMedia?.name ?? 'No clip'}</span>
+            <span className="cp-bar__meta">{clipNumber ? `Clip ${String(clipNumber).padStart(2, '0')} · ${stack.length} Node(s)` : ''}{inClip || !selectedClip ? '' : ' · first frame'}</span>
           </>
         )}
         <span className="cp-bar__spacer" />
         {!altContent && (
           <>
-            <button type="button" className={`cp-btn ${showGallery ? 'cp-btn--on' : ''}`} onClick={() => setShowGallery((v) => !v)} data-automation-id="color.toggle.gallery">Galerie</button>
+            <button type="button" className={`cp-btn ${showGallery ? 'cp-btn--on' : ''}`} onClick={() => setShowGallery((v) => !v)} data-automation-id="color.toggle.gallery">Gallery</button>
             <button type="button" className={`cp-btn ${showNodes ? 'cp-btn--on' : ''}`} onClick={() => setShowNodes((v) => !v)} data-automation-id="color.toggle.nodes">Nodes</button>
             <button type="button" className={`cp-btn ${showTimeline ? 'cp-btn--on' : ''}`} onClick={() => setShowTimeline((v) => !v)} data-automation-id="color.toggle.timeline">Timeline</button>
           </>
         )}
-        {onSwitchToEdit && <button type="button" className="cp-btn cp-btn--outline" onClick={onSwitchToEdit} data-automation-id="color.openEdit" title="Edit-Seite öffnen">Edit-Seite</button>}
+        {onSwitchToEdit && <button type="button" className="cp-btn cp-btn--outline" onClick={onSwitchToEdit} data-automation-id="color.openEdit" title="Open Edit page">Edit-Seite</button>}
       </div>
 
       {altContent ? <div className="cp-audio">{altContent}</div> : (
@@ -395,11 +395,11 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
             <div className="cp-panel" data-automation-id="color.viewerPanel">
               <div className="cp-panel__head">
                 <span className="cp-panel__title">Viewer</span>
-                <button type="button" className={`cp-btn ${bypass ? 'cp-btn--on' : ''}`} onClick={() => setBypass((v) => !v)} title="Alle Grades umgehen (⇧D)" data-automation-id="color.viewer.bypass">{bypass ? <EyeOff /> : <Eye />} Bypass</button>
+                <button type="button" className={`cp-btn ${bypass ? 'cp-btn--on' : ''}`} onClick={() => setBypass((v) => !v)} title="Bypass all grades (⇧D)" data-automation-id="color.viewer.bypass">{bypass ? <EyeOff /> : <Eye />} Bypass</button>
                 <button type="button" className={`cp-btn ${wipe ? 'cp-btn--on' : ''}`} onClick={() => setWipe((v) => !v)} title="Split-Screen: Original | Graded" data-automation-id="color.viewer.wipe"><Blend /> Wipe</button>
-                <button type="button" className={`cp-btn ${highlight ? 'cp-btn--on' : ''}`} onClick={() => setHighlight((v) => !v)} disabled={!currentIsGrade} title="Key des Nodes als Maske zeigen" data-automation-id="color.viewer.highlight"><KeyRound /> Maske</button>
+                <button type="button" className={`cp-btn ${highlight ? 'cp-btn--on' : ''}`} onClick={() => setHighlight((v) => !v)} disabled={!currentIsGrade} title="Show the node key as a mask" data-automation-id="color.viewer.highlight"><KeyRound />Mask</button>
                 <span className="cp-bar__spacer" />
-                <button type="button" className="cp-btn" onClick={grabStill} disabled={!selectedClip} title="Still aufnehmen (⌥⌘G)" data-automation-id="color.viewer.grab">Still aufnehmen</button>
+                <button type="button" className="cp-btn" onClick={grabStill} disabled={!selectedClip} title="Grab still (⌥⌘G)" data-automation-id="color.viewer.grab">Grab still</button>
               </div>
               <ColorViewer
                 ref={viewerRef}
@@ -412,11 +412,11 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
                 wipePos={wipePos}
                 onWipePos={setWipePos}
                 mode={viewerMode}
-                onPick={(rgb) => { patchNode(qualifierFromPick(rgb)); setPicking(false); setToast('Qualifier auf Farbe gesetzt'); }}
+                onPick={(rgb) => { patchNode(qualifierFromPick(rgb)); setPicking(false); setToast('Qualifier set to color'); }}
                 windowOverlay={windowOverlay}
                 onWindowMove={(x, y) => patchNode({ winX: Math.round(x * 1000) / 1000, winY: Math.round(y * 1000) / 1000 })}
                 onScopes={setScopes}
-                label={bypass ? 'Bypass' : highlight ? 'Maske' : `Node ${stack.length ? String(nodeIndex + 1).padStart(2, '0') : '–'}`}
+                label={bypass ? 'Bypass' : highlight ? 'Mask' : `Node ${stack.length ? String(nodeIndex + 1).padStart(2, '0') : '–'}`}
               />
               <div className="cp-viewer__foot">
                 <EditTransportBar
@@ -469,7 +469,7 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
               onSelectClip(clip.id);
               if (playheadPosition < clip.start || playheadPosition >= clip.end) onPlayheadUpdate(clip.start + 1 / DEFAULT_TIMELINE_FPS);
             }}
-            onApplyCurrentGrade={(clip) => { if (selectedClip && clip.id !== selectedClip.id) applyGrade(extractGrade(selectedClip), [clip.id], 'Grade angewendet'); }}
+            onApplyCurrentGrade={(clip) => { if (selectedClip && clip.id !== selectedClip.id) applyGrade(extractGrade(selectedClip), [clip.id], 'Grade applied'); }}
             onContextMenu={(clip, x, y) => setMenu({ clip, x, y })}
             onSeek={(time) => onPlayheadUpdate(Math.max(0, Math.min(sequenceDuration, time)))}
           />
@@ -477,11 +477,11 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
             <div style={{ position: 'fixed', inset: 0, zIndex: 9990 }} onPointerDown={() => setMenu(null)} onContextMenu={(event) => { event.preventDefault(); setMenu(null); }}>
               <div className="cp-panel" style={{ position: 'fixed', left: menu.x, top: Math.max(8, menu.y - 150), minWidth: 190, padding: 4, boxShadow: '0 8px 24px rgb(0 0 0 / 0.5)', border: '1px solid var(--cp-line-strong)' }} onPointerDown={(event) => event.stopPropagation()}>
                 {[
-                  { id: 'copy', label: 'Grade kopieren (⌘C)', run: () => { setClipboard(extractGrade(menu.clip)); setToast('Grade kopiert'); } },
-                  { id: 'paste', label: 'Grade einfügen (⌘V)', disabled: !clipboard, run: () => clipboard && applyGrade(clipboard, [menu.clip.id], 'Grade eingefügt') },
-                  { id: 'applyCurrent', label: 'Aktuellen Grade anwenden', disabled: !selectedClip || selectedClip.id === menu.clip.id, run: () => selectedClip && applyGrade(extractGrade(selectedClip), [menu.clip.id], 'Grade angewendet') },
-                  { id: 'still', label: 'Still aufnehmen', run: () => { const next = createStill(loadGallery(), extractGrade(menu.clip), '', { sourceClipName: mediaItems.find((m) => m.id === menu.clip.mediaId)?.name }); saveGallery(next); setStills(next); setToast(`${next[0].name} aufgenommen`); } },
-                  { id: 'reset', label: 'Grade zurücksetzen', run: () => onBatchUpdateClips(timelineClips.map((clip) => (clip.id === menu.clip.id ? { ...clip, fxStack: (clip.fxStack ?? []).filter((node) => !isGradeNode(node)) } : clip))) },
+                  { id: 'copy', label: 'Copy grade (⌘C)', run: () => { setClipboard(extractGrade(menu.clip)); setToast('Grade copied'); } },
+                  { id: 'paste', label: 'Paste grade (⌘V)', disabled: !clipboard, run: () => clipboard && applyGrade(clipboard, [menu.clip.id], 'Grade pasted') },
+                  { id: 'applyCurrent', label: 'Apply current grade', disabled: !selectedClip || selectedClip.id === menu.clip.id, run: () => selectedClip && applyGrade(extractGrade(selectedClip), [menu.clip.id], 'Grade applied') },
+                  { id: 'still', label: 'Grab still', run: () => { const next = createStill(loadGallery(), extractGrade(menu.clip), '', { sourceClipName: mediaItems.find((m) => m.id === menu.clip.mediaId)?.name }); saveGallery(next); setStills(next); setToast(`${next[0].name} aufgenommen`); } },
+                  { id: 'reset', label: 'Reset grade', run: () => onBatchUpdateClips(timelineClips.map((clip) => (clip.id === menu.clip.id ? { ...clip, fxStack: (clip.fxStack ?? []).filter((node) => !isGradeNode(node)) } : clip))) },
                 ].map((item) => (
                   <button key={item.id} type="button" className="cp-btn" style={{ width: '100%', justifyContent: 'flex-start' }} disabled={item.disabled} data-automation-id={`color.clips.menu.${item.id}`} onClick={() => { item.run(); setMenu(null); }}>{item.label}</button>
                 ))}
@@ -507,7 +507,7 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
           )}
 
           <div className="cp-bottom">
-            <div className="cp-tabs" role="tablist" aria-label="Paletten">
+            <div className="cp-tabs" role="tablist" aria-label="Palettes">
               <div className="cp-tabs__group">
                 {PRIMARY_TABS.map((tab) => (
                   <button key={tab.id} type="button" role="tab" aria-selected={primaryMode === tab.id} className={`cp-tab ${primaryMode === tab.id ? 'cp-tab--active' : ''}`} onClick={() => setPrimaryMode(tab.id)} data-automation-id={`color.palette.primaries.${tab.id}`} title={`Primaries – ${tab.label}`}>{tab.icon}{tab.label}</button>
@@ -531,17 +531,17 @@ const ColorPage: React.FC<ColorPageProps> = (props) => {
                 <div className="cp-panel__head">
                   <span className="cp-panel__title">Primaries – {PRIMARY_TABS.find((t) => t.id === primaryMode)?.label}</span>
                   <span className="cp-bar__spacer" />
-                  <button type="button" className="cp-btn" disabled={!selectedClip || !currentIsGrade} onClick={() => currentNode ? commitStack(resetNode(stack, nodeIndex)) : undefined} data-automation-id="color.primaries.resetNode" title="Node zurücksetzen">Node zurücksetzen</button>
+                  <button type="button" className="cp-btn" disabled={!selectedClip || !currentIsGrade} onClick={() => currentNode ? commitStack(resetNode(stack, nodeIndex)) : undefined} data-automation-id="color.primaries.resetNode" title="Reset node">Reset node</button>
                 </div>
-                <div className="cp-panel__body">{disabledNote ?? (nonGradePanel ? <p className="cp-note">Effekt-Node – die Parameter stehen in der mittleren Palette. Primaries gelten nur für Farb-Nodes.</p> : null) ?? <PrimariesPalette values={nodeValues} onPatch={patchNode} mode={primaryMode} />}</div>
+                <div className="cp-panel__body">{disabledNote ?? (nonGradePanel ? <p className="cp-note">Effect node – the parameters are in the middle palette. Primaries apply to color nodes only.</p> : null) ?? <PrimariesPalette values={nodeValues} onPatch={patchNode} mode={primaryMode} />}</div>
               </div>
               <div className="cp-panel" data-automation-id="color.palette.center">
                 <div className="cp-panel__head">
                   <span className="cp-panel__title">{CENTER_TABS.find((t) => t.id === centerTab)?.label}</span>
                   <span className="cp-bar__spacer" />
-                  <button type="button" className="cp-btn" onClick={copyGrade} disabled={!selectedClip} data-automation-id="color.grade.copy" title="Grade kopieren (⌘C)">Kopieren</button>
-                  <button type="button" className="cp-btn" onClick={pasteGrade} disabled={!clipboard || !selectedClip} data-automation-id="color.grade.paste" title="Grade einfügen (⌘V)">Einfügen</button>
-                  <button type="button" className="cp-btn" onClick={applyToAll} disabled={!selectedClip} data-automation-id="color.grade.applyAll" title="Grade auf alle Clips anwenden">Auf alle</button>
+                  <button type="button" className="cp-btn" onClick={copyGrade} disabled={!selectedClip} data-automation-id="color.grade.copy" title="Copy grade (⌘C)">Copy</button>
+                  <button type="button" className="cp-btn" onClick={pasteGrade} disabled={!clipboard || !selectedClip} data-automation-id="color.grade.paste" title="Paste grade (⌘V)">Insert</button>
+                  <button type="button" className="cp-btn" onClick={applyToAll} disabled={!selectedClip} data-automation-id="color.grade.applyAll" title="Apply grade to all clips">To all</button>
                 </div>
                 <div className="cp-panel__body">{centerPalette()}</div>
               </div>

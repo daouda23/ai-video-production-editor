@@ -84,7 +84,7 @@ const loadImage = (url: string): Promise<HTMLImageElement> => new Promise((resol
   const img = new Image();
   if (!url.startsWith('data:') && !url.startsWith('blob:')) img.crossOrigin = 'anonymous';
   img.onload = () => resolve(img);
-  img.onerror = () => reject(new Error('Bild konnte nicht geladen werden.'));
+  img.onerror = () => reject(new Error('Image could not be loaded.'));
   img.src = url;
 });
 
@@ -94,9 +94,9 @@ const loadVideo = (url: string): Promise<HTMLVideoElement> => new Promise((resol
   video.playsInline = true;
   video.preload = 'auto';
   if (!url.startsWith('data:') && !url.startsWith('blob:')) video.crossOrigin = 'anonymous';
-  const timer = setTimeout(() => reject(new Error('Video-Metadaten: Zeitüberschreitung.')), 15_000);
+  const timer = setTimeout(() => reject(new Error('Video metadata: timeout.')), 15_000);
   video.onloadeddata = () => { clearTimeout(timer); resolve(video); };
-  video.onerror = () => { clearTimeout(timer); reject(new Error('Video konnte nicht geladen werden.')); };
+  video.onerror = () => { clearTimeout(timer); reject(new Error('Video could not be loaded.')); };
   video.src = url;
 });
 
@@ -150,7 +150,7 @@ export const probeMedia = async (url: string, kind: UpscaleMediaKind): Promise<P
 // ---------------------------------------------------------------------------
 
 const canvasToBlob = (canvas: HTMLCanvasElement, type: string, quality?: number): Promise<Blob> =>
-  new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Kodieren fehlgeschlagen.'))), type, quality));
+  new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Encoding failed.'))), type, quality));
 
 const blobToPayload = async (blob: Blob, fallbackType: string): Promise<Payload> => ({
   base64: await fileToBase64(new File([blob], 'input', { type: blob.type || fallbackType })),
@@ -177,7 +177,7 @@ export const captureRange = async (url: string, range: Range, onProgress: (p: nu
   const video = await loadVideo(url);
   const capture = (video as HTMLVideoElement & { captureStream?: () => MediaStream }).captureStream;
   if (typeof capture !== 'function' || typeof MediaRecorder === 'undefined') {
-    throw new Error('Dieser Browser kann keinen Ausschnitt aufnehmen.');
+    throw new Error('This browser cannot record a region.');
   }
   await seek(video, range.start);
   const stream = capture.call(video);
@@ -274,13 +274,13 @@ export const renderPost = (
       unsharpMask(data.data, size.width, size.height, post.sharpen);
       ctx.putImageData(data, 0, 0);
     } else {
-      notes.push('Schärfen übersprungen (Bild über 40 MP).');
+      notes.push('Sharpening skipped (image above 40 MP).');
     }
   }
   if (post.grain > 0) {
     const grained = applyGrain(canvas, post.grain, post.grainSize);
     if (grained) canvas = grained;
-    else notes.push(`Körnung übersprungen (GPU nicht verfügbar oder über ${FX_MAX} px).`);
+    else notes.push(`Grain skipped (GPU not available or above ${FX_MAX} px).`);
   }
   return canvas;
 };
@@ -371,7 +371,7 @@ const runEnhance = async (modelId: EnhanceModelId, payload: Payload, opts: { sca
     case 'topaz': return upscaleImageWithTopaz(payload, opts);
     case 'crystal-video': return upscaleVideoWithCrystal(payload, opts);
     case 'topaz-video': return upscaleVideoWithTopaz(payload, opts);
-    default: throw new Error('Unbekanntes Upscale-Modell.');
+    default: throw new Error('Unknown upscale model.');
   }
 };
 
@@ -392,7 +392,7 @@ export type RunRequest = {
 export type RunResult = { item: MediaItem; savedPath?: string; notes: string[]; outputSize: Size | null };
 
 class CancelledError extends Error {
-  constructor() { super('Abgebrochen'); }
+  constructor() { super('Cancelled'); }
 }
 
 export const runUpscaleJob = async (req: RunRequest): Promise<RunResult> => {
@@ -400,9 +400,9 @@ export const runUpscaleJob = async (req: RunRequest): Promise<RunResult> => {
   const notes: string[] = [];
   const isFramePreview = input.kind === 'video' && req.frameTime !== undefined;
   const steps: PipelineStep[] = isFramePreview
-    ? req.plan.steps.filter((s) => s.id === 'enhance').concat([{ id: 'post', label: 'Lokal: Zielgröße', paid: false, estimatedMs: 800 }])
+    ? req.plan.steps.filter((s) => s.id === 'enhance').concat([{ id: 'post', label: 'Local: target size', paid: false, estimatedMs: 800 }])
     : req.plan.steps.filter((s) => !(job.purpose === 'preview' && (s.id === 'hdr' || s.id === 'save')));
-  if (job.purpose === 'preview' && req.plan.steps.some((s) => s.id === 'hdr')) notes.push('SDR→HDR wird in der Vorschau ausgelassen.');
+  if (job.purpose === 'preview' && req.plan.steps.some((s) => s.id === 'hdr')) notes.push('SDR→HDR is skipped in the preview.');
 
   let currentUrl = input.url;
   let currentPayload: Payload | null = null;
@@ -450,7 +450,7 @@ export const runUpscaleJob = async (req: RunRequest): Promise<RunResult> => {
           ? IMAGE_FALLBACK_FOR_VIDEO[kindModel.id] ?? 'crystal'
           : kindModel.id;
         const model = getEnhanceModel(modelId)!;
-        if (isFramePreview) notes.push(`Einzelbild-Vorschau mit dem Bildmodell ${model.label}.`);
+        if (isFramePreview) notes.push(`Single-frame preview with the image model ${model.label}.`);
         const target = computeTargetSize(sourceSize, settings.output, model.limits);
         const opts = toServiceOptions(target, currentKind);
         if (mock) {
@@ -503,18 +503,18 @@ export const runUpscaleJob = async (req: RunRequest): Promise<RunResult> => {
     }
   }
 
-  if (!resultItem) throw new Error('Kein Ergebnis erzeugt.');
+  if (!resultItem) throw new Error('No result produced.');
   if (req.isCancelled()) throw new CancelledError();
 
   const base = safeName(input.name.replace(/\.[^.]+$/, ''));
   const sizeTag = outputSize ? `_${outputSize.width}x${outputSize.height}` : '';
-  const fileName = `${base}${job.purpose === 'preview' ? '_vorschau' : ''}${sizeTag}.${ext}`;
+  const fileName = `${base}${job.purpose === 'preview' ? '_preview' : ''}${sizeTag}.${ext}`;
   const label = [
     settings.enhance.enabled ? enhanceModelFor(settings, input.kind).label : null,
     outputSize ? `${outputSize.width}×${outputSize.height}` : null,
     steps.some((s) => s.id === 'interpolate') ? `${req.plan.outputFps} fps` : null,
     steps.some((s) => s.id === 'hdr') ? 'HDR' : null,
-    mock ? 'Testmodus' : null,
+    mock ? 'Test mode' : null,
   ].filter(Boolean).join(' • ');
   const item: MediaItem = {
     ...resultItem,
@@ -522,7 +522,7 @@ export const runUpscaleJob = async (req: RunRequest): Promise<RunResult> => {
     name: fileName,
     url: currentUrl,
     source: 'generated',
-    generatedBy: `Upscale${job.purpose === 'preview' ? '-Vorschau' : ''} • ${label}`,
+    generatedBy: `Upscale${job.purpose === 'preview' ? ' preview' : ''} • ${label}`,
     duration: resultItem.type === 'video' ? (job.range ? job.range.end - job.range.start : input.duration) : undefined,
   };
 
@@ -530,12 +530,12 @@ export const runUpscaleJob = async (req: RunRequest): Promise<RunResult> => {
   if (job.purpose === 'export' && settings.export.outputFolder) {
     try {
       savedPath = await saveToFolder(settings.export.outputFolder, fileName, item.url);
-      if (!savedPath) notes.push('Ausgabeordner nur in der Desktop-App verfügbar.');
+      if (!savedPath) notes.push('Output folder is only available in the desktop app.');
     } catch (error) {
-      notes.push(`Speichern fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`);
+      notes.push(`Saving failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-  req.onProgress(0.99, 'Fertig');
+  req.onProgress(0.99, 'Done');
   return { item, savedPath, notes, outputSize };
 };
 

@@ -47,7 +47,7 @@ type Props = {
 };
 
 const SelectionModes: React.FC<{ mode: SelectionMode; onChange: (m: SelectionMode) => void }> = ({ mode, onChange }) => (
-  <span className="psx-seg" role="radiogroup" aria-label="Auswahlmodus">
+  <span className="psx-seg" role="radiogroup" aria-label="Selection mode">
     {SELECTION_MODES.map((m) => (
       <button key={m.id} type="button" aria-pressed={mode === m.id} title={m.label} onClick={() => onChange(m.id)} data-automation-id={`photo.options.selmode.${m.id}`}>
         <svg width="14" height="12" viewBox="0 0 14 12" aria-hidden>
@@ -76,10 +76,10 @@ const Num: React.FC<{ label: string; value: number; min: number; max: number; un
   </span>
 );
 
-const BrushOptions: React.FC<{ brush: BrushSettings; onBrush: Props['onBrush']; opacityLabel?: string; hideFlow?: boolean }> = ({ brush, onBrush, opacityLabel = 'Deckkraft:', hideFlow }) => (
+const BrushOptions: React.FC<{ brush: BrushSettings; onBrush: Props['onBrush']; opacityLabel?: string; hideFlow?: boolean }> = ({ brush, onBrush, opacityLabel = 'Opacity:', hideFlow }) => (
   <>
-    <Num id="size" label="Größe:" value={Math.round(brush.size)} min={1} max={2500} unit="px" onChange={(size) => onBrush({ size })} title="Pinselgröße ( [ / ] )" />
-    <Num id="hardness" label="Härte:" value={Math.round(brush.hardness * 100)} min={0} max={100} unit="%" onChange={(v) => onBrush({ hardness: v / 100 })} />
+    <Num id="size" label="Size:" value={Math.round(brush.size)} min={1} max={2500} unit="px" onChange={(size) => onBrush({ size })} title="Brush size ( [ / ] )" />
+    <Num id="hardness" label="Hardness:" value={Math.round(brush.hardness * 100)} min={0} max={100} unit="%" onChange={(v) => onBrush({ hardness: v / 100 })} />
     <span className="psx-options__sep" />
     <Num id="opacity" label={opacityLabel} value={Math.round(brush.opacity * 100)} min={1} max={100} unit="%" onChange={(v) => onBrush({ opacity: v / 100 })} />
     {!hideFlow && <Num id="flow" label="Fluss:" value={Math.round(brush.flow * 100)} min={1} max={100} unit="%" onChange={(v) => onBrush({ flow: v / 100 })} />}
@@ -91,7 +91,7 @@ const OptionsBar: React.FC<Props> = (p) => {
   const t = p.tool;
   const isMarquee = t === 'marquee-rect' || t === 'marquee-ellipse' || t === 'lasso' || t === 'lasso-poly';
   return (
-    <div className="psx-options" role="toolbar" aria-label="Optionsleiste" data-automation-id="photo.options">
+    <div className="psx-options" role="toolbar" aria-label="Options bar" data-automation-id="photo.options">
       <span className="psx-options__tool" title={TOOL_INFO[t].label}>
         <Icon size={16} strokeWidth={1.6} />
       </span>
@@ -100,45 +100,45 @@ const OptionsBar: React.FC<Props> = (p) => {
           <SelectionModes mode={p.selectionMode} onChange={p.onSelectionMode} />
           <span className="psx-options__sep" />
           <span className="psx-options__group">
-            <span className="psx-options__label">Weiche Kante:</span>
+            <span className="psx-options__label">Feather:</span>
             <input className="psx-input psx-input--num" style={{ width: 40 }} value={p.feather} onChange={(e) => { const n = Number(e.target.value); if (Number.isFinite(n)) p.onFeather(Math.max(0, Math.min(250, n))); }} data-automation-id="photo.options.feather" />
             <span className="psx-options__label">px</span>
           </span>
           <span className="psx-options__sep" />
-          <button type="button" className="psx-btn" onClick={p.onSelectSubject} disabled={!p.hasDoc || p.busy} data-automation-id="photo.options.select-subject">Motiv auswählen</button>
+          <button type="button" className="psx-btn" onClick={p.onSelectSubject} disabled={!p.hasDoc || p.busy} data-automation-id="photo.options.select-subject">Select subject</button>
         </>
       )}
       {t === 'object-select' && (
         <>
           <SelectionModes mode={p.selectionMode} onChange={p.onSelectionMode} />
           <span className="psx-options__sep" />
-          <button type="button" className="psx-btn psx-btn--primary" onClick={p.onSelectSubject} disabled={!p.hasDoc || p.busy} data-automation-id="photo.options.select-subject">Motiv auswählen</button>
-          <span className="psx-hint">KI-Freistellung über Replicate (rembg); Ergebnis wird zur Auswahl.</span>
+          <button type="button" className="psx-btn psx-btn--primary" onClick={p.onSelectSubject} disabled={!p.hasDoc || p.busy} data-automation-id="photo.options.select-subject">Select subject</button>
+          <span className="psx-hint">AI cutout via Replicate (rembg); the result becomes the selection.</span>
         </>
       )}
       {(t === 'brush' || t === 'eraser') && <BrushOptions brush={p.brush} onBrush={p.onBrush} />}
       {t === 'clone-stamp' && (
         <>
           <BrushOptions brush={p.brush} onBrush={p.onBrush} />
-          <span className="psx-hint">Alt+Klick: Quelle festlegen</span>
+          <span className="psx-hint">Alt+click: set source</span>
         </>
       )}
-      {(t === 'dodge' || t === 'burn') && <BrushOptions brush={p.brush} onBrush={p.onBrush} opacityLabel="Belichtung:" hideFlow />}
+      {(t === 'dodge' || t === 'burn') && <BrushOptions brush={p.brush} onBrush={p.onBrush} opacityLabel="Exposure:" hideFlow />}
       {t === 'spot-heal' && (
         <>
-          <Num id="size" label="Größe:" value={Math.round(p.brush.size)} min={1} max={2500} unit="px" onChange={(size) => p.onBrush({ size })} />
+          <Num id="size" label="Size:" value={Math.round(p.brush.size)} min={1} max={2500} unit="px" onChange={(size) => p.onBrush({ size })} />
           <span className="psx-options__sep" />
-          <button type="button" className="psx-btn psx-btn--primary" disabled={!p.canHeal || p.busy} onClick={p.onHeal} data-automation-id="photo.options.heal">Reparieren (KI)</button>
-          <span className="psx-hint">Bereich übermalen, dann reparieren.</span>
+          <button type="button" className="psx-btn psx-btn--primary" disabled={!p.canHeal || p.busy} onClick={p.onHeal} data-automation-id="photo.options.heal">Repair (AI)</button>
+          <span className="psx-hint">Paint over the area, then repair.</span>
         </>
       )}
       {t === 'gradient' && (
         <>
-          <span className="psx-options__group" title="Vordergrund → Hintergrund">
+          <span className="psx-options__group" title="Foreground → background">
             <span style={{ width: 90, height: 16, border: '1px solid #111', background: `linear-gradient(90deg, ${p.fg}, ${p.bg})` }} />
           </span>
-          <Num id="opacity" label="Deckkraft:" value={Math.round(p.brush.opacity * 100)} min={1} max={100} unit="%" onChange={(v) => p.onBrush({ opacity: v / 100 })} />
-          <span className="psx-hint">Linear · in der Auswahl</span>
+          <Num id="opacity" label="Opacity:" value={Math.round(p.brush.opacity * 100)} min={1} max={100} unit="%" onChange={(v) => p.onBrush({ opacity: v / 100 })} />
+          <span className="psx-hint">Linear · within the selection</span>
         </>
       )}
       {t === 'crop' && (
@@ -147,29 +147,29 @@ const OptionsBar: React.FC<Props> = (p) => {
             {CROP_RATIOS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
           </select>
           <span className="psx-options__spacer" />
-          <button type="button" className="psx-icon-btn" disabled={!p.cropActive} title="Aktuellen Freistellungsvorgang abbrechen (Esc)" onClick={p.onCropCancel} data-automation-id="photo.options.crop-cancel"><Ban size={15} /></button>
-          <button type="button" className="psx-icon-btn" disabled={!p.cropActive} title="Aktuellen Freistellungsvorgang bestätigen (Eingabe)" onClick={p.onCropCommit} data-automation-id="photo.options.crop-commit"><Check size={16} /></button>
+          <button type="button" className="psx-icon-btn" disabled={!p.cropActive} title="Cancel the current cutout (Esc)" onClick={p.onCropCancel} data-automation-id="photo.options.crop-cancel"><Ban size={15} /></button>
+          <button type="button" className="psx-icon-btn" disabled={!p.cropActive} title="Confirm the current cutout (Enter)" onClick={p.onCropCommit} data-automation-id="photo.options.crop-commit"><Check size={16} /></button>
         </>
       )}
       {t === 'text' && <TextControls layer={p.textStyle} onChange={p.onTextStyle} compact />}
       {t === 'move' && (
         <label className="psx-options__group">
           <input type="checkbox" checked={p.autoSelect} onChange={(e) => p.onAutoSelect(e.target.checked)} data-automation-id="photo.options.auto-select" />
-          <span>Automatisch auswählen: Ebene</span>
+          <span>Auto-select: layer</span>
         </label>
       )}
-      {t === 'eyedropper' && <span className="psx-hint">Aufnehmen: Alle Ebenen · Alt+Klick setzt die Hintergrundfarbe</span>}
+      {t === 'eyedropper' && <span className="psx-hint">Sample: all layers · Alt+click sets the background color</span>}
       {(t === 'zoom' || t === 'hand') && (
         <>
-          <button type="button" className="psx-icon-btn" title="Einzoomen" onClick={() => p.onZoomStep(1)} data-automation-id="photo.options.zoom-in"><ZoomIn size={14} /></button>
-          <button type="button" className="psx-icon-btn" title="Auszoomen" onClick={() => p.onZoomStep(-1)} data-automation-id="photo.options.zoom-out"><ZoomOut size={14} /></button>
+          <button type="button" className="psx-icon-btn" title="Zoom in" onClick={() => p.onZoomStep(1)} data-automation-id="photo.options.zoom-in"><ZoomIn size={14} /></button>
+          <button type="button" className="psx-icon-btn" title="Zoom out" onClick={() => p.onZoomStep(-1)} data-automation-id="photo.options.zoom-out"><ZoomOut size={14} /></button>
           <button type="button" className="psx-btn" onClick={p.onZoomActual} data-automation-id="photo.options.zoom-100">100 %</button>
-          <button type="button" className="psx-btn" onClick={p.onZoomFit} data-automation-id="photo.options.zoom-fit">Ganzes Bild</button>
+          <button type="button" className="psx-btn" onClick={p.onZoomFit} data-automation-id="photo.options.zoom-fit">Whole image</button>
         </>
       )}
       <span className="psx-options__spacer" />
-      <button type="button" className="psx-btn" onClick={p.onOpen} title="Öffnen … (Cmd+O)" data-automation-id="photo.options.open"><FolderOpen size={13} /> Öffnen</button>
-      <button type="button" className="psx-btn psx-btn--primary" disabled={!p.hasDoc} onClick={p.onSave} title="In Media Bin speichern (Cmd+S)" data-automation-id="photo.save-media"><Save size={13} /> In Media Bin speichern</button>
+      <button type="button" className="psx-btn" onClick={p.onOpen} title="Open … (Cmd+O)" data-automation-id="photo.options.open"><FolderOpen size={13} />Open</button>
+      <button type="button" className="psx-btn psx-btn--primary" disabled={!p.hasDoc} onClick={p.onSave} title="Save to Media Bin (Cmd+S)" data-automation-id="photo.save-media"><Save size={13} />Save to Media Bin</button>
     </div>
   );
 };

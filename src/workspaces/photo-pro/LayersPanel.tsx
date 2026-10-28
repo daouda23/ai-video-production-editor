@@ -52,7 +52,7 @@ const LayersPanel: React.FC<Props> = ({ doc, store, onSelect, onPatch, onReorder
     if (!active) return;
     const n = Number(text.replace('%', '').replace(',', '.'));
     if (!Number.isFinite(n)) { setOpacityText(String(Math.round(active.opacity * 100))); return; }
-    onPatch(active.id, { opacity: Math.max(0, Math.min(100, n)) / 100 }, 'Deckkraft ändern', `opacity:${active.id}`);
+    onPatch(active.id, { opacity: Math.max(0, Math.min(100, n)) / 100 }, 'Change opacity', `opacity:${active.id}`);
   };
 
   const drop = () => {
@@ -73,9 +73,9 @@ const LayersPanel: React.FC<Props> = ({ doc, store, onSelect, onPatch, onReorder
           className="psx-select"
           value={active?.blendMode ?? 'normal'}
           disabled={!active}
-          title="Füllmethode"
+          title="Blend mode"
           data-automation-id="photo.layers.blend"
-          onChange={(e) => active && onPatch(active.id, { blendMode: e.target.value as BlendMode }, 'Füllmethode ändern')}
+          onChange={(e) => active && onPatch(active.id, { blendMode: e.target.value as BlendMode }, 'Change blend mode')}
         >
           {BLEND_MODES.map((mode, i) => (
             <React.Fragment key={mode.id}>
@@ -85,7 +85,7 @@ const LayersPanel: React.FC<Props> = ({ doc, store, onSelect, onPatch, onReorder
           ))}
         </select>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span className="psx-options__label">Deckkraft:</span>
+          <span className="psx-options__label">Opacity:</span>
           <input
             className="psx-input psx-input--num"
             style={{ width: 44 }}
@@ -106,26 +106,26 @@ const LayersPanel: React.FC<Props> = ({ doc, store, onSelect, onPatch, onReorder
           value={active ? Math.round(active.opacity * 100) : 100}
           disabled={!active}
           style={{ gridColumn: '1 / -1', width: '100%' }}
-          aria-label="Deckkraft"
+          aria-label="Opacity"
           data-automation-id="photo.layers.opacity-slider"
-          onChange={(e) => active && onPatch(active.id, { opacity: Number(e.target.value) / 100 }, 'Deckkraft ändern', `opacity:${active.id}`)}
+          onChange={(e) => active && onPatch(active.id, { opacity: Number(e.target.value) / 100 }, 'Change opacity', `opacity:${active.id}`)}
         />
         <div className="psx-layers__locks">
-          <span>Fixieren:</span>
+          <span>Lock:</span>
           <button
             type="button"
             className="psx-icon-btn"
             aria-pressed={Boolean(active?.locked)}
             disabled={!active}
-            title="Alles fixieren"
+            title="Lock all"
             data-automation-id="photo.layers.lock"
-            onClick={() => active && onPatch(active.id, { locked: !active.locked }, active.locked ? 'Ebene lösen' : 'Ebene fixieren')}
+            onClick={() => active && onPatch(active.id, { locked: !active.locked }, active.locked ? 'Unlock layer' : 'Lock layer')}
           >
             {active?.locked ? <Lock size={13} /> : <LockOpen size={13} />}
           </button>
         </div>
       </div>
-      <div className="psx-layers__list" role="listbox" aria-label="Ebenen">
+      <div className="psx-layers__list" role="listbox" aria-label="Layers">
         {listed.map((layer) => {
           const selected = layer.id === doc.activeLayerId;
           const fxRows = layer.kind === 'raster' && layer.fx.length > 0;
@@ -154,9 +154,9 @@ const LayersPanel: React.FC<Props> = ({ doc, store, onSelect, onPatch, onReorder
                 <button
                   type="button"
                   className="psx-layer__eye"
-                  title="Sichtbarkeit ein/aus"
+                  title="Visibility on/off"
                   data-automation-id={`photo.layer.${layer.id}.visible`}
-                  onClick={(e) => { e.stopPropagation(); onPatch(layer.id, { visible: !layer.visible }, layer.visible ? 'Ebene ausblenden' : 'Ebene einblenden'); }}
+                  onClick={(e) => { e.stopPropagation(); onPatch(layer.id, { visible: !layer.visible }, layer.visible ? 'Hide layer' : 'Show layer'); }}
                 >
                   {layer.visible ? <Eye size={13} /> : <EyeOff size={13} style={{ opacity: 0.35 }} />}
                 </button>
@@ -173,7 +173,7 @@ const LayersPanel: React.FC<Props> = ({ doc, store, onSelect, onPatch, onReorder
                       defaultValue={layer.name}
                       data-automation-id={`photo.layer.${layer.id}.rename`}
                       onClick={(e) => e.stopPropagation()}
-                      onBlur={(e) => { onPatch(layer.id, { name: e.target.value.trim() || layer.name }, 'Ebene umbenennen'); setRenaming(null); }}
+                      onBlur={(e) => { onPatch(layer.id, { name: e.target.value.trim() || layer.name }, 'Rename layer'); setRenaming(null); }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                         if (e.key === 'Escape') setRenaming(null);
@@ -192,13 +192,13 @@ const LayersPanel: React.FC<Props> = ({ doc, store, onSelect, onPatch, onReorder
                     <button
                       type="button"
                       className="psx-icon-btn"
-                      title="Smartfilter ein/aus"
+                      title="Smart filters on/off"
                       data-automation-id={`photo.layer.${layer.id}.fx-toggle`}
-                      onClick={() => onPatch(layer.id, { fxEnabled: !layer.fxEnabled }, layer.fxEnabled ? 'Smartfilter ausblenden' : 'Smartfilter einblenden')}
+                      onClick={() => onPatch(layer.id, { fxEnabled: !layer.fxEnabled }, layer.fxEnabled ? 'Hide smart filters' : 'Show smart filters')}
                     >
                       {layer.fxEnabled ? <Eye size={11} /> : <EyeOff size={11} style={{ opacity: 0.4 }} />}
                     </button>
-                    <button type="button" onClick={() => { onSelect(layer.id); onOpenFx(layer.id); }}>Smartfilter</button>
+                    <button type="button" onClick={() => { onSelect(layer.id); onOpenFx(layer.id); }}>Smart filter</button>
                   </div>
                   {layer.fx.map((fx) => (
                     <div key={fx.id} className="psx-sublayer" style={{ paddingLeft: 58 }} aria-selected={selected}>
@@ -212,25 +212,25 @@ const LayersPanel: React.FC<Props> = ({ doc, store, onSelect, onPatch, onReorder
             </React.Fragment>
           );
         })}
-        {!listed.length && <p className="psx-hint" style={{ padding: 10 }}>Kein Dokument geöffnet.</p>}
+        {!listed.length && <p className="psx-hint" style={{ padding: 10 }}>No document open.</p>}
       </div>
       <div className="psx-panel__foot">
-        <button type="button" className="psx-icon-btn" title="Smartfilter (Lens & Film FX) hinzufügen" disabled={active?.kind !== 'raster'} onClick={() => active && onOpenFx(active.id)} data-automation-id="photo.layers.fx">
+        <button type="button" className="psx-icon-btn" title="Add smart filter (Lens & Film FX)" disabled={active?.kind !== 'raster'} onClick={() => active && onOpenFx(active.id)} data-automation-id="photo.layers.fx">
           <Sparkles size={14} />
         </button>
-        <button type="button" className="psx-icon-btn" title="Neue Füll- oder Einstellungsebene erstellen" disabled={!doc.layers.length} onClick={(e) => onAdjustmentMenu(e.currentTarget)} data-automation-id="photo.layers.adjustment">
+        <button type="button" className="psx-icon-btn" title="Create new fill or adjustment layer" disabled={!doc.layers.length} onClick={(e) => onAdjustmentMenu(e.currentTarget)} data-automation-id="photo.layers.adjustment">
           <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.3" /><path d="M7 1.5 A5.5 5.5 0 0 1 7 12.5 Z" fill="currentColor" /></svg>
         </button>
-        <button type="button" className="psx-icon-btn" title="Mit darunter liegender Ebene zusammenfassen" disabled={!canMergeDown(doc, doc.activeLayerId)} onClick={onMergeDown} data-automation-id="photo.layers.merge-down">
+        <button type="button" className="psx-icon-btn" title="Merge with the layer below" disabled={!canMergeDown(doc, doc.activeLayerId)} onClick={onMergeDown} data-automation-id="photo.layers.merge-down">
           <Merge size={14} />
         </button>
-        <button type="button" className="psx-icon-btn" title="Ebene duplizieren" disabled={!active} onClick={onDuplicate} data-automation-id="photo.layers.duplicate">
+        <button type="button" className="psx-icon-btn" title="Duplicate layer" disabled={!active} onClick={onDuplicate} data-automation-id="photo.layers.duplicate">
           <Copy size={14} />
         </button>
-        <button type="button" className="psx-icon-btn" title="Neue Ebene erstellen" disabled={!doc.width} onClick={onNewLayer} data-automation-id="photo.layers.new">
+        <button type="button" className="psx-icon-btn" title="Create new layer" disabled={!doc.width} onClick={onNewLayer} data-automation-id="photo.layers.new">
           <Plus size={15} />
         </button>
-        <button type="button" className="psx-icon-btn" title="Ebene löschen" disabled={!active || active.locked} onClick={onDelete} data-automation-id="photo.layers.delete">
+        <button type="button" className="psx-icon-btn" title="Delete layer" disabled={!active || active.locked} onClick={onDelete} data-automation-id="photo.layers.delete">
           <Trash2 size={14} />
         </button>
       </div>

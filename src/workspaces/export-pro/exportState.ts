@@ -70,11 +70,11 @@ function structuredCloneSafe<T>(value: T): T {
 }
 
 export const DESTINATION_LABELS: Record<DestinationKind, string> = {
-    media: 'Mediendatei',
-    interchange: 'Projektdatei / Austausch',
-    still: 'Einzelbild',
-    sequence: 'Bildsequenz',
-    audio: 'Nur Audio',
+    media: 'Media file',
+    interchange: 'Project file / interchange',
+    still: 'Still frame',
+    sequence: 'Image sequence',
+    audio: 'Audio only',
 };
 
 const KIND_ORDER: DestinationKind[] = ['media', 'still', 'sequence', 'audio', 'interchange'];
@@ -95,12 +95,12 @@ const defaultId = () => {
 };
 
 const presetLabelFor = (kind: DestinationKind, settings: DeliverySettings, format?: InterchangeFormat) => {
-    if (kind === 'interchange') return INTERCHANGE_FORMATS.find((entry) => entry.id === format)?.label || 'Austausch';
+    if (kind === 'interchange') return INTERCHANGE_FORMATS.find((entry) => entry.id === format)?.label || 'Interchange';
     if (kind === 'audio') return `Audio ${settings.audioOnly.codec.toUpperCase()} · ${settings.audioOnly.sampleRate / 1000} kHz`;
-    if (kind === 'still') return `Einzelbild ${settings.still.format.toUpperCase()}`;
-    if (kind === 'sequence') return `Bildsequenz ${settings.sequence.format.toUpperCase()}`;
+    if (kind === 'still') return `Still frame ${settings.still.format.toUpperCase()}`;
+    if (kind === 'sequence') return `Image sequence ${settings.sequence.format.toUpperCase()}`;
     const preset = findPreset(settings.presetId);
-    return preset && preset.kind === 'media' ? preset.label : 'Benutzerdefiniert';
+    return preset && preset.kind === 'media' ? preset.label : 'Custom';
 };
 
 /** One job per render destination; the interchange destination yields one job per format. */
@@ -249,7 +249,7 @@ export const deserializeExportState = (raw: string | null | undefined): ExportPa
             ? (parsed.queue as ExportJob[])
                 .filter((job) => isObject(job) && typeof job.id === 'string' && DESTINATION_KINDS.includes(job.kind))
                 .map((job) => (job.status === 'running'
-                    ? { ...job, status: 'error' as const, detail: 'Unterbrochen (App neu geladen).' }
+                    ? { ...job, status: 'error' as const, detail: 'Interrupted (app reloaded).' }
                     : job))
             : [];
         return { ...merged, view, queue, runner: fallback.runner };

@@ -19,11 +19,11 @@ export type TimedValue = { time: number; value: number; easing?: KeyframeEasing 
 export const KEYFRAME_TIME_TOLERANCE = 1 / 60;
 
 export const KEYFRAME_EASINGS: Array<{ id: KeyframeEasing; label: string; hint: string }> = [
-  { id: 'linear', label: 'Linear', hint: 'Gleichmäßige Änderung bis zu diesem Keyframe' },
-  { id: 'ease-in', label: 'Ease In', hint: 'Langsamer Start, beschleunigt in diesen Keyframe' },
-  { id: 'ease-out', label: 'Ease Out', hint: 'Schneller Start, bremst in diesen Keyframe ab' },
-  { id: 'ease-in-out', label: 'Ease In/Out', hint: 'Sanft anfahren und sanft abbremsen' },
-  { id: 'hold', label: 'Halten', hint: 'Wert bleibt bis zum nächsten Keyframe stehen (Sprung)' },
+  { id: 'linear', label: 'Linear', hint: 'Linear change up to this keyframe' },
+  { id: 'ease-in', label: 'Ease In', hint: 'Slow start, accelerates into this keyframe' },
+  { id: 'ease-out', label: 'Ease Out', hint: 'Fast start, decelerates into this keyframe' },
+  { id: 'ease-in-out', label: 'Ease In/Out', hint: 'Ease in and ease out' },
+  { id: 'hold', label: 'Hold', hint: 'The value holds until the next keyframe (jump)' },
 ];
 
 /** Shapes 0..1 progress (same curves as the HQ FFmpeg export). */

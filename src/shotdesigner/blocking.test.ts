@@ -167,7 +167,7 @@ test('180° line: crossing cameras are flagged', () => {
 test('templates, versions, reorder, detach and freeze/restore', () => {
   const tpl = runBlockingBatch(null, [
     { command: 'scene.applyTemplate', params: { templateId: 'dialog-two' } },
-    { command: 'shot.add', params: { cameraId: 'A', startS: 2, endS: 6, description: 'Reaktion' } },
+    { command: 'shot.add', params: { cameraId: 'A', startS: 2, endS: 6, description: 'Reaction' } },
     { command: 'scene.freeze', params: { name: 'v1' } },
   ]);
   assert.ok(tpl.ok, tpl.ok ? '' : tpl.error);

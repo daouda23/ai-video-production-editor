@@ -15399,7 +15399,7 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
                                             <div className="mt-4 space-y-5">
                                                 <div>
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Meeting Links</span>
+                                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Meeting links</span>
                                                         <span className="text-[10px] text-gray-500">{meetingLinks.length} links</span>
                                                     </div>
                                                     {meetingLinks.length === 0 ? (

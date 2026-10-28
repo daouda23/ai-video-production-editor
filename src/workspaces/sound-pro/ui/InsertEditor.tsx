@@ -4,7 +4,7 @@ import { formatDb, type InsertSlot, type SoundMix } from '../model.ts';
 import { eqCurvePath } from './widgets.tsx';
 import type { InsertTarget, RunCommand } from './ChannelStrip.tsx';
 
-const BAND_NAMES = ['HPF', 'Low', 'Mitte 1', 'Mitte 2', 'High', 'LPF'];
+const BAND_NAMES = ['HPF', 'Low', 'Center 1', 'Center 2', 'High', 'LPF'];
 
 const findSlot = (mix: SoundMix, target: InsertTarget): InsertSlot | null => {
   if (!target) return null;
@@ -29,10 +29,10 @@ export const InsertEditor: React.FC<{ mix: SoundMix; target: InsertTarget; run: 
   return (
     <div className="snd-panel snd-insert" data-automation-id={id}>
       <div className="snd-panel__head" style={{ margin: '-8px -8px 0' }}>
-        <span>{targetName} · {slot.kind === 'eq' ? 'Equalizer' : slot.kind === 'compressor' ? 'Kompressor' : slot.kind === 'gate' ? 'Gate' : slot.kind === 'limiter' ? 'Limiter' : 'Delay'}</span>
+        <span>{targetName} · {slot.kind === 'eq' ? 'Equalizer' : slot.kind === 'compressor' ? 'Compressor' : slot.kind === 'gate' ? 'Gate' : slot.kind === 'limiter' ? 'Limiter' : 'Delay'}</span>
         <span style={{ flex: 1 }} />
-        <button type="button" className={`snd-btn ${slot.bypass ? '' : 'snd-btn--on'}`} data-automation-id={`${id}-bypass`} onClick={() => run('mixer.bypassInsert', { target: target.target, insertId: slot.id })}>{slot.bypass ? 'Bypass' : 'Aktiv'}</button>
-        <button type="button" className="snd-btn" data-automation-id={`${id}-remove`} onClick={() => { run('mixer.removeInsert', { target: target.target, insertId: slot.id }); onClose(); }}>Entfernen</button>
+        <button type="button" className={`snd-btn ${slot.bypass ? '' : 'snd-btn--on'}`} data-automation-id={`${id}-bypass`} onClick={() => run('mixer.bypassInsert', { target: target.target, insertId: slot.id })}>{slot.bypass ? 'Bypass' : 'Active'}</button>
+        <button type="button" className="snd-btn" data-automation-id={`${id}-remove`} onClick={() => { run('mixer.removeInsert', { target: target.target, insertId: slot.id }); onClose(); }}>Remove</button>
         <button type="button" className="snd-btn" data-automation-id={`${id}-close`} onClick={onClose}>×</button>
       </div>
 
@@ -54,7 +54,7 @@ export const InsertEditor: React.FC<{ mix: SoundMix; target: InsertTarget; run: 
                   <b>{BAND_NAMES[i] ?? `B${i}`}</b>
                 </label>
                 <span>{band.freq >= 1000 ? `${(band.freq / 1000).toFixed(1)}k` : Math.round(band.freq)} Hz</span>
-                <input type="range" min={0} max={1} step={0.001} value={Math.log(band.freq / 20) / Math.log(1000)} aria-label="Frequenz"
+                <input type="range" min={0} max={1} step={0.001} value={Math.log(band.freq / 20) / Math.log(1000)} aria-label="Frequency"
                   onChange={(e) => run('mixer.setEqBand', { target: target.target, band: i, freq: Math.round(20 * Math.pow(1000, Number(e.target.value))) })} />
                 {band.type !== 'highpass' && band.type !== 'lowpass' && (
                   <>
@@ -63,7 +63,7 @@ export const InsertEditor: React.FC<{ mix: SoundMix; target: InsertTarget; run: 
                   </>
                 )}
                 <span>Q {band.q.toFixed(2)}</span>
-                <input type="range" min={0.2} max={10} step={0.05} value={band.q} aria-label="Güte" onChange={(e) => run('mixer.setEqBand', { target: target.target, band: i, q: Number(e.target.value) })} />
+                <input type="range" min={0.2} max={10} step={0.05} value={band.q} aria-label="Q" onChange={(e) => run('mixer.setEqBand', { target: target.target, band: i, q: Number(e.target.value) })} />
               </div>
             ))}
           </div>
@@ -96,7 +96,7 @@ export const InsertEditor: React.FC<{ mix: SoundMix; target: InsertTarget; run: 
       )}
       {slot.kind === 'delay' && (
         <>
-          <Row id={`${id}-time`} label="Zeit" value={slot.params.timeMs} min={1} max={2000} step={1} unit=" ms" onChange={(v) => set({ timeMs: v })} />
+          <Row id={`${id}-time`} label="Time" value={slot.params.timeMs} min={1} max={2000} step={1} unit=" ms" onChange={(v) => set({ timeMs: v })} />
           <Row id={`${id}-feedback`} label="Feedback" value={slot.params.feedback} min={0} max={0.95} step={0.01} unit="" onChange={(v) => set({ feedback: v })} />
           <Row id={`${id}-mix`} label="Mix" value={slot.params.mix} min={0} max={1} step={0.01} unit="" onChange={(v) => set({ mix: v })} />
         </>

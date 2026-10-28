@@ -36,10 +36,10 @@ test('addMarker does not stack two markers on the same frame', () => {
 
 test('updateMarker edits name, colour and comment; invalid colour is ignored', () => {
     const { markers } = addMarker([], 1, { fps, id: 'm' });
-    const next = updateMarker(markers, 'm', { name: 'Refrain', color: 'red', comment: 'Lauter' });
+    const next = updateMarker(markers, 'm', { name: 'Refrain', color: 'red', comment: 'Louder' });
     assert.equal(next[0].name, 'Refrain');
     assert.equal(next[0].color, 'red');
-    assert.equal(next[0].comment, 'Lauter');
+    assert.equal(next[0].comment, 'Louder');
     const same = updateMarker(next, 'm', { color: 'pink' as never });
     assert.equal(same, next);
     assert.equal(updateMarker(next, 'nope', { name: 'x' }), next);

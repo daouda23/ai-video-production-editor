@@ -21,7 +21,7 @@ export const LoudnessPanel: React.FC<{ meters: LiveMeters; mix: SoundMix; run: R
       <div className="snd-panel__head">
         <span>Loudness (EBU R128)</span>
         <span style={{ flex: 1 }} />
-        <select className="snd-select" value={target} data-automation-id="sound-loudness-target" onChange={(e) => run('master.set', { targetLufs: Number(e.target.value) })} title="Ziel">
+        <select className="snd-select" value={target} data-automation-id="sound-loudness-target" onChange={(e) => run('master.set', { targetLufs: Number(e.target.value) })} title="Destination">
           <option value={-23}>−23 LUFS (Broadcast)</option>
           <option value={-24}>−24 LUFS (ATSC)</option>
           <option value={-27}>−27 LUFS (Kino-Dialog)</option>
@@ -68,7 +68,7 @@ export const MiniViewer: React.FC<{ clips: TimelineClip[]; tracks: TimelineTrack
   }, [local, isPlaying]);
   return (
     <div className="snd-viewer" data-automation-id="sound-viewer">
-      {!visual && <span className="snd-viewer__empty">Kein Bild an der Position</span>}
+      {!visual && <span className="snd-viewer__empty">No image at this position</span>}
       {visual?.m?.type === 'video' && <video ref={ref} src={visual.m.url} muted playsInline preload="auto" />}
       {visual?.m?.type === 'image' && <img src={visual.m.url} alt="" draggable={false} />}
     </div>
@@ -80,11 +80,11 @@ export const AdrPanel: React.FC<{ mix: SoundMix; run: RunCommand; playhead: numb
     <div className="snd-panel__head">
       <span>ADR-Cues</span>
       <span style={{ flex: 1 }} />
-      <button type="button" className="snd-btn" data-automation-id="sound-adr-add" onClick={() => run('adr.addCue', { character: 'Rolle', line: '' })}>+ Cue</button>
+      <button type="button" className="snd-btn" data-automation-id="sound-adr-add" onClick={() => run('adr.addCue', { character: 'Role', line: '' })}>+ Cue</button>
     </div>
     <div className="snd-index">
       <table>
-        <thead><tr><th>✓</th><th>In</th><th>Rolle</th><th>Text</th><th /></tr></thead>
+        <thead><tr><th>✓</th><th>In</th><th>Role</th><th>Text</th><th /></tr></thead>
         <tbody>
           {mix.adrCues.map((cue) => (
             <tr key={cue.id} aria-selected={playhead >= cue.start && playhead < cue.end}>
@@ -95,7 +95,7 @@ export const AdrPanel: React.FC<{ mix: SoundMix; run: RunCommand; playhead: numb
               <td><button type="button" className="snd-btn" onClick={() => run('adr.removeCue', { cueId: cue.id })}>×</button></td>
             </tr>
           ))}
-          {mix.adrCues.length === 0 && <tr><td colSpan={5} className="snd-hint">Noch keine Cues. Bereich mit dem Selector wählen und „+ Cue“.</td></tr>}
+          {mix.adrCues.length === 0 && <tr><td colSpan={5} className="snd-hint">No cues yet. Choose a range with the selector and “+ Cue”.</td></tr>}
         </tbody>
       </table>
     </div>

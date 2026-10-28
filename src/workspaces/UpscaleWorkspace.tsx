@@ -226,18 +226,18 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
 
   const keysMissing = apiKeyReady === false && !mock;
   const exportBlocked = !activeInput
-    ? 'Eingang wählen.'
+    ? 'Choose an input.'
     : activeInput.status !== 'ready'
-      ? 'Eingang wird noch gelesen.'
+      ? 'Input is still being read.'
       : keysMissing
-        ? 'API-Keys verbinden, um zu rendern (oder Testmodus aktivieren).'
+        ? 'Connect API keys to render (or turn on test mode).'
         : null;
   const canExport = !exportBlocked && Boolean(activeEstimate && activeEstimate.plan.errors.length === 0);
   const canPreview = !exportBlocked && Boolean(previewEstimate && previewEstimate.plan.errors.length === 0);
 
   const costLabel = (cost: { usd: number; unknown: string[] } | undefined) => {
     if (!cost) return null;
-    if (mock) return 'Testmodus · 0 Credits';
+    if (mock) return 'Test mode · 0 credits';
     return `${formatUsd(cost.usd)}${cost.unknown.length ? ' + ?' : ''}`;
   };
 
@@ -277,7 +277,7 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
       objectUrlsRef.current.push(url);
       void addInput({ name: file.name, kind, url }, file);
     });
-    setNotice(skipped ? `${skipped} Datei(en) übersprungen (nur Bilder und Videos).` : null);
+    setNotice(skipped ? `${skipped} file(s) skipped (images and videos only).` : null);
   }, [addInput]);
 
   const addMediaItem = useCallback((item: MediaItem): Promise<QueueInput> => {
@@ -286,7 +286,7 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
       setActiveId(existing.id);
       return probesRef.current.get(existing.id) ?? Promise.resolve(existing);
     }
-    if (item.type !== 'image' && item.type !== 'video') return Promise.reject(new Error('Nur Bilder und Videos.'));
+    if (item.type !== 'image' && item.type !== 'video') return Promise.reject(new Error('Images and videos only.'));
     return addInput({ name: item.name, kind: item.type, url: item.url, mediaId: item.id, duration: item.duration });
   }, [inputs, addInput]);
 
@@ -304,7 +304,7 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
     }
     const assetJson = event.dataTransfer.getData('application/x-library-asset');
     if (assetJson) {
-      try { addLibraryAsset(JSON.parse(assetJson) as LibraryAsset); } catch { setNotice('Bibliotheks-Asset nicht lesbar.'); }
+      try { addLibraryAsset(JSON.parse(assetJson) as LibraryAsset); } catch { setNotice('Library asset not readable.'); }
       return;
     }
     const files = Array.from(event.dataTransfer.files ?? []);
@@ -362,11 +362,11 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
     const estimate = frameTime !== undefined ? previewEstimate?.cost.usd : sumPipelineCost(plan.steps, stepCost).usd;
     const label = purpose === 'export'
       ? 'Export'
-      : input.kind === 'image' ? 'Vorschau' : frameTime !== undefined ? `Einzelbild @ ${formatTimecode(frameTime, input.fps)}` : `${previewLength} s Vorschau`;
+      : input.kind === 'image' ? 'Preview' : frameTime !== undefined ? `Still frame @ ${formatTimecode(frameTime, input.fps)}` : `${previewLength} s preview`;
     const job: UpscaleJob = {
       id, inputId: input.id, name: `${input.name} · ${label}`, kind: input.kind, purpose,
       range: frameTime !== undefined ? { start: frameTime, end: frameTime + 1 / (input.fps || 24) } : range,
-      status: 'queued', progress: 0, stepLabel: 'Wartet', createdAt: Date.now(), estimatedUsd: estimate, mock,
+      status: 'queued', progress: 0, stepLabel: 'Waiting', createdAt: Date.now(), estimatedUsd: estimate, mock,
     };
     jobContextRef.current.set(id, { input, settings: s, plan, frameTime });
     dispatch({ type: 'add', job });
@@ -374,8 +374,8 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
   }, [planFor, stepCost, previewEstimate, previewLength, mock]);
 
   const exportInput = useCallback((input: QueueInput, s: UpscaleSettings = settingsRef.current) => {
-    if (input.status !== 'ready') throw new Error('Eingang ist noch nicht bereit.');
-    if (apiKeyReady === false && !mock) throw new Error('API-Keys fehlen.');
+    if (input.status !== 'ready') throw new Error('Input is not ready yet.');
+    if (apiKeyReady === false && !mock) throw new Error('API keys missing.');
     const io = input.kind === 'video' ? ioFor(input) : null;
     const partial = io && !isFullRange(io, input.duration, input.fps || 24);
     return enqueue(input, 'export', partial ? io : null, s);
@@ -387,8 +387,8 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
   }, [activeInput, exportInput]);
 
   const renderPreviewFor = useCallback((input: QueueInput, length: number, at: number) => {
-    if (input.status !== 'ready') throw new Error('Eingang ist noch nicht bereit.');
-    if (apiKeyReady === false && !mock) throw new Error('API-Keys fehlen.');
+    if (input.status !== 'ready') throw new Error('Input is not ready yet.');
+    if (apiKeyReady === false && !mock) throw new Error('API keys missing.');
     const s = settingsRef.current;
     if (input.kind === 'image') return enqueue(input, 'preview', null, s);
     const io = ioFor(input);
@@ -409,7 +409,7 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
   }, []);
 
   const showResult = useCallback((job: UpscaleJob, item: MediaItem, outputSize?: { width: number; height: number } | null) => {
-    if (/\.zip$/i.test(item.name)) { setNotice('EXR-Archiv: liegt im Media-Bin, keine Vorschau im Browser.'); return; }
+    if (/\.zip$/i.test(item.name)) { setNotice('EXR archive: in the Media Bin, no preview in the browser.'); return; }
     const ctx = jobContextRef.current.get(job.id);
     setPreviews((prev) => ({
       ...prev,
@@ -420,7 +420,7 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
         url: item.url,
         range: job.range,
         frame: ctx?.frameTime !== undefined,
-        label: `${job.purpose === 'preview' ? 'Vorschau' : 'Ergebnis'}${job.mock ? ' (Testmodus)' : ''}`,
+        label: `${job.purpose === 'preview' ? 'Preview' : 'Result'}${job.mock ? ' (test mode)' : ''}`,
         sizeLabel: outputSize ? `${outputSize.width}×${outputSize.height}` : undefined,
       },
     }));
@@ -455,9 +455,9 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
     const job = nextRunnableJob(jobs);
     if (!job) return;
     const context = jobContextRef.current.get(job.id);
-    if (!context) { dispatch({ type: 'fail', id: job.id, error: 'Auftragsdaten fehlen.', at: Date.now() }); return; }
+    if (!context) { dispatch({ type: 'fail', id: job.id, error: 'Job data missing.', at: Date.now() }); return; }
     dispatch({ type: 'start', id: job.id });
-    const task = startTask({ label: `Upscale · ${job.name}`, kind: job.kind, provider: job.mock ? 'test' : 'replicate', message: 'Startet…', progress: 0, cancel: () => { cancelledRef.current.add(job.id); dispatch({ type: 'cancel', id: job.id, at: Date.now() }); } });
+    const task = startTask({ label: `Upscale · ${job.name}`, kind: job.kind, provider: job.mock ? 'test' : 'replicate', message: 'Starting…', progress: 0, cancel: () => { cancelledRef.current.add(job.id); dispatch({ type: 'cancel', id: job.id, at: Date.now() }); } });
     tasksRef.current.set(job.id, task);
     const isCancelled = () => cancelledRef.current.has(job.id);
     runUpscaleJob({
@@ -480,7 +480,7 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
         jobResultsRef.current.set(job.id, item);
         jobSizesRef.current.set(job.id, outputSize);
         dispatch({ type: 'done', id: job.id, resultUrl: item.url, resultMediaId: job.purpose === 'export' ? item.id : undefined, savedPath, at: Date.now() });
-        task.complete(notes.join(' ') || 'Fertig');
+        task.complete(notes.join(' ') || 'Done');
         if (job.purpose === 'export') {
           onAddGeneratedMedia(item);
           setInBin((prev) => new Set(prev).add(job.id));
@@ -667,7 +667,7 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
   const rangeLabel = activeInput && activeIo
     ? `${formatTimecode(activeIo.start, activeInput.fps)} – ${formatTimecode(activeIo.end, activeInput.fps)} (${(activeIo.end - activeIo.start).toFixed(2)} s)`
     : null;
-  const previewHint = previewEstimate ? (mock ? 'Testmodus' : `ca. ${formatUsd(previewEstimate.cost.usd)}`) : null;
+  const previewHint = previewEstimate ? (mock ? 'Test mode' : `ca. ${formatUsd(previewEstimate.cost.usd)}`) : null;
 
   return (
     <div className="ups-root" tabIndex={-1} onKeyDown={onKeyDown} data-automation-id="upscale-workspace">
@@ -675,20 +675,20 @@ const UpscaleWorkspace: React.FC<UpscaleWorkspaceProps> = ({
         <span className="ups-title">Upscale</span>
         <span className="ups-crumb" data-automation-id="upscale-active-name">{activeInput ? `› ${activeInput.name}` : ''}</span>
         <div className="ups-top-center">
-          <button type="button" className="ups-icon-btn" aria-pressed={view.mode === 'single'} title="Einzelansicht (1)" onClick={() => setView({ mode: 'single' })} data-automation-id="upscale-view-single"><Square /></button>
-          <button type="button" className="ups-icon-btn" aria-pressed={view.mode === 'side'} title="Nebeneinander (2)" onClick={() => setView({ mode: 'side' })} data-automation-id="upscale-view-side"><Columns2 /></button>
-          <button type="button" className="ups-icon-btn" aria-pressed={view.mode === 'wipe'} title="Geteilte Ansicht mit Teiler (3)" onClick={() => setView({ mode: 'wipe' })} data-automation-id="upscale-view-wipe"><SquareSplitHorizontal /></button>
+          <button type="button" className="ups-icon-btn" aria-pressed={view.mode === 'single'} title="Single view (1)" onClick={() => setView({ mode: 'single' })} data-automation-id="upscale-view-single"><Square /></button>
+          <button type="button" className="ups-icon-btn" aria-pressed={view.mode === 'side'} title="Side by side (2)" onClick={() => setView({ mode: 'side' })} data-automation-id="upscale-view-side"><Columns2 /></button>
+          <button type="button" className="ups-icon-btn" aria-pressed={view.mode === 'wipe'} title="Split view with divider (3)" onClick={() => setView({ mode: 'wipe' })} data-automation-id="upscale-view-wipe"><SquareSplitHorizontal /></button>
           {view.mode === 'single' && (
             <div className="ups-seg" style={{ marginLeft: 8 }} data-automation-id="upscale-single-toggle">
               <button type="button" aria-pressed={view.singleShows === 'before'} onClick={() => setView({ singleShows: 'before' })} data-automation-id="upscale-single-before">Original</button>
-              <button type="button" aria-pressed={view.singleShows === 'after'} onClick={() => setView({ singleShows: 'after' })} data-automation-id="upscale-single-after">Ergebnis</button>
+              <button type="button" aria-pressed={view.singleShows === 'after'} onClick={() => setView({ singleShows: 'after' })} data-automation-id="upscale-single-after">Result</button>
             </div>
           )}
         </div>
         <div className="ups-top-right">
           {notice && <span className="ups-badge is-warn" title={notice} style={{ maxWidth: 380, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} data-automation-id="upscale-notice">{notice}</span>}
-          {mock && <span className="ups-badge is-warn" data-automation-id="upscale-mock-badge"><FlaskConical size={10} /> Testmodus – keine Credits</span>}
-          {keysMissing && <span className="ups-badge is-err">API-Keys fehlen</span>}
+          {mock && <span className="ups-badge is-warn" data-automation-id="upscale-mock-badge"><FlaskConical size={10} />Test mode – no credits</span>}
+          {keysMissing && <span className="ups-badge is-err">API keys missing</span>}
         </div>
       </header>
 

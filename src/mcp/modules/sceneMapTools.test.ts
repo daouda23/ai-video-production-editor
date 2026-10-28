@@ -16,9 +16,9 @@ const bind = (): Project => {
   overview.scenes[0].elements.push(
     createSceneMapElement('character', { x: 80, y: 100 }, { label: 'Mia' }),
     createSceneMapElement('camera', { x: 80, y: 300 }, { label: 'D' }),
-    createSceneMapElement('prop', { x: 200, y: 100 }, { label: 'Koffer' }),
+    createSceneMapElement('prop', { x: 200, y: 100 }, { label: 'Suitcase' }),
   );
-  const project: Project = { setDesign: null, shotPrompts: [{ shot: 1, prompt: '', description: 'Bestehend', characters: [], environment: null }], sceneMap: overview, opened: 0 };
+  const project: Project = { setDesign: null, shotPrompts: [{ shot: 1, prompt: '', description: 'Existing', characters: [], environment: null }], sceneMap: overview, opened: 0 };
   bindSceneMapBridge({
     getSetDesign: () => project.setDesign as never,
     setSetDesign: (next) => { project.setDesign = next; },
@@ -28,7 +28,7 @@ const bind = (): Project => {
     getSceneMap: () => project.sceneMap,
     setSceneMap: (next) => { project.sceneMap = next; },
     getProjectPath: () => null,
-    getProjectName: () => 'Testszene',
+    getProjectName: () => 'Test scene',
     openSceneMap: () => { project.opened += 1; },
   });
   return project;
@@ -82,7 +82,7 @@ test('floor plan, characters, cameras and blocking over MCP', async () => {
     ok(await call('scene_map_plan_add_room', { width: 8, depth: 6, openSide: 'south' }));
     ok(await call('scene_map_plan_add_wall', { x1: -4, z1: 0, x2: -2, z2: 0 }));
     const table = ok(await call('scene_map_plan_add_element', { category: 'table', x: 0, z: -1 }));
-    ok(await call('scene_map_plan_update_element', { id: table.id, w: 2, label: 'Esstisch' }));
+    ok(await call('scene_map_plan_update_element', { id: table.id, w: 2, label: 'Dining table' }));
     ok(await call('scene_map_plan_set_background', { url: 'data:image/png;base64,AA', mPerPx: 0.02, opacity: 0.4 }));
     const anna = ok(await call('scene_map_character_add', { name: 'Anna', x: -1, z: 0, yawDeg: -90 }));
     ok(await call('scene_map_character_add', { name: 'Ben', x: 1, z: 0, yawDeg: 90 }));
@@ -138,9 +138,9 @@ test('shot list, storyboard link, scene tools and exports over MCP', async () =>
     const shots = ok(await call('scene_map_list_shots', { order: 'setup' }));
     assert.equal((shots.shots as unknown[]).length, 3);
     assert.deepEqual(shots.axisWarnings, []);
-    const added = ok(await call('scene_map_shot_add', { cameraId: 'A', startS: 2, endS: 5, description: 'Reaktion' }));
+    const added = ok(await call('scene_map_shot_add', { cameraId: 'A', startS: 2, endS: 5, description: 'Reaction' }));
     assert.equal(added.code, '1B');
-    ok(await call('scene_map_shot_update', { id: '1B', size: 'CU', move: 'dolly', lensMm: 85, props: 'Tasse', crew: 'Fokus', gear: 'Slider', notes: 'leise' }));
+    ok(await call('scene_map_shot_update', { id: '1B', size: 'CU', move: 'dolly', lensMm: 85, props: 'Tasse', crew: 'Focus', gear: 'Slider', notes: 'leise' }));
     ok(await call('scene_map_shot_reorder', { id: '1B', toIndex: 0 }));
     ok(await call('scene_map_shot_detach', { id: '3A', detached: true }));
     ok(await call('scene_map_shot_link', { id: '2A', storyboardShot: 1 }));
@@ -155,9 +155,9 @@ test('shot list, storyboard link, scene tools and exports over MCP', async () =>
     assert.ok(project.shotPrompts.find((s) => s.shot === 1)?.cameraAngle?.includes('mm'), 'linked shot updated');
     assert.ok((sb.links as unknown[]).length >= 4);
     ok(await call('scene_map_shot_delete', { id: '1B' }));
-    ok(await call('scene_map_scene_freeze', { name: 'Fassung 1' }));
+    ok(await call('scene_map_scene_freeze', { name: 'Version 1' }));
     ok(await call('scene_map_object_delete', { id: 'C' }));
-    ok(await call('scene_map_scene_restore', { id: 'Fassung 1' }));
+    ok(await call('scene_map_scene_restore', { id: 'Version 1' }));
     // Exports (PNG needs the app canvas; headless it reports a clear error).
     const json = ok(await call('scene_map_export', { format: 'json' }));
     assert.equal(JSON.parse(String(json.text)).format, 'avpe-blocking');
@@ -165,7 +165,7 @@ test('shot list, storyboard link, scene tools and exports over MCP', async () =>
     assert.ok(String(csv.text).includes('Shot'));
     const svg = ok(await call('scene_map_export', { format: 'svg' }));
     assert.ok(String(svg.text).startsWith('<svg'));
-    const pdf = ok(await call('scene_map_export', { format: 'pdf', title: 'Küche' }));
+    const pdf = ok(await call('scene_map_export', { format: 'pdf', title: 'Kitchen' }));
     assert.ok(Buffer.from(String(pdf.base64), 'base64').toString('latin1').startsWith('%PDF'));
     const xlsx = ok(await call('scene_map_export', { format: 'xlsx' }));
     assert.equal(Buffer.from(String(xlsx.base64), 'base64').subarray(0, 2).toString(), 'PK');
@@ -180,9 +180,9 @@ test('classic overview tools and import into the camera plan', async () => {
   await withMcp(async (call, project) => {
     const overview = ok(await call('scene_map_overview_get'));
     assert.equal((overview.scenes as unknown[]).length, 1);
-    const scene = ok(await call('scene_map_overview_add_scene', { name: 'Flur' }));
+    const scene = ok(await call('scene_map_overview_add_scene', { name: 'Hallway' }));
     ok(await call('scene_map_overview_select_scene', { sceneId: project.sceneMap.scenes[0].id }));
-    const el = ok(await call('scene_map_overview_add_element', { type: 'light', x: 10, y: 20, label: 'Fenster' }));
+    const el = ok(await call('scene_map_overview_add_element', { type: 'light', x: 10, y: 20, label: 'Window' }));
     ok(await call('scene_map_overview_update_element', { elementId: el.elementId, rotation: 90, linkedShotNumbers: [1] }));
     ok(await call('scene_map_overview_delete_element', { elementId: el.elementId }));
     assert.equal(project.sceneMap.scenes.length, 2);

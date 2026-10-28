@@ -104,7 +104,7 @@ export function createComposition(init: Partial<Composition> = {}): Composition 
   const output = createNode('output', { id: 'output', name: 'MediaOut', x: 600, y: 0 });
   return {
     id: init.id ?? newId('comp'),
-    name: init.name ?? 'Komposition 1',
+    name: init.name ?? 'Composition 1',
     width: init.width ?? 1920,
     height: init.height ?? 1080,
     fps: init.fps ?? 24,

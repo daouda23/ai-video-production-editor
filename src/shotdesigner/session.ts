@@ -125,7 +125,7 @@ export const bindSceneMapBridge = (next: SceneMapBridge | null) => { bridge = ne
 export const getBridge = () => bridge;
 
 const requireBridge = () => {
-  if (!bridge) throw new Error('Scene Map ist nicht mit dem Projekt verbunden (App lädt noch).');
+  if (!bridge) throw new Error('The Scene Map is not connected to the project (the app is still loading).');
   return bridge;
 };
 
@@ -147,7 +147,7 @@ const apply = (next: StageHost, recordHistory = true) => {
   const stored = toStoredHost(ensureHost(next), base);
   lastBase = base;
   lastApplied = ensureHost(next);
-  if (committer) committer.commit(stored, 'Kameraplan');
+  if (committer) committer.commit(stored, 'Camera plan');
   else b.setSetDesign(stored);
   emit();
 };

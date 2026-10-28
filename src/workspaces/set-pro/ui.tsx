@@ -155,10 +155,10 @@ export const NumberField: React.FC<NumberFieldProps> = ({
       title={title}
     >
       {fill !== null && <div className="sdx-num__fill" style={{ width: `${fill}%` }} />}
-      {!editing && !slider && <button type="button" className="sdx-num__arrow" onClick={() => nudge(-1)} tabIndex={-1} aria-label="Weniger">‹</button>}
+      {!editing && !slider && <button type="button" className="sdx-num__arrow" onClick={() => nudge(-1)} tabIndex={-1} aria-label="Less">‹</button>}
       {label && !editing && <span className="sdx-num__label">{label}</span>}
       {!editing && <span className="sdx-num__value" style={label ? { textAlign: 'right' } : undefined}>{format(value, digits)}{unit ? ` ${unit}` : ''}</span>}
-      {!editing && !slider && <button type="button" className="sdx-num__arrow" onClick={() => nudge(1)} tabIndex={-1} aria-label="Mehr">›</button>}
+      {!editing && !slider && <button type="button" className="sdx-num__arrow" onClick={() => nudge(1)} tabIndex={-1} aria-label="More">›</button>}
       {editing && (
         <input
           ref={inputRef}

@@ -173,7 +173,7 @@ export const FILM_EMULATION: FxDefinition = {
     },
     {
       id: 'doc-16mm',
-      name: '16mm Doku',
+      name: '16mm documentary',
       description: '16 mm documentary: chunky grain, weave, breath and a little dust.',
       values: {
         inputSpace: 0,

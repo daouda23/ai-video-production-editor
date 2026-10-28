@@ -31,12 +31,12 @@ const Outliner: React.FC<Props> = ({ scene, ui, onError, renamingId, setRenaming
         <span style={{ fontWeight: 600, marginRight: 'auto' }}>Outliner</span>
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <Search size={12} style={{ position: 'absolute', left: 6, color: '#8b8b90' }} />
-          <input className="sdx-input" style={{ width: 130, paddingLeft: 22 }} placeholder="Suchen" value={filter} onChange={(event) => setFilter(event.target.value)} data-automation-id="setdesign-outliner-filter" />
+          <input className="sdx-input" style={{ width: 130, paddingLeft: 22 }} placeholder="Search" value={filter} onChange={(event) => setFilter(event.target.value)} data-automation-id="setdesign-outliner-filter" />
         </div>
       </div>
       <div className="sdx-outliner__list" onClick={(event) => { if (event.target === event.currentTarget) runCommand('select.set', { objects: [] }); }}>
-        <div className="sdx-outliner__collection"><Layers size={13} /> Szenensammlung</div>
-        {items.length === 0 && <div className="sdx-empty">{filter ? 'Nichts gefunden.' : 'Leeres Set. Shift+A im Viewport fügt Objekte hinzu.'}</div>}
+        <div className="sdx-outliner__collection"><Layers size={13} />Scene collection</div>
+        {items.length === 0 && <div className="sdx-empty">{filter ? 'Nothing found.' : 'Empty set. Shift+A in the viewport adds objects.'}</div>}
         {items.map((item) => {
           const selected = ui.selectedIds.includes(item.id);
           const active = ui.activeId === item.id;
@@ -71,7 +71,7 @@ const Outliner: React.FC<Props> = ({ scene, ui, onError, renamingId, setRenaming
                 <button
                   type="button"
                   className={`sdx-row__toggle${item.active ? ' is-on' : ''}`}
-                  title={item.active ? 'Aktive Kamera' : 'Als aktive Kamera setzen'}
+                  title={item.active ? 'Active camera' : 'Set as active camera'}
                   data-automation-id={`setdesign-outliner-active-${item.id}`}
                   onClick={(event) => { event.stopPropagation(); runCommand('camera.set_active', { object: item.id }, onError); }}
                 >
@@ -82,7 +82,7 @@ const Outliner: React.FC<Props> = ({ scene, ui, onError, renamingId, setRenaming
                 <button
                   type="button"
                   className="sdx-row__toggle"
-                  title={item.locked ? 'Entsperren' : 'Sperren (nicht auswählbar)'}
+                  title={item.locked ? 'Unlock' : 'Lock (not selectable)'}
                   data-automation-id={`setdesign-outliner-lock-${item.id}`}
                   onClick={(event) => { event.stopPropagation(); runCommand('object.update', { object: item.id, locked: !item.locked }, onError); }}
                 >
@@ -92,7 +92,7 @@ const Outliner: React.FC<Props> = ({ scene, ui, onError, renamingId, setRenaming
               <button
                 type="button"
                 className="sdx-row__toggle"
-                title={item.hidden ? 'Einblenden' : 'Ausblenden (H)'}
+                title={item.hidden ? 'Show' : 'Hide (H)'}
                 data-automation-id={`setdesign-outliner-eye-${item.id}`}
                 onClick={(event) => { event.stopPropagation(); runCommand('object.update', { object: item.id, hidden: !item.hidden }, onError); }}
               >

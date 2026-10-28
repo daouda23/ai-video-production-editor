@@ -112,7 +112,7 @@ const live = (name: string, args: Record<string, unknown>, ctx: StudioToolContex
 
 export const TIMELINE_TOOL_MODULE: StudioToolModule = {
     id: 'timeline',
-    label: 'Timeline & Monitore (Schnitt)',
+    label: 'Timeline & monitors (edit)',
     tools: [
         /* ── Markers ── */
         {

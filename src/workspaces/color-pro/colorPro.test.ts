@@ -42,8 +42,8 @@ test('node stack: add serial, remove, move, toggle, label', () => {
   assert.deepEqual(removeNode(stack, 1).map((n) => n.id), ['a', 'b']);
   assert.equal(toggleNode(stack, 2)[2].enabled, false);
   assert.equal(toggleNode(toggleNode(stack, 2), 2)[2].enabled, true);
-  const labelled = setNodeLabel(stack, 0, '  Haut  ');
-  assert.equal(nodeLabel(labelled[0], '01'), 'Haut');
+  const labelled = setNodeLabel(stack, 0, '  Skin  ');
+  assert.equal(nodeLabel(labelled[0], '01'), 'Skin');
   assert.equal(nodeLabel(setNodeLabel(labelled, 0, '')[0], '01'), '01');
   assert.equal(stack[0].params.nodeLabel, undefined, 'immutable');
   const ofx: FxInstance = { id: 'o', effectId: 'ofx:com.example', enabled: true, params: {} };
@@ -97,11 +97,11 @@ test('gallery: create, name, save/load round trip, quota fallback', () => {
   stills = createStill(stills, { fxStack: [] }, '', { id: 's2', now: 2 });
   assert.deepEqual(stills.map((s) => s.name), ['Still 1.2', 'Still 1.1']);
   assert.equal(nextStillName(stills), 'Still 1.3');
-  stills = renameStill(stills, 's1', 'Abendlicht');
+  stills = renameStill(stills, 's1', 'Evening light');
   assert.ok(saveGallery(stills, storage));
   const loaded = loadGallery(storage);
   assert.equal(loaded.length, 2);
-  assert.equal(loaded[1].name, 'Abendlicht');
+  assert.equal(loaded[1].name, 'Evening light');
   assert.equal(loaded[1].grade.fxStack[0].params.hue, 20);
   assert.equal(removeStill(loaded, 's2').length, 1);
   memory.set(GALLERY_STORAGE_KEY, '{broken');

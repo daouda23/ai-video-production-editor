@@ -141,7 +141,7 @@ export type StageState = {
 
 export const SENSOR_PRESETS: Array<{ id: string; label: string; widthMm: number; heightMm: number }> = [
   { id: 'super35', label: 'Super 35', widthMm: 24.89, heightMm: 18.66 },
-  { id: 'fullframe', label: 'Vollformat', widthMm: 36, heightMm: 24 },
+  { id: 'fullframe', label: 'Full frame', widthMm: 36, heightMm: 24 },
   { id: 'alexa-lf', label: 'Large Format (LF)', widthMm: 36.7, heightMm: 25.54 },
   { id: 'aps-c', label: 'APS-C', widthMm: 23.6, heightMm: 15.6 },
   { id: 'mft', label: 'Micro Four Thirds', widthMm: 17.3, heightMm: 13 },
@@ -219,7 +219,7 @@ export const createCamera = (input: Partial<StageCamera> & { id?: string } = {},
 }, index);
 
 export const createCharacter = (input: Partial<StageCharacter> & { id?: string } = {}, index = 0): StageCharacter => normalizeCharacter({
-  name: `Figur ${index + 1}`,
+  name: `Character ${index + 1}`,
   color: CHARACTER_COLORS[index % CHARACTER_COLORS.length],
   ...input,
   id: input.id || makeStageId('chr'),
@@ -267,7 +267,7 @@ export const normalizeCharacter = (raw: unknown, index = 0): StageCharacter => {
   const c = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
   const chr: StageCharacter = {
     id: str(c.id, '', 120) || makeStageId('chr'),
-    name: str(c.name, `Figur ${index + 1}`, 120),
+    name: str(c.name, `Character ${index + 1}`, 120),
     position: vec3(c.position, { x: 0, y: 0, z: 0 }),
     yawDeg: wrapDeg(finite(c.yawDeg, 0)),
     heightM: finite(c.heightM, DEFAULT_CHARACTER_HEIGHT_M, 0.3, 3),

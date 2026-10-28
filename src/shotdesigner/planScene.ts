@@ -260,7 +260,7 @@ const cameraPrims = (cam: StageCamera, k: number, theme: typeof THEMES.dark, sel
   if (labels) {
     out.push({ t: 'text', x: c[0], y: c[1] + 3.8 * k, text: cam.name.slice(0, 3), size: 10.5 * k, fill: '#ffffff', anchor: 'middle', weight: 700, objectId: cam.id, role: 'label' });
     const back = rot(cam.position.x, cam.position.z, cam.yawDeg, 0, 0.44);
-    out.push({ t: 'text', x: back[0], y: back[1] + 14 * k, text: `${Math.round(cam.focalLengthMm)} mm · ${cam.position.y.toFixed(1).replace('.', ',')} m${cam.followId ? ' · folgt' : ''}`, size: 9.5 * k, fill: active ? theme.text : theme.muted, anchor: 'middle', halo: theme.halo, objectId: cam.id, role: 'label' });
+    out.push({ t: 'text', x: back[0], y: back[1] + 14 * k, text: `${Math.round(cam.focalLengthMm)} mm · ${cam.position.y.toFixed(1).replace('.', ',')} m${cam.followId ? ' · follows' : ''}`, size: 9.5 * k, fill: active ? theme.text : theme.muted, anchor: 'middle', halo: theme.halo, objectId: cam.id, role: 'label' });
   }
   if (selected) {
     out.push({ t: 'poly', pts: [...body.slice(0, 1), lens[3], lens[2], ...body.slice(1)], closed: true, stroke: theme.select, sw: 1.5 * k, dash: [4 * k, 3 * k], role: 'selection', objectId: cam.id });

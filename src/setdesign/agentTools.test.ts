@@ -59,7 +59,7 @@ test('setdesign_get_scene describes a fresh set with an active camera in Blender
   const { call } = setup(null);
   const scene = await call('setdesign_get_scene');
   assert.match(scene.coordinates, /Z up/);
-  assert.equal(scene.activeCamera.name, 'Kamera');
+  assert.equal(scene.activeCamera.name, 'Camera');
   assert.match(scene.activeCamera.setup.de, /35 mm \(Super 35\)/);
   const camera = scene.objects.find((o: any) => o.type === 'camera');
   assert.equal(camera.active, true);
@@ -92,8 +92,8 @@ test('setdesign_import_model takes a URL or a file path and checks the format', 
 
 test('setdesign_add_camera aims at an object and becomes active', async () => {
   const { call, scene } = setup();
-  const crate = await call('setdesign_add_primitive', { primitive: 'box', name: 'Kiste', location: [0.5, 0.5, 0.5] });
-  const cam = await call('setdesign_add_camera', { name: 'Totale', location: [5, -6, 1.6], lookAt: 'Kiste', lensMm: 24, sensorPreset: 'full-frame' });
+  const crate = await call('setdesign_add_primitive', { primitive: 'box', name: 'Crate', location: [0.5, 0.5, 0.5] });
+  const cam = await call('setdesign_add_camera', { name: 'Wide shot', location: [5, -6, 1.6], lookAt: 'Crate', lensMm: 24, sensorPreset: 'full-frame' });
   const stored = scene().cameras!.find((c) => c.id === cam.id)!;
   assert.equal(scene().activeCameraId, cam.id);
   assert.equal(stored.lensMm, 24);
@@ -124,9 +124,9 @@ test('setdesign_transform_object sets and adds in Blender coordinates', async ()
   assert.deepEqual(result.location, { x: 1, y: 2, z: 3 });
   close(result.rotation.z, 45, 1e-2);
   assert.deepEqual(result.scale, { x: 2, y: 1, z: 1 });
-  const relative = await call('setdesign_transform_object', { object: 'Würfel', location: [0, 0, 1], relative: true });
+  const relative = await call('setdesign_transform_object', { object: 'Cube', location: [0, 0, 1], relative: true });
   assert.deepEqual(relative.location, { x: 1, y: 2, z: 4 });
-  await assert.rejects(call('setdesign_transform_object', { object: 'Kamera', scale: [2, 2, 2] }), /Only meshes and models have a scale/);
+  await assert.rejects(call('setdesign_transform_object', { object: 'Camera', scale: [2, 2, 2] }), /Only meshes and models have a scale/);
   await assert.rejects(call('setdesign_transform_object', { object: 'nope', location: [0, 0, 0] }), /No object "nope"/);
   assert.equal(scene().assets.length, 1);
 });
@@ -134,23 +134,23 @@ test('setdesign_transform_object sets and adds in Blender coordinates', async ()
 test('setdesign_update_object changes material, camera sensor and light properties', async () => {
   const { call, scene } = setup();
   const box = await call('setdesign_add_primitive', { primitive: 'box' });
-  const updated = await call('setdesign_update_object', { object: box.id, name: 'Tresen', color: '#6b4f3a', roughness: 0.4 });
-  assert.equal(updated.name, 'Tresen');
+  const updated = await call('setdesign_update_object', { object: box.id, name: 'Bar counter', color: '#6b4f3a', roughness: 0.4 });
+  assert.equal(updated.name, 'Bar counter');
   assert.equal(scene().assets[0].material?.color, '#6b4f3a');
-  const cam = await call('setdesign_update_object', { object: 'Kamera', lensMm: 85, sensorPreset: 'super16', shiftY: 0.1, focusDistance: 2.4, fStop: 2.8 });
+  const cam = await call('setdesign_update_object', { object: 'Camera', lensMm: 85, sensorPreset: 'super16', shiftY: 0.1, focusDistance: 2.4, fStop: 2.8 });
   assert.equal(cam.lensMm, 85);
   assert.equal(cam.sensorWidthMm, 12.52);
   assert.equal(cam.shiftY, 0.1);
-  const sun = await call('setdesign_update_object', { object: 'Sonne', power: 5, color: '#ffeedd' });
+  const sun = await call('setdesign_update_object', { object: 'Sun', power: 5, color: '#ffeedd' });
   assert.equal(sun.power, 5);
-  await assert.rejects(call('setdesign_update_object', { object: 'Kamera', sensorPreset: 'imax' }), /sensorPreset must be one of/);
+  await assert.rejects(call('setdesign_update_object', { object: 'Camera', sensorPreset: 'imax' }), /sensorPreset must be one of/);
 });
 
 test('setdesign_duplicate_objects copies the selection with an offset', async () => {
   const { call, scene } = setup();
-  await call('setdesign_add_primitive', { primitive: 'cylinder', name: 'Säule', location: [0, 0, 1] });
+  await call('setdesign_add_primitive', { primitive: 'cylinder', name: 'Column', location: [0, 0, 1] });
   const result = await call('setdesign_duplicate_objects', { offset: [2, 0, 0] });
-  assert.equal(result.created[0].name, 'Säule.001');
+  assert.equal(result.created[0].name, 'Column.001');
   const copy = scene().assets.find((a) => a.id === result.created[0].id)!;
   close(copy.position.x, 2); close(copy.position.y, 1); close(copy.position.z, 0);
 });
@@ -160,7 +160,7 @@ test('setdesign_delete_objects removes objects but keeps the last camera', async
   const box = await call('setdesign_add_primitive', { primitive: 'box' });
   await call('setdesign_delete_objects', { objects: [box.id] });
   assert.equal(scene().assets.length, 0);
-  await assert.rejects(call('setdesign_delete_objects', { objects: ['Kamera'] }), /at least one camera/);
+  await assert.rejects(call('setdesign_delete_objects', { objects: ['Camera'] }), /at least one camera/);
 });
 
 test('setdesign_select_objects supports replace, add, toggle and remove', async () => {
@@ -198,13 +198,13 @@ test('setdesign_aim_object points a light at an object', async () => {
 
 test('setdesign_set_active_camera and setdesign_set_view look through a chosen camera', async () => {
   const { call, bus, scene } = setup();
-  const close2 = await call('setdesign_add_camera', { name: 'Nah', makeActive: false });
+  const close2 = await call('setdesign_add_camera', { name: 'Close', makeActive: false });
   assert.notEqual(scene().activeCameraId, close2.id);
-  await call('setdesign_set_active_camera', { object: 'Nah' });
+  await call('setdesign_set_active_camera', { object: 'Close' });
   assert.equal(scene().activeCameraId, close2.id);
-  const view = await call('setdesign_set_view', { camera: true, object: 'Kamera' });
+  const view = await call('setdesign_set_view', { camera: true, object: 'Camera' });
   assert.equal(view.lookThroughCamera, true);
-  assert.equal(view.camera, 'Kamera');
+  assert.equal(view.camera, 'Camera');
   await call('setdesign_set_view', { view: 'top' });
   assert.equal(bus.getUi().lookThroughCamera, false);
   assert.equal(bus.getUi().ortho, true);
@@ -238,7 +238,7 @@ test('setdesign_history undoes and redoes scene changes but not view changes', a
   const { call, scene } = setup();
   await call('setdesign_add_primitive', { primitive: 'box' });
   await call('setdesign_set_view', { view: 'front' });
-  assert.deepEqual((await call('setdesign_history', { action: 'list' })).undo, ['Grundkörper hinzufügen']);
+  assert.deepEqual((await call('setdesign_history', { action: 'list' })).undo, ['Add primitive']);
   await call('setdesign_history', { action: 'undo' });
   assert.equal(scene().assets.length, 0);
   await call('setdesign_history', { action: 'redo' });
@@ -265,7 +265,7 @@ test('setdesign_open_workspace shows the workspace on a tab', async () => {
 test('setdesign_capture_frame renders the active camera and files it into media, shot and reference', async () => {
   const { call, captures, media, shots, references, scene } = setup();
   await call('setdesign_set_output', { width: 2048, height: 858 });
-  const result = await call('setdesign_capture_frame', { pass: 'clay', width: 1024, shotNumber: 3, reference: 'Drehrestaurant' });
+  const result = await call('setdesign_capture_frame', { pass: 'clay', width: 1024, shotNumber: 3, reference: 'Revolving restaurant' });
   assert.equal(captures[0].cameraId, scene().activeCameraId);
   assert.equal(captures[0].pass, 'clay');
   assert.deepEqual([captures[0].width, captures[0].height], [1024, 429]);
@@ -273,19 +273,19 @@ test('setdesign_capture_frame renders the active camera and files it into media,
   assert.match(media[0].prompt, /35mm lens on Super 35/);
   assert.equal(shots[0].shotNumber, 3);
   assert.equal(shots[0].imageUrl, 'blob:media-1');
-  assert.deepEqual(references, ['Drehrestaurant']);
+  assert.deepEqual(references, ['Revolving restaurant']);
   assert.equal(result.__mcpContent[0].type, 'image');
   assert.equal(result.__mcpContent[0].mimeType, 'image/png');
   const quiet = await call('setdesign_capture_frame', { returnImage: false, addToMedia: false });
   assert.equal(quiet.__mcpContent, undefined);
-  await assert.rejects(call('setdesign_capture_frame', { camera: 'Sonne' }), /No camera "Sonne"/);
+  await assert.rejects(call('setdesign_capture_frame', { camera: 'Sun' }), /No camera "Sun"/);
   await assert.rejects(call('setdesign_capture_frame', { pass: 'normal' }), /pass must be/);
 });
 
 test('a property drag is one undo step (bus interaction around several commands)', async () => {
   const { bus, call, scene } = setup();
   const box = await call('setdesign_add_primitive', { primitive: 'box' });
-  bus.beginInteraction('Eigenschaft');
+  bus.beginInteraction('Property');
   for (const z of [1, 2, 3]) bus.run('object.transform', { object: box.id, location: [0, 0, z] });
   bus.endInteraction(true);
   assert.equal(bus.history().undo.length, 2);
@@ -300,12 +300,12 @@ test('Scene Map data (stage, plan, character) survives normalizing, moving, dupl
     stage: { shots: [{ id: 's1' }], axisLine: { a: [0, 0], b: [1, 0] } },
     assets: [
       { id: 'p1', name: 'Anna', kind: 'primitive' as const, primitive: 'person' as const, position: { x: 0, y: 0.85, z: 0 }, rotation: { x: 0, y: 30, z: 0 }, scale: { x: 1, y: 0.97, z: 1 }, character: { referenceId: 'ref-anna', heightM: 1.7, pose: 'stand' } },
-      { id: 'w1', name: 'Wand Nord', kind: 'primitive' as const, primitive: 'box' as const, position: { x: 0, y: 1.3, z: -3 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 4, y: 2.6, z: 0.12 }, plan: { category: 'wall', heightM: 2.6 } },
+      { id: 'w1', name: 'North wall', kind: 'primitive' as const, primitive: 'box' as const, position: { x: 0, y: 1.3, z: -3 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 4, y: 2.6, z: 0.12 }, plan: { category: 'wall', heightM: 2.6 } },
     ],
   };
   const { call, scene, bus } = setup(initial);
   await call('setdesign_transform_object', { object: 'Anna', location: [1, 0, 0.85] });
-  const copy = await call('setdesign_duplicate_objects', { objects: ['Wand Nord'] });
+  const copy = await call('setdesign_duplicate_objects', { objects: ['North wall'] });
   assert.deepEqual(scene().stage, initial.stage);
   assert.deepEqual(scene().assets.find((a) => a.id === 'p1')!.character, initial.assets[0].character);
   assert.deepEqual(scene().assets.find((a) => a.id === copy.created[0].id)!.plan, { category: 'wall', heightM: 2.6 });
@@ -374,7 +374,7 @@ test('material presets, HDRI, preset lists, pack manifest and Blender export', a
   await call('setdesign_add_light', { lightType: 'spot', temperature: 3200, power: 700 });
   const exported = await call('setdesign_export_blender_script');
   assert.equal(exported.fileName, 'avpe_set.py');
-  for (const needle of ["bpy.data.scenes.new('AVPE Set')", "primitive('box', 'Würfel'", 'cd.lens = 35', "cd.sensor_fit = 'AUTO'", 'scene.camera = c0', "bpy.data.lights.new('Spot', 'SPOT')", 'ld.energy = 700', 'scene.render.resolution_x = 1920']) {
+  for (const needle of ["bpy.data.scenes.new('AVPE Set')", "primitive('box', 'Cube'", 'cd.lens = 35', "cd.sensor_fit = 'AUTO'", 'scene.camera = c0', "bpy.data.lights.new('Spot', 'SPOT')", 'ld.energy = 700', 'scene.render.resolution_x = 1920']) {
     assert.ok(exported.script.includes(needle), needle);
   }
 });

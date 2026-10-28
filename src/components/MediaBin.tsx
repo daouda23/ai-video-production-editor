@@ -648,7 +648,7 @@ const MediaBin: React.FC<MediaBinProps> = ({
             ) : viewMode === 'list' ? (
               <div className="media-bin-list" role="list" data-automation-id="pp.project.list">
                 <div className="media-bin-list__head" aria-hidden>
-                  <span>Name</span><span>Typ</span><span>Dauer</span><span>Status</span>
+                  <span>Name</span><span>Type</span><span>Duration</span><span>Status</span>
                 </div>
                 {filteredProjectMedia.map((item) => {
                   const isArchive = isArchiveMedia(item);
@@ -668,7 +668,7 @@ const MediaBin: React.FC<MediaBinProps> = ({
                       onDoubleClick={() => {
                         if (!isArchive && onSelectMedia) onAddToTimeline(item.id);
                       }}
-                      title={onSelectMedia ? 'Klick: im Quellmonitor ansehen · Doppelklick: zur Timeline' : item.name}
+                      title={onSelectMedia ? 'Click: view in the source monitor · Double-click: to the timeline' : item.name}
                       data-automation-id={`pp.project.item.${item.id}`}
                     >
                       <span className="media-bin-list__name">
@@ -679,9 +679,9 @@ const MediaBin: React.FC<MediaBinProps> = ({
                         </span>
                         <span className="truncate">{item.name}</span>
                       </span>
-                      <span>{isArchive ? 'EXR' : item.type === 'image' ? 'Bild' : item.type === 'video' ? 'Video' : 'Audio'}</span>
+                      <span>{isArchive ? 'EXR' : item.type === 'image' ? 'Image' : item.type === 'video' ? 'Video' : 'Audio'}</span>
                       <span>{formatDuration(item.duration) || '–'}</span>
-                      <span>{usedMediaIds.has(item.id) ? 'im Schnitt' : 'unbenutzt'}</span>
+                      <span>{usedMediaIds.has(item.id) ? 'in the edit' : 'unused'}</span>
                     </div>
                   );
                 })}

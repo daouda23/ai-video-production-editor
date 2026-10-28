@@ -32,15 +32,15 @@ export type HistorySnapshot = { clips: HistoryClip[]; tracks: HistoryTrack[]; me
 const same = (a: unknown, b: unknown) => a === b || JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
 const FIELD_LABELS: Array<{ fields: Array<keyof HistoryClip>; label: string }> = [
-    { fields: ['fxStack'], label: 'GPU-Effekte geändert' },
-    { fields: ['effect', 'effects', 'filters'], label: 'Video-Effekt geändert' },
-    { fields: ['transform', 'blendMode'], label: 'Bewegung/Deckkraft geändert' },
-    { fields: ['volume'], label: 'Lautstärke geändert' },
-    { fields: ['transitionOut'], label: 'Übergang geändert' },
-    { fields: ['textConfig'], label: 'Text geändert' },
-    { fields: ['keyframes'], label: 'Keyframes geändert' },
-    { fields: ['speed'], label: 'Geschwindigkeit geändert' },
-    { fields: ['sourceIn', 'sourceOut'], label: 'Quellausschnitt geändert' },
+    { fields: ['fxStack'], label: 'GPU effects changed' },
+    { fields: ['effect', 'effects', 'filters'], label: 'Video effect changed' },
+    { fields: ['transform', 'blendMode'], label: 'Motion/opacity changed' },
+    { fields: ['volume'], label: 'Volume changed' },
+    { fields: ['transitionOut'], label: 'Transition changed' },
+    { fields: ['textConfig'], label: 'Text changed' },
+    { fields: ['keyframes'], label: 'Keyframes changed' },
+    { fields: ['speed'], label: 'Speed changed' },
+    { fields: ['sourceIn', 'sourceOut'], label: 'Source range changed' },
 ];
 
 export function describeChange(prev: HistorySnapshot, next: HistorySnapshot, nameOf: (mediaId: string) => string = (id) => id): string[] {
@@ -58,12 +58,12 @@ export function describeChange(prev: HistorySnapshot, next: HistorySnapshot, nam
         && changed[0].mediaId === added[0].mediaId && changed[0].trackId === added[0].trackId
         && Math.abs(changed[0].end - added[0].start) < 1e-3;
     if (isSplit) {
-        labels.push(`Clip geteilt: ${nameOf(added[0].mediaId)}`);
+        labels.push(`Clip split: ${nameOf(added[0].mediaId)}`);
     } else {
-        if (added.length === 1) labels.push(`Clip hinzugefügt: ${nameOf(added[0].mediaId)}`);
-        else if (added.length > 1) labels.push(`${added.length} Clips hinzugefügt`);
-        if (removed.length === 1) labels.push(`Clip entfernt: ${nameOf(removed[0].mediaId)}`);
-        else if (removed.length > 1) labels.push(`${removed.length} Clips entfernt`);
+        if (added.length === 1) labels.push(`Clip added: ${nameOf(added[0].mediaId)}`);
+        else if (added.length > 1) labels.push(`${added.length} clips added`);
+        if (removed.length === 1) labels.push(`Clip removed: ${nameOf(removed[0].mediaId)}`);
+        else if (removed.length > 1) labels.push(`${removed.length} clips removed`);
         if (changed.length > 0) {
             const moved = changed.filter((clip) => {
                 const before = prevById.get(clip.id)!;
@@ -73,23 +73,23 @@ export function describeChange(prev: HistorySnapshot, next: HistorySnapshot, nam
                 const before = prevById.get(moved[0].id)!;
                 const trimmed = moved.length === 1 && Math.abs((before.end - before.start) - (moved[0].end - moved[0].start)) > 1e-3;
                 labels.push(moved.length === 1
-                    ? `${trimmed ? 'Clip getrimmt' : 'Clip verschoben'}: ${nameOf(moved[0].mediaId)}`
-                    : `${moved.length} Clips verschoben`);
+                    ? `${trimmed ? 'Clip trimmed' : 'Clip moved'}: ${nameOf(moved[0].mediaId)}`
+                    : `${moved.length} clips moved`);
             }
             const rest = changed.filter((clip) => !moved.includes(clip));
             const fieldLabels = new Set<string>();
             rest.forEach((clip) => {
                 const before = prevById.get(clip.id)!;
                 const hit = FIELD_LABELS.find((entry) => entry.fields.some((field) => !same(before[field], clip[field])));
-                fieldLabels.add(hit ? hit.label : 'Clip geändert');
+                fieldLabels.add(hit ? hit.label : 'Clip changed');
             });
             fieldLabels.forEach((label) => labels.push(rest.length === 1 ? `${label}: ${nameOf(rest[0].mediaId)}` : label));
         }
     }
 
-    if (next.tracks.length > prev.tracks.length) labels.push('Spur hinzugefügt');
-    else if (next.tracks.length < prev.tracks.length) labels.push('Spur entfernt');
-    else if (!same(prev.tracks, next.tracks)) labels.push('Spureinstellung geändert');
-    if (next.mediaCount > prev.mediaCount) labels.push(next.mediaCount - prev.mediaCount === 1 ? 'Medium importiert' : `${next.mediaCount - prev.mediaCount} Medien importiert`);
+    if (next.tracks.length > prev.tracks.length) labels.push('Track added');
+    else if (next.tracks.length < prev.tracks.length) labels.push('Track removed');
+    else if (!same(prev.tracks, next.tracks)) labels.push('Track setting changed');
+    if (next.mediaCount > prev.mediaCount) labels.push(next.mediaCount - prev.mediaCount === 1 ? 'Media imported' : `${next.mediaCount - prev.mediaCount} media imported`);
     return labels;
 }

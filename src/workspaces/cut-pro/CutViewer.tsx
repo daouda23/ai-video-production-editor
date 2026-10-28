@@ -76,7 +76,7 @@ export const MediaSurface: React.FC<{
         return () => element.removeEventListener('loadedmetadata', seek);
     }, [time, playing, media?.url]);
 
-    if (!media) return <div className="cutp-surface cutp-surface--empty" data-automation-id={automationId}>Kein Clip</div>;
+    if (!media) return <div className="cutp-surface cutp-surface--empty" data-automation-id={automationId}>No clip</div>;
     if (media.type === 'image') {
         return <div className="cutp-surface" data-automation-id={automationId}><img src={media.url} alt="" draggable={false} /></div>;
     }
@@ -167,7 +167,7 @@ export const TrimFrames: React.FC<{ left: TrimFrame; right: TrimFrame; tool: str
         <div className="cutp-trimview__badge">
             <span>{tool}</span>
             <strong>{offsetFrames > 0 ? '+' : ''}{offsetFrames} Fr</strong>
-            <button type="button" className="cutp-btn cutp-btn--ghost" onClick={onClose} title="Trimmen beenden (Esc)" data-automation-id="cut-trim-close">Fertig</button>
+            <button type="button" className="cutp-btn cutp-btn--ghost" onClick={onClose} title="Finish trimming (Esc)" data-automation-id="cut-trim-close">Done</button>
         </div>
     </div>
 );
@@ -216,8 +216,8 @@ export interface CutViewerProps {
 }
 
 const MODES: Array<{ mode: ViewerMode; label: string; icon: React.FC<{ className?: string }> }> = [
-    { mode: 'source', label: 'Quellclip', icon: SourceClipIcon },
-    { mode: 'tape', label: 'Quellband', icon: SourceTapeIcon },
+    { mode: 'source', label: 'Source clip', icon: SourceClipIcon },
+    { mode: 'tape', label: 'Source tape', icon: SourceTapeIcon },
     { mode: 'timeline', label: 'Timeline', icon: TimelineViewIcon },
 ];
 
@@ -253,8 +253,8 @@ const CutViewer: React.FC<CutViewerProps> = (props) => {
                         />
                         {props.timelineClips.length === 0 && (
                             <div className="cutp-viewer__empty">
-                                <strong>Die Timeline ist leer</strong>
-                                <span>Wähle links einen Clip, setze In/Out (I/O) und nutze Smart Insert oder Anhängen.</span>
+                                <strong>The timeline is empty</strong>
+                                <span>Choose a clip on the left, set In/Out (I/O) and use Smart Insert or Append.</span>
                             </div>
                         )}
                     </div>
@@ -269,18 +269,18 @@ const CutViewer: React.FC<CutViewerProps> = (props) => {
             <Scrubber duration={props.scrubDuration} time={props.scrubTime} marks={props.scrubMarks} segments={props.scrubSegments} onSeek={props.onScrub} automationId={`cut-viewer-scrub-${mode}`} />
 
             <footer className="cutp-transport" aria-label="Transport">
-                <button type="button" className="cutp-btn cutp-btn--icon" onClick={props.onMarkIn} title="In-Punkt setzen (I)" data-automation-id="cut-mark-in"><MarkInGlyph /></button>
-                <button type="button" className="cutp-btn cutp-btn--icon" onClick={props.onMarkOut} title="Out-Punkt setzen (O)" data-automation-id="cut-mark-out"><MarkOutGlyph /></button>
-                <button type="button" className="cutp-btn cutp-btn--ghost" onClick={props.onClearMarks} title="In und Out löschen (Alt+X)" data-automation-id="cut-mark-clear">I/O ×</button>
+                <button type="button" className="cutp-btn cutp-btn--icon" onClick={props.onMarkIn} title="Set In point (I)" data-automation-id="cut-mark-in"><MarkInGlyph /></button>
+                <button type="button" className="cutp-btn cutp-btn--icon" onClick={props.onMarkOut} title="Set Out point (O)" data-automation-id="cut-mark-out"><MarkOutGlyph /></button>
+                <button type="button" className="cutp-btn cutp-btn--ghost" onClick={props.onClearMarks} title="Clear In and Out (Alt+X)" data-automation-id="cut-mark-clear">I/O ×</button>
                 <span className="cutp-spacer" />
-                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => props.onJumpEdit(-1)} title="Vorheriger Schnitt (Pfeil hoch)" data-automation-id="cut-transport-prev-edit"><PrevEditIcon /></button>
-                <button type="button" className={`cutp-btn cutp-btn--icon ${shuttle < 0 ? 'cutp-btn--on' : ''}`} onClick={() => props.onShuttle('j')} title="Rückwärts (J, mehrfach = schneller)" data-automation-id="cut-transport-reverse"><ReverseIcon /></button>
-                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => props.onShuttle('k')} title="Stopp (K)" data-automation-id="cut-transport-stop"><StopIcon /></button>
-                <button type="button" className={`cutp-btn cutp-btn--icon ${shuttle > 0 || (mode === 'timeline' && props.isPlaying) ? 'cutp-btn--on' : ''}`} onClick={() => props.onShuttle('l')} title="Vorwärts (L, mehrfach = schneller)" data-automation-id="cut-transport-forward"><ForwardIcon /></button>
-                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => props.onJumpEdit(1)} title="Nächster Schnitt (Pfeil runter)" data-automation-id="cut-transport-next-edit"><NextEditIcon /></button>
+                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => props.onJumpEdit(-1)} title="Previous edit (up arrow)" data-automation-id="cut-transport-prev-edit"><PrevEditIcon /></button>
+                <button type="button" className={`cutp-btn cutp-btn--icon ${shuttle < 0 ? 'cutp-btn--on' : ''}`} onClick={() => props.onShuttle('j')} title="Reverse (J, repeat = faster)" data-automation-id="cut-transport-reverse"><ReverseIcon /></button>
+                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => props.onShuttle('k')} title="Stop (K)" data-automation-id="cut-transport-stop"><StopIcon /></button>
+                <button type="button" className={`cutp-btn cutp-btn--icon ${shuttle > 0 || (mode === 'timeline' && props.isPlaying) ? 'cutp-btn--on' : ''}`} onClick={() => props.onShuttle('l')} title="Forward (L, repeat = faster)" data-automation-id="cut-transport-forward"><ForwardIcon /></button>
+                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => props.onJumpEdit(1)} title="Next edit (down arrow)" data-automation-id="cut-transport-next-edit"><NextEditIcon /></button>
                 <span className="cutp-spacer" />
-                <button type="button" className="cutp-btn" onClick={props.onFastReview} title={`Schnelldurchsicht: Tempo richtet sich nach der Länge (${props.fastReviewRate}×)`} data-automation-id="cut-fast-review">
-                    <FastReviewIcon /><span className="cutp-hide-narrow">Schnelldurchsicht</span>
+                <button type="button" className="cutp-btn" onClick={props.onFastReview} title={`Quick review: speed depends on the length (${props.fastReviewRate}×)`} data-automation-id="cut-fast-review">
+                    <FastReviewIcon /><span className="cutp-hide-narrow">Quick review</span>
                 </button>
                 <span className="cutp-tc cutp-tc--dim">{formatTimecode(props.duration)}</span>
             </footer>

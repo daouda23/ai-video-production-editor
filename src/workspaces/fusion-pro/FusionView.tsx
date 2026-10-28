@@ -81,10 +81,10 @@ const fusionLook = (node: CompNode): GraphNodeLook => {
   const cls = nodeClassOf(node);
   const inputs: GraphNodeLook['inputs'] = [];
   if (node.type === 'merge') {
-    inputs.push({ port: 'bg', x: -1, y: H / 2, dir: 'left', color: PORT_COLOR.bg, label: 'Hintergrund' });
-    inputs.push({ port: 'fg', x: W / 2, y: -1, dir: 'top', color: PORT_COLOR.fg, label: 'Vordergrund' });
-    inputs.push({ port: 'mask', x: W / 2, y: H + 1, dir: 'bottom', color: PORT_COLOR.mask, label: 'Effektmaske' });
-  } else if (!isSourceType(node.type)) inputs.push({ port: 'input', x: -1, y: H / 2, dir: 'left', color: PORT_COLOR.input, label: 'Eingang' });
+    inputs.push({ port: 'bg', x: -1, y: H / 2, dir: 'left', color: PORT_COLOR.bg, label: 'Background' });
+    inputs.push({ port: 'fg', x: W / 2, y: -1, dir: 'top', color: PORT_COLOR.fg, label: 'Foreground' });
+    inputs.push({ port: 'mask', x: W / 2, y: H + 1, dir: 'bottom', color: PORT_COLOR.mask, label: 'Effect mask' });
+  } else if (!isSourceType(node.type)) inputs.push({ port: 'input', x: -1, y: H / 2, dir: 'left', color: PORT_COLOR.input, label: 'Input' });
   return {
     w: W,
     h: H,
@@ -93,7 +93,7 @@ const fusionLook = (node: CompNode): GraphNodeLook => {
     shape: 'rect',
     inputs,
     output: node.type === 'output' ? null : { x: W + 1, y: H / 2 },
-    title: `${node.name}${node.enabled ? '' : ' (durchgeleitet)'}`,
+    title: `${node.name}${node.enabled ? '' : ' (passed through)'}`,
   };
 };
 
@@ -261,8 +261,8 @@ const FusionView: React.FC<FusionViewProps> = (props) => {
       <div className="fxp-viewer" data-automation-id={`fusion-viewer-${slot}`}>
         <div className="fxp-viewer__bar">
           <span className="fxp-viewer__slot">{slot}</span>
-          <select className="fxp-select" value={viewer.nodeId ?? ''} onChange={(event) => set({ nodeId: event.target.value || null })} data-automation-id={`fusion-viewer-${slot}-node`} title="Knoten im Viewer">
-            <option value="">– leer –</option>
+          <select className="fxp-select" value={viewer.nodeId ?? ''} onChange={(event) => set({ nodeId: event.target.value || null })} data-automation-id={`fusion-viewer-${slot}-node`} title="Node in the viewer">
+            <option value="">– empty –</option>
             {comp.nodes.map((entry) => (
               <option key={entry.id} value={entry.id}>
                 {entry.name}
@@ -271,11 +271,11 @@ const FusionView: React.FC<FusionViewProps> = (props) => {
           </select>
           <span className="fxp-spacer" />
           {(['rgb', 'a'] as ViewerChannel[]).map((channel) => (
-            <button key={channel} type="button" className={`fxp-chip ${viewer.channel === channel ? 'fxp-chip--on' : ''}`} onClick={() => set({ channel })} data-automation-id={`fusion-viewer-${slot}-channel-${channel}`} title={channel === 'a' ? 'Alphakanal' : 'Farbe'}>
+            <button key={channel} type="button" className={`fxp-chip ${viewer.channel === channel ? 'fxp-chip--on' : ''}`} onClick={() => set({ channel })} data-automation-id={`fusion-viewer-${slot}-channel-${channel}`} title={channel === 'a' ? 'Alpha channel' : 'Color'}>
               {channel.toUpperCase()}
             </button>
           ))}
-          <button type="button" className={`fxp-chip ${viewer.checker ? 'fxp-chip--on' : ''}`} onClick={() => set({ checker: !viewer.checker })} data-automation-id={`fusion-viewer-${slot}-checker`} title="Schachbrett für Transparenz">
+          <button type="button" className={`fxp-chip ${viewer.checker ? 'fxp-chip--on' : ''}`} onClick={() => set({ checker: !viewer.checker })} data-automation-id={`fusion-viewer-${slot}-checker`} title="Checkerboard for transparency">
             <LayoutGrid size={12} />
           </button>
         </div>
@@ -287,7 +287,7 @@ const FusionView: React.FC<FusionViewProps> = (props) => {
           channel={viewer.channel}
           checker={viewer.checker}
           automationId={`fusion-viewer-${slot}-stage`}
-          emptyHint={`Knoten wählen und ${slot} drücken`}
+          emptyHint={`Select a node and ${slot} press`}
         />
         <div className="fxp-viewer__foot">
           <span>{node ? node.name : '—'}</span>
@@ -319,7 +319,7 @@ const FusionView: React.FC<FusionViewProps> = (props) => {
           automationId="fusion-timebar"
         />
       </div>
-      <div className="fxp-toolbar" role="toolbar" aria-label="Werkzeuge">
+      <div className="fxp-toolbar" role="toolbar" aria-label="Tools">
         {FUSION_TOOLS.map((def) => {
           const Icon = TOOL_ICON[def.id] ?? Sparkles;
           return (
@@ -330,22 +330,20 @@ const FusionView: React.FC<FusionViewProps> = (props) => {
           );
         })}
         <span className="fxp-spacer" />
-        <button type="button" className="fxp-tool fxp-tool--text" onClick={() => setSearch({ query: '', index: 0 })} title="Werkzeug suchen (Shift+Leertaste)" data-automation-id="fusion-select-tool">
-          Werkzeug …
+        <button type="button" className="fxp-tool fxp-tool--text" onClick={() => setSearch({ query: '', index: 0 })} title="Search tool (Shift+Space)" data-automation-id="fusion-select-tool">Tool …
         </button>
-        <button type="button" className="fxp-tool" onClick={swapInputs} disabled={!active || active.type !== 'merge'} title="Eingänge tauschen (Ctrl/⌘+T)" data-automation-id="fusion-swap-inputs">
+        <button type="button" className="fxp-tool" onClick={swapInputs} disabled={!active || active.type !== 'merge'} title="Swap inputs (Ctrl/⌘+T)" data-automation-id="fusion-swap-inputs">
           <Repeat size={14} />
         </button>
-        <button type="button" className="fxp-tool" onClick={passthrough} disabled={!selectedNodeIds.length} title="Durchleiten an/aus (Ctrl/⌘+P)" data-automation-id="fusion-passthrough">
+        <button type="button" className="fxp-tool" onClick={passthrough} disabled={!selectedNodeIds.length} title="Pass-through on/off (Ctrl/⌘+P)" data-automation-id="fusion-passthrough">
           <ToggleLeft size={14} />
         </button>
-        <button type="button" className="fxp-tool" onClick={deleteSelected} disabled={!selectedNodeIds.length} title="Löschen (Entf)" data-automation-id="fusion-delete">
+        <button type="button" className="fxp-tool" onClick={deleteSelected} disabled={!selectedNodeIds.length} title="Delete (Del)" data-automation-id="fusion-delete">
           <Trash2 size={14} />
         </button>
-        <button type="button" className="fxp-tool fxp-tool--text" onClick={arrange} title="Knoten automatisch anordnen" data-automation-id="fusion-arrange">
-          Anordnen
+        <button type="button" className="fxp-tool fxp-tool--text" onClick={arrange} title="Arrange nodes automatically" data-automation-id="fusion-arrange">Arrange
         </button>
-        <button type="button" className="fxp-tool" onClick={() => graphRef.current?.fit()} title="Einpassen (F)" data-automation-id="fusion-fit">
+        <button type="button" className="fxp-tool" onClick={() => graphRef.current?.fit()} title="Fit (F)" data-automation-id="fusion-fit">
           <Maximize2 size={14} />
         </button>
       </div>
@@ -369,16 +367,16 @@ const FusionView: React.FC<FusionViewProps> = (props) => {
           viewerSlotsOf={viewerSlotsOf}
           onViewerSlot={(id, slot) => assignViewer(slot as 1 | 2, viewerSlotsOf(id).includes(slot) ? null : id)}
           automationId="fusion-nodes"
-          emptyHint="Werkzeug in der Leiste wählen oder Shift+Leertaste drücken"
+          emptyHint="Choose a tool in the bar or press Shift+Space"
         />
         {search && (
-          <div className="fxp-search" role="dialog" aria-label="Werkzeug wählen" data-automation-id="fusion-select-tool-popup">
-            <div className="fxp-search__title">Werkzeug wählen</div>
+          <div className="fxp-search" role="dialog" aria-label="Choose tool" data-automation-id="fusion-select-tool-popup">
+            <div className="fxp-search__title">Choose tool</div>
             <input
               autoFocus
               className="fxp-search__input"
               value={search.query}
-              placeholder="Suchen …"
+              placeholder="Search …"
               onChange={(event) => setSearch({ query: event.target.value, index: 0 })}
               onKeyDown={(event) => {
                 if (event.key === 'Escape') setSearch(null);
@@ -410,16 +408,16 @@ const FusionView: React.FC<FusionViewProps> = (props) => {
                   <small>{def.description}</small>
                 </button>
               ))}
-              {!results.length && <p className="pe-hint">Kein Werkzeug gefunden.</p>}
+              {!results.length && <p className="pe-hint">No tool found.</p>}
             </div>
           </div>
         )}
       </div>
       <aside className="fxp-inspector" data-automation-id="fusion-inspector">
         <div className="fxp-inspector__head">
-          <span>Inspektor</span>
+          <span>Inspector</span>
           {active && (
-            <label className="fxp-inspector__bypass" title="Durchleiten (Ctrl/⌘+P)">
+            <label className="fxp-inspector__bypass" title="Pass through (Ctrl/⌘+P)">
               <input type="checkbox" checked={active.enabled} disabled={active.id === comp.outputNodeId} onChange={passthrough} data-automation-id="fusion-inspector-enabled" />
               aktiv
             </label>
@@ -434,7 +432,7 @@ const FusionView: React.FC<FusionViewProps> = (props) => {
           </>
         ) : (
           <div className="fxp-inspector__body">
-            <p className="pe-hint">Kein Knoten ausgewählt. Klicke einen Knoten im Knoteneditor.</p>
+            <p className="pe-hint">No node selected. Click a node in the node editor.</p>
             <ParamEditor comp={comp} node={getNode(comp, comp.outputNodeId)!} time={time} mediaItems={mediaItems} variant="fusion" onNodeChange={() => undefined} onCompChange={onChange} automationId="fusion-inspector-comp" />
           </div>
         )}

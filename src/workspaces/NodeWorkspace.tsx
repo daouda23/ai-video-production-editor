@@ -3876,7 +3876,7 @@ const NodeWorkspaceContent: React.FC<NodeWorkspaceProps> = ({
                     </div>
                     <div className="rounded-md bg-black/20 p-2">
                       <div className="text-lg font-semibold text-gray-100">{edges.length}</div>
-                      <div className="text-[10px] text-gray-500">Links</div>
+                      <div className="text-[10px] text-gray-500">Left</div>
                     </div>
                     <div className="rounded-md bg-black/20 p-2">
                       <div className="text-lg font-semibold text-gray-100">{validation.errors.length}</div>

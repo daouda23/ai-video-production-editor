@@ -85,7 +85,7 @@ export function useSoundPlayback({ doc, media, isPlaying, playhead, monitorDb = 
     const Ctx = (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }).AudioContext
       ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) {
-      setAudioError('Web Audio ist in dieser Umgebung nicht verfügbar.');
+      setAudioError('Web Audio is not available in this environment.');
       return null;
     }
     const ctx = new Ctx({ sampleRate: ENGINE_SAMPLE_RATE, latencyHint: 'playback' });

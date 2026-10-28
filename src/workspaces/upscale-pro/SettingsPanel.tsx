@@ -94,16 +94,16 @@ const SettingsPanel: React.FC<Props> = ({
   return (
     <aside className="ups-settings" data-automation-id="upscale-settings">
       <div className="ups-section-head">
-        <span>Einstellungen</span>
-        {mock && <span className="ups-badge is-warn" title="Keine Cloud-Aufrufe, keine Credits"><FlaskConical size={10} /> Testmodus</span>}
+        <span>Settings</span>
+        {mock && <span className="ups-badge is-warn" title="No cloud calls, no credits"><FlaskConical size={10} />Test mode</span>}
       </div>
       <div className="ups-settings-scroll">
-        <Group id="output" title="Ausgabegröße">
+        <Group id="output" title="Output size">
           <Seg
             id="upscale-size-mode"
             value={settings.output.mode}
             onChange={(mode) => update((d) => { d.output.mode = mode; })}
-            options={[{ value: 'scale', label: 'Faktor' }, { value: 'preset', label: 'Preset' }, { value: 'custom', label: 'Eigene' }]}
+            options={[{ value: 'scale', label: 'Factor' }, { value: 'preset', label: 'Preset' }, { value: 'custom', label: 'Custom' }]}
           />
           {settings.output.mode === 'scale' && (
             <>
@@ -113,12 +113,12 @@ const SettingsPanel: React.FC<Props> = ({
                 onChange={(scale) => update((d) => { d.output.scale = scale; })}
                 options={scaleOptions.map((s) => ({ value: s, label: `${s}×` }))}
               />
-              <Slider id="upscale-scale-slider" label="Faktor" value={settings.output.scale} min={1} max={8} step={0.25} onChange={(scale) => update((d) => { d.output.scale = scale; })} format={(v) => `${v}×`} />
+              <Slider id="upscale-scale-slider" label="Factor" value={settings.output.scale} min={1} max={8} step={0.25} onChange={(scale) => update((d) => { d.output.scale = scale; })} format={(v) => `${v}×`} />
             </>
           )}
           {settings.output.mode === 'preset' && (
             <div className="ups-row">
-              <label htmlFor="ups-preset">Ziel</label>
+              <label htmlFor="ups-preset">Destination</label>
               <select id="ups-preset" className="ups-select" style={{ flex: 1 }} value={settings.output.preset} onChange={(event) => update((d) => { d.output.preset = event.target.value as UpscaleSettings['output']['preset']; })} data-automation-id="upscale-preset">
                 {OUTPUT_PRESETS.map((preset) => <option key={preset.id} value={preset.id}>{preset.label} ({preset.width}×{preset.height})</option>)}
               </select>
@@ -127,33 +127,33 @@ const SettingsPanel: React.FC<Props> = ({
           {settings.output.mode === 'custom' && (
             <div className="ups-row">
               <label>B × H</label>
-              <input className="ups-input is-num" type="number" min={2} max={16384} value={settings.output.customWidth} onChange={(event) => update((d) => { d.output.customWidth = Number(event.target.value) || 2; })} aria-label="Breite" data-automation-id="upscale-custom-width" />
+              <input className="ups-input is-num" type="number" min={2} max={16384} value={settings.output.customWidth} onChange={(event) => update((d) => { d.output.customWidth = Number(event.target.value) || 2; })} aria-label="Width" data-automation-id="upscale-custom-width" />
               <span className="ups-faint">×</span>
-              <input className="ups-input is-num" type="number" min={2} max={16384} value={settings.output.customHeight} onChange={(event) => update((d) => { d.output.customHeight = Number(event.target.value) || 2; })} aria-label="Höhe" data-automation-id="upscale-custom-height" />
+              <input className="ups-input is-num" type="number" min={2} max={16384} value={settings.output.customHeight} onChange={(event) => update((d) => { d.output.customHeight = Number(event.target.value) || 2; })} aria-label="Height" data-automation-id="upscale-custom-height" />
             </div>
           )}
           {settings.output.mode !== 'scale' && (
             <div className="ups-row">
-              <label>Auf Füllen zuschneiden</label>
+              <label>Crop to fill</label>
               <span className="ups-spacer" />
-              <Switch id="upscale-crop-fill" label="Auf Füllen zuschneiden" checked={settings.output.cropToFill} onChange={(v) => update((d) => { d.output.cropToFill = v; })} />
+              <Switch id="upscale-crop-fill" label="Crop to fill" checked={settings.output.cropToFill} onChange={(v) => update((d) => { d.output.cropToFill = v; })} />
             </div>
           )}
           <div className="ups-hint" data-automation-id="upscale-size-readout">
-            {sourceLabel && target ? `${sourceLabel} → ${target.width}×${target.height} (${target.scale}×)` : 'Eingang wählen, um die Zielgröße zu sehen.'}
+            {sourceLabel && target ? `${sourceLabel} → ${target.width}×${target.height} (${target.scale}×)` : 'Choose an input to see the target size.'}
           </div>
         </Group>
 
         {isVideo && (
-          <Group id="framerate" title="Bildrate">
+          <Group id="framerate" title="Frame rate">
             <div className={`ups-card${settings.interpolation.enabled ? '' : ' is-off'}`}>
               <div className="ups-card-head">
-                <strong>Bildinterpolation</strong>
-                <Switch id="upscale-interpolation-toggle" label="Bildinterpolation" checked={settings.interpolation.enabled} onChange={(v) => update((d) => { d.interpolation.enabled = v; })} />
+                <strong>Frame interpolation</strong>
+                <Switch id="upscale-interpolation-toggle" label="Frame interpolation" checked={settings.interpolation.enabled} onChange={(v) => update((d) => { d.interpolation.enabled = v; })} />
               </div>
               <div className="ups-card-body">
                 <div className="ups-hint">{INTERPOLATION_MODEL.label}: {INTERPOLATION_MODEL.description}</div>
-                <div className="ups-hint">Ausgabe: {formatFps(plan?.outputFps ?? 0)} fps</div>
+                <div className="ups-hint">Output: {formatFps(plan?.outputFps ?? 0)} fps</div>
               </div>
             </div>
           </Group>
@@ -179,17 +179,17 @@ const SettingsPanel: React.FC<Props> = ({
                 {modelsForKind(modelKind).map((entry) => <option key={entry.id} value={entry.id}>{entry.label}</option>)}
               </select>
               {model && <div className="ups-hint">{model.description} Max. {model.limits.maxScale}× / {model.limits.maxLongEdge} px.</div>}
-              <div className="ups-hint"><Info size={10} /> Detail-/Entrausch-Regler bietet die Cloud-API dieser Modelle in der App nicht an.</div>
+              <div className="ups-hint"><Info size={10} />The cloud API of these models offers no detail/denoise controls in the app.</div>
             </div>
           </div>
 
           <div className="ups-card" data-automation-id="upscale-card-post">
-            <div className="ups-card-head"><strong>Nachbearbeitung (lokal)</strong></div>
+            <div className="ups-card-head"><strong>Post-processing (local)</strong></div>
             <div className="ups-card-body">
-              <Slider id="upscale-sharpen" label="Schärfen" value={settings.post.sharpen} min={0} max={1} step={0.01} onChange={(v) => update((d) => { d.post.sharpen = v; })} />
-              <Slider id="upscale-grain" label="Körnung" value={settings.post.grain} min={0} max={1} step={0.01} onChange={(v) => update((d) => { d.post.grain = v; })} />
-              <Slider id="upscale-grain-size" label="Korngröße" value={settings.post.grainSize} min={0.5} max={4} step={0.05} onChange={(v) => update((d) => { d.post.grainSize = v; })} format={(v) => v.toFixed(2)} />
-              <div className="ups-hint">Körnung: Optics-Lab-Sensorkorn (GPU). {isVideo ? 'Bei Videos nur Vorschau.' : 'Wird ins Bild eingerechnet.'}</div>
+              <Slider id="upscale-sharpen" label="Sharpen" value={settings.post.sharpen} min={0} max={1} step={0.01} onChange={(v) => update((d) => { d.post.sharpen = v; })} />
+              <Slider id="upscale-grain" label="Grain" value={settings.post.grain} min={0} max={1} step={0.01} onChange={(v) => update((d) => { d.post.grain = v; })} />
+              <Slider id="upscale-grain-size" label="Grain size" value={settings.post.grainSize} min={0.5} max={4} step={0.05} onChange={(v) => update((d) => { d.post.grainSize = v; })} format={(v) => v.toFixed(2)} />
+              <div className="ups-hint">Grain: Optics Lab sensor grain (GPU). {isVideo ? 'Preview only for videos.' : 'Baked into the image.'}</div>
             </div>
           </div>
 
@@ -197,7 +197,7 @@ const SettingsPanel: React.FC<Props> = ({
             <div className={`ups-card${settings.hdr.enabled ? '' : ' is-off'}`} data-automation-id="upscale-card-hdr">
               <div className="ups-card-head">
                 <strong>SDR → HDR</strong>
-                <Switch id="upscale-hdr-toggle" label="SDR zu HDR" checked={settings.hdr.enabled} onChange={(v) => update((d) => { d.hdr.enabled = v; })} />
+                <Switch id="upscale-hdr-toggle" label="SDR to HDR" checked={settings.hdr.enabled} onChange={(v) => update((d) => { d.hdr.enabled = v; })} />
               </div>
               <div className="ups-card-body">
                 <Seg id="upscale-hdr-engine" value={settings.hdr.engine} onChange={(engine) => update((d) => { d.hdr.engine = engine; })} options={HDR_ENGINES.map((e) => ({ value: e.id, label: e.label }))} />
@@ -214,7 +214,7 @@ const SettingsPanel: React.FC<Props> = ({
                         <option value="4444">ProRes 4444</option>
                       </select>
                     )}
-                    {!runwayKey && <div className="ups-msg is-warn"><TriangleAlert /> Runway-API-Key in den Einstellungen hinterlegen.</div>}
+                    {!runwayKey && <div className="ups-msg is-warn"><TriangleAlert />Add a Runway API key in Settings.</div>}
                   </>
                 )}
               </div>
@@ -234,13 +234,13 @@ const SettingsPanel: React.FC<Props> = ({
                 </select>
               </div>
               <div className="ups-row">
-                <label>Qualität</label>
-                <Seg id="upscale-quality" value={settings.export.quality} onChange={(quality) => update((d) => { d.export.quality = quality; })} options={[{ value: 'low', label: 'Niedrig' }, { value: 'medium', label: 'Mittel' }, { value: 'high', label: 'Hoch' }]} />
+                <label>Quality</label>
+                <Seg id="upscale-quality" value={settings.export.quality} onChange={(quality) => update((d) => { d.export.quality = quality; })} options={[{ value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }]} />
               </div>
               <div className="ups-row">
-                <label>Ton durchreichen</label>
+                <label>Pass audio through</label>
                 <span className="ups-spacer" />
-                <Switch id="upscale-audio" label="Ton durchreichen" checked={settings.export.audio} onChange={(v) => update((d) => { d.export.audio = v; })} />
+                <Switch id="upscale-audio" label="Pass audio through" checked={settings.export.audio} onChange={(v) => update((d) => { d.export.audio = v; })} />
               </div>
             </>
           ) : (
@@ -251,37 +251,36 @@ const SettingsPanel: React.FC<Props> = ({
               </div>
               {settings.export.imageFormat !== 'png' && (
                 <div className="ups-row">
-                  <label>Qualität</label>
-                  <Seg id="upscale-quality" value={settings.export.quality} onChange={(quality) => update((d) => { d.export.quality = quality; })} options={[{ value: 'low', label: 'Niedrig' }, { value: 'medium', label: 'Mittel' }, { value: 'high', label: 'Hoch' }]} />
+                  <label>Quality</label>
+                  <Seg id="upscale-quality" value={settings.export.quality} onChange={(quality) => update((d) => { d.export.quality = quality; })} options={[{ value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }]} />
                 </div>
               )}
             </>
           )}
           <div className="ups-row">
-            <label>Ausgabe</label>
+            <label>Output</label>
             <span className="ups-faint" style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={settings.export.outputFolder ?? undefined} data-automation-id="upscale-output-folder">
               {settings.export.outputFolder ?? 'Media-Bin (Projekt)'}
             </span>
             {settings.export.outputFolder && (
-              <button type="button" className="ups-icon-btn" title="Ordner entfernen" onClick={() => update((d) => { d.export.outputFolder = null; })} data-automation-id="upscale-output-folder-clear"><X /></button>
+              <button type="button" className="ups-icon-btn" title="Remove folder" onClick={() => update((d) => { d.export.outputFolder = null; })} data-automation-id="upscale-output-folder-clear"><X /></button>
             )}
-            <button type="button" className="ups-icon-btn" title={electron ? 'Ordner wählen' : 'Nur in der Desktop-App'} disabled={!electron} onClick={onChooseFolder} data-automation-id="upscale-output-folder-choose"><FolderOpen /></button>
+            <button type="button" className="ups-icon-btn" title={electron ? 'Choose folder' : 'Desktop app only'} disabled={!electron} onClick={onChooseFolder} data-automation-id="upscale-output-folder-choose"><FolderOpen /></button>
           </div>
         </Group>
       </div>
 
       <div className="ups-summary" data-automation-id="upscale-summary">
         <dl className="ups-summary-grid">
-          <dt>Ausgabe</dt><dd data-automation-id="upscale-summary-size">{target ? `${target.width}×${target.height}` : '–'}{isVideo && plan ? ` · ${formatFps(plan.outputFps)} fps` : ''}</dd>
-          {isVideo && <><dt>Bereich</dt><dd>{rangeLabel ?? '–'}</dd></>}
-          <dt>Dateigröße ca.</dt><dd data-automation-id="upscale-summary-bytes">{sizeLabel ?? '–'}</dd>
-          <dt>Kosten ca.</dt><dd data-automation-id="upscale-summary-cost">{costLabel ?? '–'}</dd>
+          <dt>Output</dt><dd data-automation-id="upscale-summary-size">{target ? `${target.width}×${target.height}` : '–'}{isVideo && plan ? ` · ${formatFps(plan.outputFps)} fps` : ''}</dd>
+          {isVideo && <><dt>Range</dt><dd>{rangeLabel ?? '–'}</dd></>}
+          <dt>File size approx.</dt><dd data-automation-id="upscale-summary-bytes">{sizeLabel ?? '–'}</dd>
+          <dt>Cost approx.</dt><dd data-automation-id="upscale-summary-cost">{costLabel ?? '–'}</dd>
         </dl>
         {plan?.errors.map((message) => <div key={message} className="ups-msg is-err"><CircleAlert /> {message}</div>)}
         {plan?.warnings.map((message) => <div key={message} className="ups-msg is-warn"><TriangleAlert /> {message}</div>)}
         {blockedReason && <div className="ups-msg is-info"><Info /> {blockedReason}</div>}
-        <button type="button" className="ups-btn is-primary" disabled={!canExport} onClick={onExport} data-automation-id="upscale-export">
-          Exportieren{mock ? ' (Testmodus)' : ''}
+        <button type="button" className="ups-btn is-primary" disabled={!canExport} onClick={onExport} data-automation-id="upscale-export">Export{mock ? ' (test mode)' : ''}
         </button>
       </div>
     </aside>

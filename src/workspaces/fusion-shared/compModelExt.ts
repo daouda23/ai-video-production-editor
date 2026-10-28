@@ -377,7 +377,7 @@ export function createCompFromMedia(
 ): CompositionExt {
   const fps = options.fps ?? 24;
   const duration = options.durationSeconds ?? (media.type === 'video' && media.duration && media.duration > 0 ? media.duration : 5);
-  const base = createComposition({ name: media.name || 'Komposition', width: options.width ?? 1920, height: options.height ?? 1080, fps, durationSeconds: Math.max(1 / fps, duration) });
+  const base = createComposition({ name: media.name || 'Composition', width: options.width ?? 1920, height: options.height ?? 1080, fps, durationSeconds: Math.max(1 / fps, duration) });
   const output = { ...base.nodes[0], name: 'MediaOut1', x: 220, y: 0 };
   const mediaIn = createNode('media', { name: 'MediaIn1', mediaId: media.id, x: 0, y: 0 });
   const comp: Composition = { ...base, nodes: [mediaIn, output] };

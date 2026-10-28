@@ -45,7 +45,7 @@ const candidates = [
 
 test('routes photoreal product goals toward quality and commercial realism', () => {
   const route = routeSmartModel({
-    goal: 'realistischer Produktshot',
+    goal: 'realistic product shot',
     candidates,
     availableProviders: ['fal', 'replicate'],
     hasReferences: false,
@@ -58,7 +58,7 @@ test('routes photoreal product goals toward quality and commercial realism', () 
 
 test('routes preview goals toward fastest viable model', () => {
   const route = routeSmartModel({
-    goal: 'schnelle Vorschau',
+    goal: 'fast preview',
     candidates,
     availableProviders: ['fal', 'replicate'],
     hasReferences: false,
@@ -70,7 +70,7 @@ test('routes preview goals toward fastest viable model', () => {
 
 test('routes cheap variation goals toward low cost reference-friendly models', () => {
   const route = routeSmartModel({
-    goal: 'billige Variation',
+    goal: 'cheap variation',
     candidates,
     availableProviders: ['fal', 'replicate'],
     hasReferences: true,
@@ -83,7 +83,7 @@ test('routes cheap variation goals toward low cost reference-friendly models', (
 
 test('falls back to the best available provider when the top match is unavailable', () => {
   const route = routeSmartModel({
-    goal: 'realistischer Produktshot',
+    goal: 'realistic product shot',
     candidates,
     availableProviders: ['replicate'],
     hasReferences: false,
@@ -95,7 +95,7 @@ test('falls back to the best available provider when the top match is unavailabl
 
 test('skips reference-only candidates when no references are present', () => {
   const route = routeSmartModel({
-    goal: 'billige Variation',
+    goal: 'cheap variation',
     candidates: [
       {
         id: 'reference-only-cheap',

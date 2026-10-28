@@ -265,7 +265,7 @@ const SceneMapWorkspace: React.FC<SceneMapWorkspaceProps> = ({
                 </button>
                 <div className="scene-tabs__spacer" />
                 <div className="toolbar-segmented" role="radiogroup" aria-label="View">
-                    {onSetDesignChange && <button type="button" role="radio" aria-checked={viewPlan} data-automation-id="scene-map-view-plan" className={`toolbar-segmented__item ${viewPlan ? 'toolbar-segmented__item--active' : ''}`} onClick={() => updateSession({ view: 'plan' })}>Kameraplan</button>}
+                    {onSetDesignChange && <button type="button" role="radio" aria-checked={viewPlan} data-automation-id="scene-map-view-plan" className={`toolbar-segmented__item ${viewPlan ? 'toolbar-segmented__item--active' : ''}`} onClick={() => updateSession({ view: 'plan' })}>Camera plan</button>}
                     <button type="button" role="radio" aria-checked={!view3d && !viewPlan} data-automation-id="scene-map-view-overview" className={`toolbar-segmented__item ${!view3d && !viewPlan ? 'toolbar-segmented__item--active' : ''}`} onClick={() => setView3d(false)}>2D plan</button>
                     <button type="button" role="radio" aria-checked={view3d} data-automation-id="scene-map-view-3d" className={`toolbar-segmented__item ${view3d ? 'toolbar-segmented__item--active' : ''}`} onClick={() => setView3d(true)}>3D blockout</button>
                 </div>

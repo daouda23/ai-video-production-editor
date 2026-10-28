@@ -39,10 +39,10 @@ import { DESTINATION_ICONS, FrameFields, JobRow, PreflightList, TimecodeInput, s
 
 const describeDestination = (vm: ExportViewModel, kind: DestinationKind) => {
     const { settings } = vm.state;
-    if (kind === 'interchange') return settings.interchange.formats.length > 0 ? settings.interchange.formats.map((f) => f.toUpperCase()).join(', ') : 'Kein Format gewählt';
+    if (kind === 'interchange') return settings.interchange.formats.length > 0 ? settings.interchange.formats.map((f) => f.toUpperCase()).join(', ') : 'No format chosen';
     if (kind === 'media') {
         const preset = findPreset(settings.presetId);
-        return preset?.kind === 'media' ? preset.label : 'Benutzerdefiniert';
+        return preset?.kind === 'media' ? preset.label : 'Custom';
     }
     return outputFileName(kind, settings);
 };
@@ -68,16 +68,16 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
             ? `${v.width} × ${v.height} · ${fps} fps · WebM`
             : `${v.width} × ${v.height} · ${fps} fps${kind === 'media' ? ` · ${v.codec === 'prores' ? `ProRes ${v.proresProfile.toUpperCase()}` : v.codec.toUpperCase()} ${v.bitDepth}-bit` : ''}`;
 
-    const blocked = enabledKinds.length === 0 ? 'Kein Ziel aktiviert.' : enabledKinds.some((k) => k !== 'interchange') ? vm.exportBlockReason : null;
+    const blocked = enabledKinds.length === 0 ? 'No destination enabled.' : enabledKinds.some((k) => k !== 'interchange') ? vm.exportBlockReason : null;
 
     return (
         <>
             <div className="xp-body xp-premiere">
                 {/* ─── Ziele ─── */}
-                <section className="xp-panel" aria-label="Ziele">
-                    <div className="xp-panel__head">Ziele</div>
-                    <div className="xp-panel__scroll" role="listbox" aria-label="Exportziele">
-                        <div className="xp-dest-group">Datei</div>
+                <section className="xp-panel" aria-label="Destinations">
+                    <div className="xp-panel__head">Destinations</div>
+                    <div className="xp-panel__scroll" role="listbox" aria-label="Export destinations">
+                        <div className="xp-dest-group">File</div>
                         {DESTINATION_KINDS.map((k) => (
                             <div
                                 key={k}
@@ -97,27 +97,26 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                                 <Switch aid={`export.destination.toggle.${k}`} label={`${DESTINATION_LABELS[k]} exportieren`} checked={state.enabledDestinations[k]} onChange={(enabled) => dispatch('export.destination.toggle', { kind: k, enabled })} />
                             </div>
                         ))}
-                        <div className="xp-note">
-                            Social- und Cloud-Uploads fehlen bewusst: Die App hat dafür keine Integration. Aktivierte Ziele werden mit „Exportieren“ nacheinander gerendert.
+                        <div className="xp-note">Social and cloud uploads are left out on purpose: the app has no integration for them. Enabled destinations render one after another with “Export”.
                         </div>
                     </div>
                 </section>
 
                 {/* ─── Einstellungen ─── */}
-                <section className="xp-panel" aria-label="Einstellungen">
-                    <div className="xp-panel__head">Einstellungen <small>{DESTINATION_LABELS[kind]}</small></div>
+                <section className="xp-panel" aria-label="Settings">
+                    <div className="xp-panel__head">Settings <small>{DESTINATION_LABELS[kind]}</small></div>
                     <div className="xp-panel__scroll">
-                        <Section id={`${kind}.file`} title="Dateiname und Speicherort" summary={outputFileName(kind, settings, settings.interchange.formats[0])} open={open('file')} onToggle={toggle('file')}>
+                        <Section id={`${kind}.file`} title="File name and location" summary={outputFileName(kind, settings, settings.interchange.formats[0])} open={open('file')} onToggle={toggle('file')}>
                             <FileFields {...env} fileName={outputFileName(kind, settings, settings.interchange.formats[0])} />
                         </Section>
                         {kind === 'media' ? (
                             <>
-                                <Section id="media.preset" title="Vorgabe" summary={preset?.kind === 'media' ? preset.label : 'Benutzerdefiniert'} open={open('preset')} onToggle={toggle('preset')}>
-                                    <Field label="Vorgabe" hint={preset?.kind === 'media' ? preset.description : 'Eigene Einstellungen – jede Änderung unten löst die Vorgabe.'}>
+                                <Section id="media.preset" title="Preset" summary={preset?.kind === 'media' ? preset.label : 'Custom'} open={open('preset')} onToggle={toggle('preset')}>
+                                    <Field label="Preset" hint={preset?.kind === 'media' ? preset.description : 'Custom settings – any change below detaches the preset.'}>
                                         <Select
                                             aid="export.preset.select"
                                             value={preset?.kind === 'media' ? preset.id : 'custom'}
-                                            options={[...mediaPresets().map((p) => ({ value: p.id, label: p.label })), { value: 'custom', label: 'Benutzerdefiniert' }]}
+                                            options={[...mediaPresets().map((p) => ({ value: p.id, label: p.label })), { value: 'custom', label: 'Custom' }]}
                                             onChange={(presetId) => { if (presetId !== 'custom') dispatch('export.preset.apply', { presetId }); }}
                                         />
                                     </Field>
@@ -142,13 +141,13 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                             </Section>
                         ) : null}
                         {kind === 'still' ? (
-                            <Section id="still.image" title="Einzelbild" open={open('image')} onToggle={toggle('image')}>
+                            <Section id="still.image" title="Still frame" open={open('image')} onToggle={toggle('image')}>
                                 <StillFields {...env} stillLabel={formatTimecode(vm.previewTime, fps)} />
                                 <FrameFields vm={vm} />
                             </Section>
                         ) : null}
                         {kind === 'sequence' ? (
-                            <Section id="sequence.image" title="Bildsequenz" open={open('image')} onToggle={toggle('image')}>
+                            <Section id="sequence.image" title="Image sequence" open={open('image')} onToggle={toggle('image')}>
                                 <SequenceFields {...env} frameCount={Math.max(1, Math.round(vm.range.duration * fps))} />
                                 <FrameFields vm={vm} withFps />
                             </Section>
@@ -159,22 +158,22 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                             </Section>
                         ) : null}
                         {kind === 'media' || kind === 'still' || kind === 'sequence' ? (
-                            <Section id={`${kind}.effects`} title="Effekte" summary={[
-                                settings.effects.imageOverlay.enabled ? 'Bild' : '',
+                            <Section id={`${kind}.effects`} title="Effects" summary={[
+                                settings.effects.imageOverlay.enabled ? 'Image' : '',
                                 settings.effects.timecode.enabled ? 'Timecode' : '',
                                 settings.effects.name.enabled ? 'Name' : '',
                                 settings.effects.outputLut.enabled ? 'LUT' : '',
-                            ].filter(Boolean).join(', ') || 'Keine'} open={open('effects')} onToggle={toggle('effects')}>
+                            ].filter(Boolean).join(', ') || 'None'} open={open('effects')} onToggle={toggle('effects')}>
                                 <EffectsFields {...env} />
                             </Section>
                         ) : null}
                         {kind === 'media' || kind === 'audio' ? (
-                            <Section id={`${kind}.metadata`} title="Metadaten" summary={settings.metadata.title || undefined} open={open('metadata')} onToggle={toggle('metadata')}>
+                            <Section id={`${kind}.metadata`} title="Metadata" summary={settings.metadata.title || undefined} open={open('metadata')} onToggle={toggle('metadata')}>
                                 <MetadataFields {...env} />
                             </Section>
                         ) : null}
                         {kind !== 'interchange' ? (
-                            <Section id={`${kind}.general`} title="Allgemein" open={open('general')} onToggle={toggle('general')}>
+                            <Section id={`${kind}.general`} title="General" open={open('general')} onToggle={toggle('general')}>
                                 <GeneralFields />
                             </Section>
                         ) : null}
@@ -182,30 +181,30 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                 </section>
 
                 {/* ─── Vorschau ─── */}
-                <section className="xp-panel" aria-label="Vorschau">
-                    <div className="xp-panel__head">Vorschau <small>{vm.timelineName}</small></div>
+                <section className="xp-panel" aria-label="Preview">
+                    <div className="xp-panel__head">Preview <small>{vm.timelineName}</small></div>
                     {vm.viewer}
                     <div className="xp-preview-meta">
                         <div className="xp-row2">
-                            <Field label="Bereich" stack>
+                            <Field label="Range" stack>
                                 <Select
                                     aid="export.range.mode"
                                     value={settings.range.mode}
                                     options={[
-                                        { value: 'full', label: 'Gesamte Sequenz' },
-                                        { value: 'workarea', label: 'Arbeitsbereich (nicht vorhanden)', disabled: true },
-                                        { value: 'inout', label: 'Sequenz In/Out' },
-                                        { value: 'custom', label: 'Benutzerdefiniert' },
+                                        { value: 'full', label: 'Entire sequence' },
+                                        { value: 'workarea', label: 'Workspace (not available)', disabled: true },
+                                        { value: 'inout', label: 'Sequence In/Out' },
+                                        { value: 'custom', label: 'Custom' },
                                     ]}
                                     onChange={(mode) => dispatch('export.range.set', { mode: mode as 'full' | 'inout' | 'custom' })}
                                 />
                             </Field>
-                            <Field label="Skalieren" stack>
+                            <Field label="Scale" stack>
                                 <Select
                                     aid="export.preview.scaleMode"
                                     value={v.scaleMode}
                                     disabled={settings.engine === 'browser'}
-                                    options={[{ value: 'fit', label: 'Einpassen' }, { value: 'fill', label: 'Füllen' }, { value: 'stretch', label: 'Strecken' }]}
+                                    options={[{ value: 'fit', label: 'Fit' }, { value: 'fill', label: 'Fill' }, { value: 'stretch', label: 'Stretch' }]}
                                     onChange={(scaleMode) => dispatch('export.settings.patch', { section: 'video', patch: { scaleMode } })}
                                 />
                             </Field>
@@ -220,11 +219,11 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                         </div>
                     </div>
                     <dl className="xp-summary" data-automation-id="export.summary">
-                        <dt>Quelle</dt><dd>{vm.sourceInfo ? `${vm.sourceInfo.width} × ${vm.sourceInfo.height}` : 'unbekannt'}</dd>
-                        <dt>Ausgabe</dt><dd title={outputLabel}>{outputLabel}</dd>
-                        <dt>Dauer</dt><dd>{kind === 'still' ? '1 Bild' : formatTimecode(vm.range.duration, fps)}</dd>
-                        <dt>Geschätzte Dateigröße</dt><dd className="xp-summary__big" data-automation-id="export.estimate">{formatBytes(bytes)}</dd>
-                        {enabledKinds.length > 1 ? (<><dt>Alle Ziele ({enabledKinds.length})</dt><dd>{formatBytes(totalBytes || null)}</dd></>) : null}
+                        <dt>Source</dt><dd>{vm.sourceInfo ? `${vm.sourceInfo.width} × ${vm.sourceInfo.height}` : 'unknown'}</dd>
+                        <dt>Output</dt><dd title={outputLabel}>{outputLabel}</dd>
+                        <dt>Duration</dt><dd>{kind === 'still' ? '1 frame' : formatTimecode(vm.range.duration, fps)}</dd>
+                        <dt>Estimated file size</dt><dd className="xp-summary__big" data-automation-id="export.estimate">{formatBytes(bytes)}</dd>
+                        {enabledKinds.length > 1 ? (<><dt>All destinations ({enabledKinds.length})</dt><dd>{formatBytes(totalBytes || null)}</dd></>) : null}
                     </dl>
                     <PreflightList items={vm.preflight} />
                 </section>
@@ -232,25 +231,24 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
 
             {/* ─── Bottom bar ─── */}
             <div className="xp-bottombar">
-                <div className="xp-bottombar__queue" aria-label="Warteschlange">
-                    {state.queue.length === 0 ? <span className="xp-message">Warteschlange leer.</span> : state.queue.slice(-8).map((job) => <JobRow key={job.id} vm={vm} job={job} compact />)}
+                <div className="xp-bottombar__queue" aria-label="Queue">
+                    {state.queue.length === 0 ? <span className="xp-message">Queue empty.</span> : state.queue.slice(-8).map((job) => <JobRow key={job.id} vm={vm} job={job} compact />)}
                 </div>
                 {vm.message ? <span className="xp-message" data-tone={vm.message.tone} title={vm.message.text}>{vm.message.text}</span> : null}
                 {running ? (
                     <button type="button" className="xp-btn xp-btn--danger" data-automation-id="export.queue.cancel" onClick={() => dispatch('export.queue.cancel', {})}>
-                        <Square size={12} /> Abbrechen
+                        <Square size={12} />Cancel
                     </button>
                 ) : null}
-                <button type="button" className="xp-btn" data-automation-id="export.queue.add" disabled={enabledKinds.length === 0} onClick={() => dispatch('export.queue.add', {})} title="Aktivierte Ziele als Jobs in die Warteschlange legen">
-                    <ListPlus size={13} /> An Warteschlange senden
+                <button type="button" className="xp-btn" data-automation-id="export.queue.add" disabled={enabledKinds.length === 0} onClick={() => dispatch('export.queue.add', {})} title="Queue the enabled destinations as jobs">
+                    <ListPlus size={13} />Send to queue
                 </button>
                 {summary.pending > 0 && !running ? (
-                    <button type="button" className="xp-btn" data-automation-id="export.queue.renderAll" onClick={() => dispatch('export.queue.renderAll', {})}>
-                        Warteschlange rendern ({summary.pending})
+                    <button type="button" className="xp-btn" data-automation-id="export.queue.renderAll" onClick={() => dispatch('export.queue.renderAll', {})}>Render queue ({summary.pending})
                     </button>
                 ) : null}
                 <button type="button" className="xp-btn xp-btn--primary" data-automation-id="export.export" disabled={Boolean(blocked) || running} title={blocked || undefined} onClick={() => dispatch('export.export', {})}>
-                    <Upload size={13} /> Exportieren
+                    <Upload size={13} />Export
                 </button>
             </div>
         </>

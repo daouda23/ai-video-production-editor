@@ -25,7 +25,7 @@ export const INTERCHANGE_FORMATS: { id: InterchangeFormat; label: string; ext: s
     { id: 'otio', label: 'OpenTimelineIO', ext: 'otio' },
     { id: 'nuke', label: 'Nuke-Skript', ext: 'nk' },
     { id: 'natron', label: 'Natron-Python-Skript', ext: 'natron.py' },
-    { id: 'vfx-manifest', label: 'VFX-Übergabe-Manifest', ext: 'vfx-handoff.json' },
+    { id: 'vfx-manifest', label: 'VFX handoff manifest', ext: 'vfx-handoff.json' },
     { id: 'ocio-manifest', label: 'OCIO-/ACES-Manifest', ext: 'ocio.json' },
 ];
 
@@ -142,14 +142,14 @@ export type DeliveryPreset = {
 
 export const DELIVERY_PRESETS: DeliveryPreset[] = [
     {
-        id: 'hq-1080-h264', label: 'Hohe Qualität 1080p (H.264)', tile: 'H.264 Master', kind: 'media', engine: 'ffmpeg',
+        id: 'hq-1080-h264', label: 'High quality 1080p (H.264)', tile: 'H.264 Master', kind: 'media', engine: 'ffmpeg',
         description: 'H.264 High, 1920×1080, VBR 20 Mbit/s, AAC 320 kbit/s',
         video: { codec: 'h264', container: 'mp4', width: 1920, height: 1080, bitrateMode: 'vbr', bitrateKbps: 20000, maxBitrateKbps: 24000, bitDepth: 8, profile: 'high', level: '4.2', scaleMode: 'fit' },
         audio: { enabled: true, codec: 'aac', sampleRate: 48000, channels: 2, bitrateKbps: 320 },
     },
     {
-        id: 'match-source-high', label: 'Quelle anpassen – hohe Bitrate', tile: 'Quelle (hoch)', kind: 'media', engine: 'ffmpeg',
-        description: 'H.264 in Quellauflösung, VBR 40 Mbit/s',
+        id: 'match-source-high', label: 'Match source – high bitrate', tile: 'Source (high)', kind: 'media', engine: 'ffmpeg',
+        description: 'H.264 at source resolution, VBR 40 Mbit/s',
         video: { matchSource: true, codec: 'h264', container: 'mp4', bitrateMode: 'vbr', bitrateKbps: 40000, maxBitrateKbps: 48000, bitDepth: 8, profile: 'high', level: '5.1', scaleMode: 'fit' },
         audio: { enabled: true, codec: 'aac', sampleRate: 48000, channels: 2, bitrateKbps: 320 },
     },
@@ -167,7 +167,7 @@ export const DELIVERY_PRESETS: DeliveryPreset[] = [
     },
     {
         id: 'h265-10bit', label: 'H.265 10-bit', tile: 'H.265 Master', kind: 'media', engine: 'ffmpeg',
-        description: 'HEVC Main10 in Quellauflösung, VBR 25 Mbit/s',
+        description: 'HEVC Main10 at source resolution, VBR 25 Mbit/s',
         video: { matchSource: true, codec: 'hevc', container: 'mp4', bitDepth: 10, profile: 'main10', bitrateMode: 'vbr', bitrateKbps: 25000, maxBitrateKbps: 32000, scaleMode: 'fit' },
         audio: { enabled: true, codec: 'aac', sampleRate: 48000, channels: 2, bitrateKbps: 320 },
     },
@@ -184,31 +184,31 @@ export const DELIVERY_PRESETS: DeliveryPreset[] = [
         audio: { enabled: true, codec: 'aac', sampleRate: 48000, channels: 2, bitrateKbps: 320 },
     },
     {
-        id: 'instagram-916', label: 'Instagram 9:16 (1080×1920)', tile: 'Hochformat 9:16', kind: 'media', engine: 'ffmpeg',
-        description: 'H.264 1080×1920, Füllen, VBR 10 Mbit/s',
+        id: 'instagram-916', label: 'Instagram 9:16 (1080×1920)', tile: 'Portrait 9:16', kind: 'media', engine: 'ffmpeg',
+        description: 'H.264 1080×1920, fill, VBR 10 Mbit/s',
         video: { codec: 'h264', container: 'mp4', width: 1080, height: 1920, bitrateMode: 'vbr', bitrateKbps: 10000, maxBitrateKbps: 12000, bitDepth: 8, profile: 'high', level: '4.2', scaleMode: 'fill' },
         audio: { enabled: true, codec: 'aac', sampleRate: 48000, channels: 2, bitrateKbps: 256 },
     },
     {
-        id: 'draft-720', label: 'Entwurf 720p', tile: 'Entwurf 720p', kind: 'media', engine: 'ffmpeg',
+        id: 'draft-720', label: 'Draft 720p', tile: 'Draft 720p', kind: 'media', engine: 'ffmpeg',
         description: 'H.264 1280×720, VBR 5 Mbit/s, AAC 128 kbit/s',
         video: { codec: 'h264', container: 'mp4', width: 1280, height: 720, bitrateMode: 'vbr', bitrateKbps: 5000, maxBitrateKbps: 6500, bitDepth: 8, profile: 'main', level: '4.0', scaleMode: 'fit' },
         audio: { enabled: true, codec: 'aac', sampleRate: 48000, channels: 2, bitrateKbps: 128 },
     },
     {
-        id: 'quick-browser', label: 'Schnell (Browser, WebM)', tile: 'Schnell (Browser)', kind: 'media', engine: 'browser',
-        description: 'Echtzeit-Aufnahme des Vorschau-Canvas als WebM, ohne Ton',
+        id: 'quick-browser', label: 'Schnell (Browser, WebM)', tile: 'Fast (browser)', kind: 'media', engine: 'browser',
+        description: 'Real-time recording of the preview canvas as WebM, without sound',
         video: { bitrateKbps: 8000 },
         audio: { enabled: false },
     },
     {
-        id: 'audio-only', label: 'Nur Audio (WAV 24-bit)', tile: 'Nur Audio', kind: 'audio', engine: 'ffmpeg',
-        description: 'Mixdown als WAV PCM 24-bit, 48 kHz Stereo',
+        id: 'audio-only', label: 'Audio only (WAV 24-bit)', tile: 'Audio only', kind: 'audio', engine: 'ffmpeg',
+        description: 'Mixdown as WAV PCM 24-bit, 48 kHz stereo',
         audio: { codec: 'pcm_s24le', sampleRate: 48000, channels: 2 },
     },
     {
-        id: 'image-sequence', label: 'Einzelbilder (PNG-Sequenz)', tile: 'Einzelbilder', kind: 'sequence', engine: 'ffmpeg',
-        description: 'Jedes Bild als PNG in einem Unterordner',
+        id: 'image-sequence', label: 'Single frames (PNG sequence)', tile: 'Single frames', kind: 'sequence', engine: 'ffmpeg',
+        description: 'Each frame as a PNG in a subfolder',
         image: 'png',
     },
 ];
@@ -438,11 +438,11 @@ export const buildRenderPayload = (kind: RenderKind, settings: DeliverySettings,
 export type EffectCapability = { id: string; label: string; supported: boolean; reason?: string };
 
 export const EFFECT_CAPABILITIES: EffectCapability[] = [
-    { id: 'imageOverlay', label: 'Bildüberlagerung', supported: true },
+    { id: 'imageOverlay', label: 'Image overlay', supported: true },
     { id: 'timecode', label: 'Timecode-Einblendung', supported: true },
-    { id: 'name', label: 'Namenseinblendung', supported: true },
-    { id: 'outputLut', label: 'Ausgabe-LUT (.cube)', supported: true },
-    { id: 'hdr', label: 'HDR-zu-SDR-Konvertierung', supported: false, reason: 'Kein Tonemapping im Render-Pfad – Farbtags unter „Video“ setzen.' },
-    { id: 'loudness', label: 'Lautheitsnormalisierung', supported: false, reason: 'Kommt mit dem Sound-Mixdown (project.soundMix).' },
-    { id: 'captions', label: 'Untertitel einbrennen', supported: false, reason: 'Text-Clips werden im HQ-Export noch nicht gerendert.' },
+    { id: 'name', label: 'Name lower third', supported: true },
+    { id: 'outputLut', label: 'Output LUT (.cube)', supported: true },
+    { id: 'hdr', label: 'HDR-to-SDR conversion', supported: false, reason: 'No tone mapping in the render path – set color tags under “Video”.' },
+    { id: 'loudness', label: 'Loudness normalization', supported: false, reason: 'Comes with the sound mixdown (project.soundMix).' },
+    { id: 'captions', label: 'Burn in subtitles', supported: false, reason: 'Text clips are not rendered in the HQ export yet.' },
 ];

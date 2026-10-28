@@ -62,7 +62,7 @@ const TimecodeField: React.FC<Props> = ({ value, onCommit, fps = DEFAULT_TIMELIN
                     if (event.key === 'Enter') { event.preventDefault(); commit(); }
                     else if (event.key === 'Escape') { event.preventDefault(); setEditing(false); }
                 }}
-                aria-label="Timecode eingeben"
+                aria-label="Enter timecode"
                 data-automation-id={automationId ? `${automationId}.input` : undefined}
             />
         );
@@ -74,7 +74,7 @@ const TimecodeField: React.FC<Props> = ({ value, onCommit, fps = DEFAULT_TIMELIN
             className={`ppx-tcfield ${className}`}
             onClick={begin}
             disabled={disabled}
-            title={title ?? 'Klicken und Timecode eingeben (z. B. 00:00:05:12, 512, +12 Bilder, -1:00)'}
+            title={title ?? 'Click and type a timecode (e.g. 00:00:05:12, 512, +12 frames, -1:00)'}
             data-automation-id={automationId}
         >
             {formatTimecode(value, fps)}

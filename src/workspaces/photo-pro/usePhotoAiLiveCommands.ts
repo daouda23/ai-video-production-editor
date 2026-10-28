@@ -50,7 +50,7 @@ export function usePhotoAiLiveCommands(props: PhotoAiLiveProps): void {
 
   const requireDoc = () => {
     const doc = latest.current.docRef.current;
-    if (!doc) throw new Error('Kein Dokument geöffnet (photo_open oder photo_new_document).');
+    if (!doc) throw new Error('No document open (photo_open or photo_new_document).');
     return doc;
   };
   const layerCount = () => latest.current.docRef.current?.layers.length ?? 0;
@@ -99,7 +99,7 @@ export function usePhotoAiLiveCommands(props: PhotoAiLiveProps): void {
         const heal = args.heal === true;
         const ok = heal
           ? await latest.current.handleHeal()
-          : await latest.current.runInpaint(String(args.prompt ?? latest.current.inpaintPrompt ?? ''), { label: 'Generative Füllung', layerName: 'Generative Füllung' });
+          : await latest.current.runInpaint(String(args.prompt ?? latest.current.inpaintPrompt ?? ''), { label: 'Generative fill', layerName: 'Generative fill' });
         if (!ok) throw new Error(latest.current.statusRef.current || 'Generative fill failed.');
         await waitForCommit();
         failIfUnchanged(before, 'Generative fill added no layer.');

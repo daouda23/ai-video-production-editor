@@ -155,7 +155,7 @@ export class PdfPage {
   }
 
   image(img: PdfImage, x: number, y: number, w: number, h: number, opacity?: number) {
-    const name = `Im${(this.imgCount += 1)}`;
+    const name = `In${(this.imgCount += 1)}`;
     this.images.set(name, img);
     this.ops.push('q');
     if (opacity !== undefined && opacity < 0.999) {

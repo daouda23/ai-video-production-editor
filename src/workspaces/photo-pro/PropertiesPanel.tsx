@@ -105,9 +105,9 @@ const CurveEditor: React.FC<{ points: Array<[number, number]>; onChange: (points
 };
 
 const TONES: Array<{ id: 'shadows' | 'midtones' | 'highlights'; label: string }> = [
-  { id: 'shadows', label: 'Tiefen' },
-  { id: 'midtones', label: 'Mitteltöne' },
-  { id: 'highlights', label: 'Lichter' },
+  { id: 'shadows', label: 'Shadows' },
+  { id: 'midtones', label: 'Midtones' },
+  { id: 'highlights', label: 'Highlights' },
 ];
 
 export const AdjustmentControls: React.FC<{ adjustment: Adjustment; onChange: (adj: Adjustment, field: string) => void }> = ({ adjustment, onChange }) => {
@@ -117,22 +117,22 @@ export const AdjustmentControls: React.FC<{ adjustment: Adjustment; onChange: (a
     case 'brightnessContrast':
       return (
         <>
-          <Slider id="brightness" label="Helligkeit" value={adjustment.brightness} min={-150} max={150} onChange={(v) => set('brightness', v)} />
-          <Slider id="contrast" label="Kontrast" value={adjustment.contrast} min={-50} max={100} onChange={(v) => set('contrast', v)} />
+          <Slider id="brightness" label="Brightness" value={adjustment.brightness} min={-150} max={150} onChange={(v) => set('brightness', v)} />
+          <Slider id="contrast" label="Contrast" value={adjustment.contrast} min={-50} max={100} onChange={(v) => set('contrast', v)} />
         </>
       );
     case 'hueSaturation':
       return (
         <>
-          <Slider id="hue" label="Farbton" value={adjustment.hue} min={-180} max={180} onChange={(v) => set('hue', v)} />
-          <Slider id="saturation" label="Sättigung" value={adjustment.saturation} min={-100} max={100} onChange={(v) => set('saturation', v)} />
-          <Slider id="lightness" label="Helligkeit" value={adjustment.lightness} min={-100} max={100} onChange={(v) => set('lightness', v)} />
+          <Slider id="hue" label="Hue" value={adjustment.hue} min={-180} max={180} onChange={(v) => set('hue', v)} />
+          <Slider id="saturation" label="Saturation" value={adjustment.saturation} min={-100} max={100} onChange={(v) => set('saturation', v)} />
+          <Slider id="lightness" label="Brightness" value={adjustment.lightness} min={-100} max={100} onChange={(v) => set('lightness', v)} />
         </>
       );
     case 'exposure':
       return (
         <>
-          <Slider id="exposure" label="Belichtung" value={adjustment.exposure} min={-5} max={5} step={0.01} onChange={(v) => set('exposure', v)} format={(v) => v.toFixed(2).replace('.', ',')} />
+          <Slider id="exposure" label="Exposure" value={adjustment.exposure} min={-5} max={5} step={0.01} onChange={(v) => set('exposure', v)} format={(v) => v.toFixed(2).replace('.', ',')} />
           <Slider id="offset" label="Offset" value={adjustment.offset} min={-0.5} max={0.5} step={0.001} onChange={(v) => set('offset', v)} format={(v) => v.toFixed(4).replace('.', ',')} />
           <Slider id="gamma" label="Gamma-Korrektur" value={adjustment.gamma} min={0.01} max={9.99} step={0.01} onChange={(v) => set('gamma', v)} format={(v) => v.toFixed(2).replace('.', ',')} />
         </>
@@ -141,7 +141,7 @@ export const AdjustmentControls: React.FC<{ adjustment: Adjustment; onChange: (a
       return (
         <>
           <CurveEditor points={adjustment.points} onChange={(points) => set('points', points)} />
-          <p className="psx-hint" style={{ marginTop: 6 }}>Klicken fügt einen Punkt hinzu, Ziehen verschiebt, aus dem Feld ziehen entfernt ihn.</p>
+          <p className="psx-hint" style={{ marginTop: 6 }}>Click adds a point, drag moves it, dragging it out of the field removes it.</p>
         </>
       );
     case 'colorBalance': {
@@ -154,17 +154,17 @@ export const AdjustmentControls: React.FC<{ adjustment: Adjustment; onChange: (a
       return (
         <>
           <div className="psx-row">
-            <label>Farbton:</label>
+            <label>Hue:</label>
             <select className="psx-select" value={tone} onChange={(e) => setTone(e.target.value as any)} data-automation-id="photo.props.tone">
               {TONES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
             </select>
           </div>
           <Slider id="cb-r" label="Cyan ↔ Rot" value={values[0]} min={-100} max={100} onChange={(v) => setChannel(0, v)} />
-          <Slider id="cb-g" label="Magenta ↔ Grün" value={values[1]} min={-100} max={100} onChange={(v) => setChannel(1, v)} />
-          <Slider id="cb-b" label="Gelb ↔ Blau" value={values[2]} min={-100} max={100} onChange={(v) => setChannel(2, v)} />
+          <Slider id="cb-g" label="Magenta ↔ Green" value={values[1]} min={-100} max={100} onChange={(v) => setChannel(1, v)} />
+          <Slider id="cb-b" label="Yellow ↔ Blue" value={values[2]} min={-100} max={100} onChange={(v) => setChannel(2, v)} />
           <label className="psx-row" style={{ gap: 6 }}>
             <input type="checkbox" checked={adjustment.preserveLuminosity} onChange={(e) => set('preserveLuminosity', e.target.checked)} data-automation-id="photo.props.preserve-luminosity" />
-            <span>Luminanz erhalten</span>
+            <span>Preserve luminance</span>
           </label>
         </>
       );
@@ -172,15 +172,15 @@ export const AdjustmentControls: React.FC<{ adjustment: Adjustment; onChange: (a
     case 'look':
       return (
         <>
-          <Slider id="look-brightness" label="Helligkeit %" value={adjustment.brightness} min={50} max={150} onChange={(v) => set('brightness', v)} />
-          <Slider id="look-contrast" label="Kontrast %" value={adjustment.contrast} min={50} max={150} onChange={(v) => set('contrast', v)} />
-          <Slider id="look-saturate" label="Sättigung %" value={adjustment.saturate} min={50} max={150} onChange={(v) => set('saturate', v)} />
-          <Slider id="look-hue" label="Farbton °" value={adjustment.hue} min={-180} max={180} onChange={(v) => set('hue', v)} />
-          <Slider id="look-blur" label="Tiefenunschärfe" value={adjustment.blur} min={0} max={20} onChange={(v) => set('blur', v)} />
+          <Slider id="look-brightness" label="Brightness %" value={adjustment.brightness} min={50} max={150} onChange={(v) => set('brightness', v)} />
+          <Slider id="look-contrast" label="Contrast %" value={adjustment.contrast} min={50} max={150} onChange={(v) => set('contrast', v)} />
+          <Slider id="look-saturate" label="Saturation %" value={adjustment.saturate} min={50} max={150} onChange={(v) => set('saturate', v)} />
+          <Slider id="look-hue" label="Hue °" value={adjustment.hue} min={-180} max={180} onChange={(v) => set('hue', v)} />
+          <Slider id="look-blur" label="Depth blur" value={adjustment.blur} min={0} max={20} onChange={(v) => set('blur', v)} />
         </>
       );
     case 'invert':
-      return <p className="psx-hint">Kehrt die Farben aller darunter liegenden Ebenen um.</p>;
+      return <p className="psx-hint">Inverts the colors of all layers below.</p>;
     default:
       return null;
   }
@@ -197,24 +197,24 @@ export const FONT_FAMILIES = [
 
 export const TextControls: React.FC<{ layer: Pick<TextLayer, 'fontFamily' | 'fontSize' | 'color' | 'bold' | 'italic' | 'align'>; onChange: (patch: Partial<TextLayer>, field: string) => void; compact?: boolean }> = ({ layer, onChange, compact }) => (
   <>
-    <select className="psx-select" style={{ width: compact ? 130 : '100%' }} value={layer.fontFamily} onChange={(e) => onChange({ fontFamily: e.target.value }, 'font')} title="Schriftart" data-automation-id="photo.text.font">
+    <select className="psx-select" style={{ width: compact ? 130 : '100%' }} value={layer.fontFamily} onChange={(e) => onChange({ fontFamily: e.target.value }, 'font')} title="Font" data-automation-id="photo.text.font">
       {!FONT_FAMILIES.some((f) => f.value === layer.fontFamily) && <option value={layer.fontFamily}>{layer.fontFamily}</option>}
       {FONT_FAMILIES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
     </select>
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }} title="Schriftgröße (px)">
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }} title="Font size (px)">
       <input className="psx-input psx-input--num" value={layer.fontSize} onChange={(e) => { const n = Number(e.target.value); if (n > 0) onChange({ fontSize: Math.min(2000, n) }, 'size'); }} data-automation-id="photo.text.size" />
       <span className="psx-options__label">px</span>
     </span>
     <span className="psx-seg">
-      <button type="button" aria-pressed={layer.bold} title="Fett" onClick={() => onChange({ bold: !layer.bold }, 'bold')} data-automation-id="photo.text.bold"><Bold size={12} /></button>
-      <button type="button" aria-pressed={layer.italic} title="Kursiv" onClick={() => onChange({ italic: !layer.italic }, 'italic')} data-automation-id="photo.text.italic"><Italic size={12} /></button>
+      <button type="button" aria-pressed={layer.bold} title="Bold" onClick={() => onChange({ bold: !layer.bold }, 'bold')} data-automation-id="photo.text.bold"><Bold size={12} /></button>
+      <button type="button" aria-pressed={layer.italic} title="Italic" onClick={() => onChange({ italic: !layer.italic }, 'italic')} data-automation-id="photo.text.italic"><Italic size={12} /></button>
     </span>
     <span className="psx-seg">
-      {([['left', AlignLeft, 'Text linksbündig ausrichten'], ['center', AlignCenter, 'Text zentrieren'], ['right', AlignRight, 'Text rechtsbündig ausrichten']] as const).map(([align, Icon, title]) => (
+      {([['left', AlignLeft, 'Align text left'], ['center', AlignCenter, 'Center text'], ['right', AlignRight, 'Align text right']] as const).map(([align, Icon, title]) => (
         <button key={align} type="button" aria-pressed={layer.align === align} title={title} onClick={() => onChange({ align }, 'align')} data-automation-id={`photo.text.align-${align}`}><Icon size={12} /></button>
       ))}
     </span>
-    <label className="psx-swatch" style={{ position: 'relative', display: 'inline-block', width: 22, height: 18 }} title="Textfarbe">
+    <label className="psx-swatch" style={{ position: 'relative', display: 'inline-block', width: 22, height: 18 }} title="Text color">
       <span style={{ position: 'absolute', inset: 0, background: layer.color }} />
       <input type="color" value={layer.color} onChange={(e) => onChange({ color: e.target.value }, 'color')} data-automation-id="photo.text.color" />
     </label>
@@ -248,11 +248,11 @@ type PropsPanelProps = {
 };
 
 export const PropertiesPanel: React.FC<PropsPanelProps> = ({ doc, layer, onPatch, onOpenFx, onSelectSubject, onRasterize, busy }) => {
-  if (!doc) return <p className="psx-hint">Kein Dokument geöffnet.</p>;
+  if (!doc) return <p className="psx-hint">No document open.</p>;
   if (!layer) {
     return (
       <div>
-        <div className="psx-section-title">Dokument</div>
+        <div className="psx-section-title">Document</div>
         <p>{doc.width} × {doc.height} px · RGB/8</p>
       </div>
     );
@@ -266,8 +266,8 @@ export const PropertiesPanel: React.FC<PropsPanelProps> = ({ doc, layer, onPatch
             type="button"
             className="psx-icon-btn"
             style={{ marginLeft: 'auto' }}
-            title="Auf Standardwerte zurücksetzen"
-            onClick={() => onPatch({ adjustment: defaultAdjustment(layer.adjustment.type) } as Partial<Layer>, 'Korrektur zurücksetzen')}
+            title="Reset to defaults"
+            onClick={() => onPatch({ adjustment: defaultAdjustment(layer.adjustment.type) } as Partial<Layer>, 'Reset correction')}
             data-automation-id="photo.props.reset"
           >
             <RotateCcw size={12} />
@@ -277,46 +277,46 @@ export const PropertiesPanel: React.FC<PropsPanelProps> = ({ doc, layer, onPatch
       {layer.kind === 'adjustment' && (
         <AdjustmentControls
           adjustment={layer.adjustment}
-          onChange={(adjustment, field) => onPatch({ adjustment } as Partial<Layer>, `${ADJUSTMENT_LABELS[adjustment.type]} ändern`, `adj:${layer.id}:${field}`)}
+          onChange={(adjustment, field) => onPatch({ adjustment } as Partial<Layer>, `${ADJUSTMENT_LABELS[adjustment.type]} change`, `adj:${layer.id}:${field}`)}
         />
       )}
       {(layer.kind === 'raster' || layer.kind === 'text') && (
         <>
-          <div className="psx-section-title">Transformieren</div>
+          <div className="psx-section-title">Transform</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
             {layer.kind === 'raster' && <NumberBox id="w" label="B" value={layer.width} onChange={() => undefined} disabled />}
             {layer.kind === 'raster' && <NumberBox id="h" label="H" value={layer.height} onChange={() => undefined} disabled />}
-            <NumberBox id="x" label="X" value={layer.kind === 'text' ? layer.x : layer.x} disabled={layer.locked} onChange={(x) => onPatch({ x } as Partial<Layer>, 'Verschieben')} />
-            <NumberBox id="y" label="Y" value={layer.y} disabled={layer.locked} onChange={(y) => onPatch({ y } as Partial<Layer>, 'Verschieben')} />
+            <NumberBox id="x" label="X" value={layer.kind === 'text' ? layer.x : layer.x} disabled={layer.locked} onChange={(x) => onPatch({ x } as Partial<Layer>, 'Move')} />
+            <NumberBox id="y" label="Y" value={layer.y} disabled={layer.locked} onChange={(y) => onPatch({ y } as Partial<Layer>, 'Move')} />
           </div>
         </>
       )}
       {layer.kind === 'text' && (
         <>
-          <div className="psx-section-title">Zeichen</div>
+          <div className="psx-section-title">Characters</div>
           <textarea
             className="psx-textarea"
             rows={3}
             value={layer.text}
             disabled={layer.locked}
-            onChange={(e) => onPatch({ text: e.target.value, name: e.target.value.split('\n')[0].slice(0, 40) || 'Text' } as Partial<Layer>, 'Text bearbeiten', `text:${layer.id}`)}
+            onChange={(e) => onPatch({ text: e.target.value, name: e.target.value.split('\n')[0].slice(0, 40) || 'Text' } as Partial<Layer>, 'Edit text', `text:${layer.id}`)}
             data-automation-id="photo.props.text"
           />
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, alignItems: 'center' }}>
-            <TextControls layer={layer} onChange={(patch, field) => onPatch(patch as Partial<Layer>, 'Zeichen ändern', `char:${layer.id}:${field}`)} />
+            <TextControls layer={layer} onChange={(patch, field) => onPatch(patch as Partial<Layer>, 'Change character', `char:${layer.id}:${field}`)} />
           </div>
-          <button type="button" className="psx-btn psx-btn--block" style={{ marginTop: 10 }} onClick={onRasterize} data-automation-id="photo.props.rasterize">Textebene rastern</button>
+          <button type="button" className="psx-btn psx-btn--block" style={{ marginTop: 10 }} onClick={onRasterize} data-automation-id="photo.props.rasterize">Rasterize text layer</button>
         </>
       )}
       {layer.kind === 'raster' && (
         <>
-          <div className="psx-section-title">Smartfilter</div>
+          <div className="psx-section-title">Smart filter</div>
           {layer.fx.length ? (
             <p style={{ marginBottom: 6 }}>{layer.fx.map((fx) => getFxDefinition(fx.effectId)?.name ?? fx.effectId).join(', ')}</p>
-          ) : <p className="psx-hint" style={{ marginBottom: 6 }}>Keine Filter. Lens- und Film-Charakter wirken nicht-destruktiv auf diese Ebene.</p>}
+          ) : <p className="psx-hint" style={{ marginBottom: 6 }}>No filters. Lens and film character work non-destructively on this layer.</p>}
           <button type="button" className="psx-btn psx-btn--block" onClick={onOpenFx} data-automation-id="photo.props.open-fx"><Sparkles size={12} /> Lens &amp; Film FX …</button>
-          <div className="psx-section-title">Schnellaktionen</div>
-          <button type="button" className="psx-btn psx-btn--block" disabled={busy} onClick={onSelectSubject} data-automation-id="photo.props.select-subject"><WandSparkles size={12} /> Motiv auswählen (KI)</button>
+          <div className="psx-section-title">Quick actions</div>
+          <button type="button" className="psx-btn psx-btn--block" disabled={busy} onClick={onSelectSubject} data-automation-id="photo.props.select-subject"><WandSparkles size={12} />Select subject (AI)</button>
         </>
       )}
     </div>
@@ -334,7 +334,7 @@ const ADJ_BUTTONS: Array<{ type: AdjustmentType; icon: React.ReactNode }> = [
 
 export const AdjustmentsPanel: React.FC<{ disabled: boolean; onAdd: (type: AdjustmentType) => void }> = ({ disabled, onAdd }) => (
   <div data-automation-id="photo.adjustments-panel">
-    <div className="psx-section-title">Einstellungsebene hinzufügen</div>
+    <div className="psx-section-title">Add adjustment layer</div>
     <div className="psx-adjgrid">
       {ADJ_BUTTONS.map(({ type, icon }) => (
         <button key={type} type="button" disabled={disabled} title={ADJUSTMENT_LABELS[type]} onClick={() => onAdd(type)} data-automation-id={`photo.adjust.add.${type}`}>
@@ -343,6 +343,6 @@ export const AdjustmentsPanel: React.FC<{ disabled: boolean; onAdd: (type: Adjus
         </button>
       ))}
     </div>
-    <p className="psx-hint" style={{ marginTop: 8 }}>Korrekturen wirken nicht-destruktiv auf alle darunter liegenden Ebenen. Deckkraft und Füllmethode steuern die Stärke.</p>
+    <p className="psx-hint" style={{ marginTop: 8 }}>Adjustments work non-destructively on all layers below. Opacity and blend mode control the strength.</p>
   </div>
 );

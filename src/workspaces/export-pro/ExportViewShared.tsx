@@ -44,11 +44,11 @@ export const DESTINATION_ICONS: Record<DestinationKind, React.ReactNode> = {
 };
 
 export const STATUS_LABELS: Record<JobStatus, string> = {
-    pending: 'Wartend',
-    running: 'Läuft',
-    done: 'Fertig',
-    error: 'Fehler',
-    cancelled: 'Abgebrochen',
+    pending: 'Waiting',
+    running: 'Running',
+    done: 'Done',
+    error: 'Error',
+    cancelled: 'Cancelled',
 };
 
 export const TimecodeInput: React.FC<{ aid: string; value: number; fps: number; disabled?: boolean; onChange: (seconds: number) => void }> = ({ aid, value, fps, disabled, onChange }) => {
@@ -78,13 +78,13 @@ export const FrameFields: React.FC<{ vm: ExportViewModel; withFps?: boolean }> =
     const v = (patch: Record<string, unknown>) => vm.dispatch('export.settings.patch', { section: 'video', patch });
     return (
         <>
-            <Field label="Bildgröße">
+            <Field label="Image size">
                 <NumberInput aid="export.settings.frame.width" value={video.width} min={16} max={8192} onChange={(width) => v({ width })} />
                 <span className="xp-unit">×</span>
                 <NumberInput aid="export.settings.frame.height" value={video.height} min={16} max={8192} onChange={(height) => v({ height })} />
             </Field>
-            <Field label="Skalierung">
-                <Select aid="export.settings.frame.scaleMode" value={video.scaleMode} options={[{ value: 'fit', label: 'Einpassen' }, { value: 'fill', label: 'Füllen' }, { value: 'stretch', label: 'Strecken' }]} onChange={(scaleMode) => v({ scaleMode })} />
+            <Field label="Scale">
+                <Select aid="export.settings.frame.scaleMode" value={video.scaleMode} options={[{ value: 'fit', label: 'Fit' }, { value: 'fill', label: 'Fill' }, { value: 'stretch', label: 'Stretch' }]} onChange={(scaleMode) => v({ scaleMode })} />
             </Field>
             {withFps ? (
                 <Field label="Framerate">
@@ -95,11 +95,11 @@ export const FrameFields: React.FC<{ vm: ExportViewModel; withFps?: boolean }> =
     );
 };
 
-export const sourceLabelOf = (source: SourceInfo) => (source ? `Quelle: ${source.width} × ${source.height}${source.fps ? ` · ${source.fps} fps` : ''}` : 'Quelle: unbekannt');
+export const sourceLabelOf = (source: SourceInfo) => (source ? `Source: ${source.width} × ${source.height}${source.fps ? ` · ${source.fps} fps` : ''}` : 'Source: unknown');
 
 export const PreflightList: React.FC<{ items: string[] }> = ({ items }) => (items.length === 0 ? null : (
     <div className="xp-note" data-automation-id="export.preflight" style={{ color: 'var(--xp-warn)' }}>
-        <strong>Vorabprüfung ({items.length}):</strong>
+        <strong>Preflight ({items.length}):</strong>
         {items.slice(0, 4).map((item) => <div key={item}>• {item}</div>)}
         {items.length > 4 ? <div>… {items.length - 4} weitere</div> : null}
     </div>
@@ -136,18 +136,18 @@ export const JobRow: React.FC<{ vm: ExportViewModel; job: ExportJob; compact?: b
             {job.outputPath ? <div className="xp-job__meta" title={job.outputPath}>→ {job.outputPath}</div> : null}
             <div className="xp-job__actions">
                 {job.status !== 'running' ? (
-                    <button type="button" className="xp-btn xp-btn--sm" data-automation-id={`export.queue.renderJob.${job.id}`} disabled={busy || Boolean(vm.exportBlockReason && job.kind !== 'interchange')} title={vm.exportBlockReason || 'Diesen Job rendern'} onClick={() => vm.dispatch('export.queue.renderJob', { jobId: job.id })}>
-                        <Play size={11} /> Rendern
+                    <button type="button" className="xp-btn xp-btn--sm" data-automation-id={`export.queue.renderJob.${job.id}`} disabled={busy || Boolean(vm.exportBlockReason && job.kind !== 'interchange')} title={vm.exportBlockReason || 'Render this job'} onClick={() => vm.dispatch('export.queue.renderJob', { jobId: job.id })}>
+                        <Play size={11} />Render
                     </button>
                 ) : null}
                 {job.status === 'error' || job.status === 'cancelled' || job.status === 'done' ? (
-                    <button type="button" className="xp-btn xp-btn--sm xp-btn--icon" title="Zurücksetzen" data-automation-id={`export.queue.retry.${job.id}`} onClick={() => vm.dispatch('export.queue.retry', { jobId: job.id })}><RotateCcw size={11} /></button>
+                    <button type="button" className="xp-btn xp-btn--sm xp-btn--icon" title="Reset" data-automation-id={`export.queue.retry.${job.id}`} onClick={() => vm.dispatch('export.queue.retry', { jobId: job.id })}><RotateCcw size={11} /></button>
                 ) : null}
                 {job.outputPath && job.kind !== 'interchange' && vm.hasElectron ? (
-                    <button type="button" className="xp-btn xp-btn--sm" data-automation-id={`export.queue.open.${job.id}`} onClick={() => vm.onOpenOutput(job)}>Ordner</button>
+                    <button type="button" className="xp-btn xp-btn--sm" data-automation-id={`export.queue.open.${job.id}`} onClick={() => vm.onOpenOutput(job)}>Folder</button>
                 ) : null}
                 <span style={{ flex: 1 }} />
-                <button type="button" className="xp-btn xp-btn--sm xp-btn--icon xp-btn--danger" title="Job löschen" data-automation-id={`export.queue.remove.${job.id}`} disabled={job.status === 'running'} onClick={() => vm.dispatch('export.queue.remove', { jobId: job.id })}><Trash2 size={11} /></button>
+                <button type="button" className="xp-btn xp-btn--sm xp-btn--icon xp-btn--danger" title="Delete job" data-automation-id={`export.queue.remove.${job.id}`} disabled={job.status === 'running'} onClick={() => vm.dispatch('export.queue.remove', { jobId: job.id })}><Trash2 size={11} /></button>
             </div>
         </div>
     );

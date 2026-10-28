@@ -400,7 +400,7 @@ const NodeGraph = forwardRef<NodeGraphHandle, NodeGraphProps>(function NodeGraph
       onDoubleClick={onDoubleClick}
       onContextMenu={(event) => event.preventDefault()}
       data-automation-id={automationId}
-      aria-label="Knoteneditor"
+      aria-label="Node editor"
     >
       <div className="ng-grid" style={{ backgroundPosition: `${view.tx}px ${view.ty}px`, backgroundSize: `${24 * view.zoom}px ${24 * view.zoom}px` }} />
       <div className="ng-layer" style={{ transform: `translate(${view.tx}px, ${view.ty}px) scale(${view.zoom})` }}>
@@ -449,11 +449,11 @@ const NodeGraph = forwardRef<NodeGraphHandle, NodeGraphProps>(function NodeGraph
                   title={input.label || input.port}
                 />
               ))}
-              {l.output && <span className="ng-port ng-port--out" style={{ left: l.output.x, top: l.output.y }} data-gout={node.id} data-automation-id={`${automationId}-out-${node.name}`} title="Ausgang" />}
+              {l.output && <span className="ng-port ng-port--out" style={{ left: l.output.x, top: l.output.y }} data-gout={node.id} data-automation-id={`${automationId}-out-${node.name}`} title="Output" />}
               {onViewerSlot && (
                 <span className="ng-slots">
                   {[1, 2].map((slot) => (
-                    <span key={slot} className={`ng-slot ${slots.includes(slot) ? 'ng-slot--on' : ''}`} data-gslot={slot} data-gslotnode={node.id} data-automation-id={`${automationId}-slot-${node.name}-${slot}`} title={`In Viewer ${slot} anzeigen (${slot})`} />
+                    <span key={slot} className={`ng-slot ${slots.includes(slot) ? 'ng-slot--on' : ''}`} data-gslot={slot} data-gslotnode={node.id} data-automation-id={`${automationId}-slot-${node.name}-${slot}`} title={`In Viewer ${slot} show (${slot})`} />
                   ))}
                 </span>
               )}

@@ -37,21 +37,21 @@ export const DEFAULT_OUTPUT = { width: 1920, height: 1080 };
 export const DEFAULT_WORLD = { color: '#3d3d40', strength: 1 };
 
 export const PRIMITIVES: Array<{ id: SetDesignPrimitive; label: string; size: SetDesignTransform; hint: string }> = [
-  { id: 'box', label: 'Würfel', size: { x: 1, y: 1, z: 1 }, hint: '1 × 1 × 1 m' },
-  { id: 'plane', label: 'Ebene', size: { x: 2, y: 0, z: 2 }, hint: '2 × 2 m, liegt auf dem Boden' },
-  { id: 'sphere', label: 'Kugel', size: { x: 1, y: 1, z: 1 }, hint: 'Durchmesser 1 m' },
-  { id: 'cylinder', label: 'Zylinder', size: { x: 1, y: 1, z: 1 }, hint: 'Durchmesser 1 m, Höhe 1 m' },
-  { id: 'cone', label: 'Kegel', size: { x: 1, y: 1, z: 1 }, hint: 'Durchmesser 1 m, Höhe 1 m' },
-  { id: 'torus', label: 'Torus', size: { x: 1.3, y: 0.3, z: 1.3 }, hint: 'Ring, Außendurchmesser 1,3 m' },
-  { id: 'wall', label: 'Wand', size: { x: 4, y: 2.6, z: 0.12 }, hint: '4 m breit, 2,60 m hoch, 12 cm stark' },
-  { id: 'person', label: 'Stand-in', size: { x: 0.5, y: 1.75, z: 0.3 }, hint: 'Platzhalterfigur, 1,75 m groß' },
+  { id: 'box', label: 'Cube', size: { x: 1, y: 1, z: 1 }, hint: '1 × 1 × 1 m' },
+  { id: 'plane', label: 'Layer', size: { x: 2, y: 0, z: 2 }, hint: '2 × 2 m, lying on the floor' },
+  { id: 'sphere', label: 'Kugel', size: { x: 1, y: 1, z: 1 }, hint: 'Diameter 1 m' },
+  { id: 'cylinder', label: 'Cylinder', size: { x: 1, y: 1, z: 1 }, hint: 'Diameter 1 m, height 1 m' },
+  { id: 'cone', label: 'Cone', size: { x: 1, y: 1, z: 1 }, hint: 'Diameter 1 m, height 1 m' },
+  { id: 'torus', label: 'Torus', size: { x: 1.3, y: 0.3, z: 1.3 }, hint: 'Ring, outer diameter 1.3 m' },
+  { id: 'wall', label: 'Wand', size: { x: 4, y: 2.6, z: 0.12 }, hint: '4 m wide, 2.60 m high, 12 cm thick' },
+  { id: 'person', label: 'Stand-in', size: { x: 0.5, y: 1.75, z: 0.3 }, hint: 'Placeholder character, 1.75 m tall' },
 ];
 
 export const LIGHT_TYPES: Array<{ id: SetDesignLight['type']; label: string; defaultPower: number }> = [
-  { id: 'point', label: 'Punktlicht', defaultPower: 1000 },
-  { id: 'sun', label: 'Sonne', defaultPower: 3 },
+  { id: 'point', label: 'Point light', defaultPower: 1000 },
+  { id: 'sun', label: 'Sun', defaultPower: 3 },
   { id: 'spot', label: 'Spot', defaultPower: 1000 },
-  { id: 'area', label: 'Flächenlicht', defaultPower: 200 },
+  { id: 'area', label: 'Area light', defaultPower: 200 },
 ];
 
 const zero = (): SetDesignTransform => ({ x: 0, y: 0, z: 0 });
@@ -70,7 +70,7 @@ export const makeSceneId = (prefix: string) =>
   `${prefix}-${typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID().slice(0, 8) : Math.random().toString(16).slice(2, 10)}`;
 
 /** Viewport camera → a scene camera with the same view (36 mm sensor, 16:9). */
-export const cameraObjectFromView = (view: SetDesignCamera, id: string, name = 'Kamera', aspect = 16 / 9): SetDesignCameraObject => ({
+export const cameraObjectFromView = (view: SetDesignCamera, id: string, name = 'Camera', aspect = 16 / 9): SetDesignCameraObject => ({
   id,
   name,
   position: { ...view.position },
@@ -95,7 +95,7 @@ export const createDefaultSetDesignState = (): SetDesignState => {
   return {
     assets: [],
     lights: [
-      { id: 'light-key', name: 'Sonne', type: 'directional', color: '#ffffff', intensity: 1.2, position: { x: 5, y: 8, z: 5 }, rotation: lookAtRotation({ x: 5, y: 8, z: 5 }, zero()), power: 3, castShadow: true },
+      { id: 'light-key', name: 'Sun', type: 'directional', color: '#ffffff', intensity: 1.2, position: { x: 5, y: 8, z: 5 }, rotation: lookAtRotation({ x: 5, y: 8, z: 5 }, zero()), power: 3, castShadow: true },
     ],
     grid: { enabled: true, size: 30, divisions: 30, snapEnabled: false, snap: 0.5 },
     camera: view,
@@ -108,7 +108,7 @@ export const createDefaultSetDesignState = (): SetDesignState => {
 };
 
 const lightLabel = (type: SetDesignLight['type']) =>
-  type === 'ambient' ? 'Umgebungslicht' : type === 'directional' ? 'Sonne' : LIGHT_TYPES.find((entry) => entry.id === type)?.label || 'Licht';
+  type === 'ambient' ? 'Ambient light' : type === 'directional' ? 'Sun' : LIGHT_TYPES.find((entry) => entry.id === type)?.label || 'Light';
 
 /**
  * Bring any stored set design (older projects included) into the current shape without
@@ -124,7 +124,7 @@ export const normalizeSetDesignState = (raw: SetDesignState | null | undefined):
   const assets = (Array.isArray(raw.assets) ? raw.assets : []).filter(Boolean).map((asset, index) => ({
     ...asset,
     id: asset.id || `asset-${index + 1}`,
-    name: asset.name || (asset.kind === 'primitive' ? PRIMITIVES.find((p) => p.id === asset.primitive)?.label || 'Objekt' : 'Modell'),
+    name: asset.name || (asset.kind === 'primitive' ? PRIMITIVES.find((p) => p.id === asset.primitive)?.label || 'Object' : 'Model'),
     position: vec(asset.position, zero()),
     rotation: vec(asset.rotation, zero()),
     scale: vec(asset.scale, one()),
@@ -139,7 +139,7 @@ export const normalizeSetDesignState = (raw: SetDesignState | null | undefined):
   let cameras = (Array.isArray(raw.cameras) ? raw.cameras : []).filter(Boolean).map((camera, index) => ({
     ...camera,
     id: camera.id || `camera-${index + 1}`,
-    name: camera.name || 'Kamera',
+    name: camera.name || 'Camera',
     position: vec(camera.position, base.cameras![0].position),
     rotation: vec(camera.rotation, zero()),
     lensMm: isFiniteNumber(camera.lensMm) && camera.lensMm > 0 ? camera.lensMm : 50,
@@ -148,7 +148,7 @@ export const normalizeSetDesignState = (raw: SetDesignState | null | undefined):
   const output = raw.output && isFiniteNumber(raw.output.width) && isFiniteNumber(raw.output.height) && raw.output.width > 0 && raw.output.height > 0
     ? { width: Math.round(raw.output.width), height: Math.round(raw.output.height) }
     : { ...DEFAULT_OUTPUT };
-  if (cameras.length === 0) cameras = [cameraObjectFromView(view, 'camera-main', 'Kamera', output.width / output.height)];
+  if (cameras.length === 0) cameras = [cameraObjectFromView(view, 'camera-main', 'Camera', output.width / output.height)];
   const activeCameraId = cameras.some((camera) => camera.id === raw.activeCameraId) ? raw.activeCameraId! : cameras[0].id;
   return {
     ...raw,
@@ -189,7 +189,7 @@ export const findSceneObject = (state: SetDesignState, key: string | { id?: stri
 
 /** Blender-style unique names: "Würfel", "Würfel.001", "Würfel.002" … */
 export const uniqueName = (state: SetDesignState, wanted: string) => {
-  const base = wanted.trim().replace(/\.\d{3}$/, '') || 'Objekt';
+  const base = wanted.trim().replace(/\.\d{3}$/, '') || 'Object';
   const taken = new Set([...state.assets, ...(state.cameras || []), ...state.lights].map((o) => (o.name || '').toLowerCase()));
   if (!taken.has(base.toLowerCase())) return base;
   for (let n = 1; n < 1000; n += 1) {

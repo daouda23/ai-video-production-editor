@@ -42,7 +42,7 @@ export const exportSceneMap = async (
   opts: { title?: string; timeS?: number; widthPx?: number; theme?: 'light' | 'dark' } = {},
 ): Promise<SceneMapExport> => {
   const base = safeFileName(opts.title || 'kameraplan');
-  const title = opts.title || 'Kameraplan';
+  const title = opts.title || 'Camera plan';
   if (format === 'json') return { fileName: `${base}.blocking.json`, mime: MIME.json, data: blockingJson(host, title) };
   if (format === 'csv') return { fileName: `${base}-shotliste.csv`, mime: MIME.csv, data: shotListCsv(host.stage) };
   if (format === 'xlsx') return { fileName: `${base}-shotliste.xlsx`, mime: MIME.xlsx, data: await buildXlsx(shotListTable(host.stage)) };
@@ -52,7 +52,7 @@ export const exportSceneMap = async (
     const out = planToSvg(host, { title, timeS: opts.timeS ?? 0, widthPx: opts.widthPx ?? 2400, theme: opts.theme || 'light', imageSizes: bg && bgSize ? { [bg]: bgSize } : {} });
     if (format === 'svg') return { fileName: `${base}-grundriss.svg`, mime: MIME.svg, data: out.svg };
     const png = await svgToPng(out.svg, out.widthPx, out.heightPx);
-    if (!png) throw new Error('PNG braucht die App (Browser-Canvas). Als SVG oder PDF exportieren.');
+    if (!png) throw new Error('PNG needs the app (browser canvas). Export as SVG or PDF.');
     return { fileName: `${base}-grundriss.png`, mime: MIME.png, data: dataUrlToBytes(png) };
   }
   // PDF: collect frame and background images as JPEG.
@@ -66,6 +66,6 @@ export const exportSceneMap = async (
     if (img) images[href] = img;
     else missing += 1;
   }
-  const pdf = buildBlockingPdf(host, { title, subtitle: `Stand ${new Date().toLocaleDateString('de-DE')} · ${host.stage.cameras.length} Kameras · ${host.stage.shots.length} Shots`, timeS: opts.timeS ?? 0, images, backgroundSize: bgSize });
-  return { fileName: `${base}-kameraplan.pdf`, mime: MIME.pdf, data: pdf, note: missing ? `${missing} Bild(er) konnten nicht eingebettet werden.` : undefined };
+  const pdf = buildBlockingPdf(host, { title, subtitle: `Stand ${new Date().toLocaleDateString('de-DE')} · ${host.stage.cameras.length} cameras · ${host.stage.shots.length} Shots`, timeS: opts.timeS ?? 0, images, backgroundSize: bgSize });
+  return { fileName: `${base}-kameraplan.pdf`, mime: MIME.pdf, data: pdf, note: missing ? `${missing} image(s) could not be embedded.` : undefined };
 };

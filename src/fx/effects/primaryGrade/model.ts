@@ -24,7 +24,7 @@ export const HUE_CURVE_KEYS: CurveKey[] = ['hueHue', 'hueSat', 'hueLum'];
 
 export type CurvePoint = [number, number];
 
-export const WINDOW_TYPES = ['Aus', 'Kreis', 'Linear', 'Verlauf'] as const;
+export const WINDOW_TYPES = ['Aus', 'Kreis', 'Linear', 'History'] as const;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const num = (values: FxParamValues, id: string, fallback: number) => {

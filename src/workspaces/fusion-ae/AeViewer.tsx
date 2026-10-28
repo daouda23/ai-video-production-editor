@@ -49,7 +49,7 @@ const ZOOMS = [0.125, 0.25, 0.333, 0.5, 0.666, 1, 1.5, 2, 4, 8];
 export const stepZoom = (scale: number, dir: 1 | -1) =>
   dir > 0 ? ZOOMS.find((z) => z > scale + 1e-3) ?? ZOOMS[ZOOMS.length - 1] : [...ZOOMS].reverse().find((z) => z < scale - 1e-3) ?? ZOOMS[0];
 
-const RES_LABEL: Record<number, string> = { 1: 'Voll', 2: 'Halb', 3: 'Drittel', 4: 'Viertel' };
+const RES_LABEL: Record<number, string> = { 1: 'Full', 2: 'Half', 3: 'Thirds', 4: 'Viertel' };
 
 const sourceSize = (source: CanvasImageSource | null) => {
   if (!source) return null;
@@ -332,7 +332,7 @@ export default function AeViewer(props: Props) {
       if (w < 4 || h < 4) return;
       const target = selectedIds.find((id) => !layers.find((l) => l.sourceId === id)?.locked) ?? null;
       if (!target) {
-        props.onStatus('Maske: zuerst eine Ebene auswählen (Formebenen sind nicht verfügbar).');
+        props.onStatus('Mask: select a layer first (shape layers are not available).');
         return;
       }
       props.onCreateMask(
@@ -342,9 +342,9 @@ export default function AeViewer(props: Props) {
       );
       return;
     }
-    if (d.kind === 'move') props.gesture.end('Ebene verschieben');
-    if (d.kind === 'rotate') props.gesture.end('Ebene drehen');
-    if (d.kind === 'anchor') props.gesture.end('Ankerpunkt verschieben');
+    if (d.kind === 'move') props.gesture.end('Move layer');
+    if (d.kind === 'rotate') props.gesture.end('Rotate layer');
+    if (d.kind === 'anchor') props.gesture.end('Move anchor point');
   };
 
   const onDrop = (e: React.DragEvent) => {
@@ -369,8 +369,8 @@ export default function AeViewer(props: Props) {
   return (
     <div className="aev-viewer" data-automation-id="ae.viewer">
       <div className="aev-panel-head">
-        <span className="aev-panel-title">Komposition: {comp.name}</span>
-        {error && <span className="aev-error" data-automation-id="ae.viewer.error">Renderfehler: {error}</span>}
+        <span className="aev-panel-title">Composition: {comp.name}</span>
+        {error && <span className="aev-error" data-automation-id="ae.viewer.error">Render error: {error}</span>}
       </div>
       <div
         className="aev-viewer-area"
@@ -473,7 +473,7 @@ export default function AeViewer(props: Props) {
             ref={(el) => {
               if (el && document.activeElement !== el) window.setTimeout(() => el.focus(), 0);
             }}
-            placeholder="Text eingeben, Eingabe bestätigt"
+            placeholder="Type the text, Enter confirms"
             style={{ left: textEdit.x - (wrapRef.current?.getBoundingClientRect().left ?? 0), top: textEdit.y - (wrapRef.current?.getBoundingClientRect().top ?? 0) }}
             value={textEdit.value}
             data-automation-id="ae.viewer.textEdit"
@@ -494,13 +494,13 @@ export default function AeViewer(props: Props) {
           className="aev-select"
           value={ZOOMS.includes(Number(zoomValue)) || zoomValue === '0' ? zoomValue : 'custom'}
           data-automation-id="ae.viewer.zoom"
-          title="Vergrößerung"
+          title="Magnification"
           onChange={(e) => {
             setPan({ x: 0, y: 0 });
             props.setUi({ viewerZoom: Number(e.target.value) || 0 });
           }}
         >
-          <option value="0">Einpassen</option>
+          <option value="0">Fit</option>
           {ZOOMS.map((z) => (
             <option key={z} value={String(z)}>
               {Math.round(z * 1000) / 10} %
@@ -512,7 +512,7 @@ export default function AeViewer(props: Props) {
           className="aev-select"
           value={String(ui.resolution)}
           data-automation-id="ae.viewer.resolution"
-          title="Auflösung/Downsample-Faktor"
+          title="Resolution/downsample factor"
           onChange={(e) => props.setUi({ resolution: Number(e.target.value) as AeUiState['resolution'] })}
         >
           {[1, 2, 3, 4].map((r) => (
@@ -521,7 +521,7 @@ export default function AeViewer(props: Props) {
             </option>
           ))}
         </select>
-        <button type="button" className={`aev-icon-btn${ui.transparency ? ' is-on' : ''}`} title="Transparenzraster ein/aus" data-automation-id="ae.viewer.transparency" onClick={() => props.setUi({ transparency: !ui.transparency })}>
+        <button type="button" className={`aev-icon-btn${ui.transparency ? ' is-on' : ''}`} title="Transparency grid on/off" data-automation-id="ae.viewer.transparency" onClick={() => props.setUi({ transparency: !ui.transparency })}>
           <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
             <rect x="1" y="1" width="12" height="12" fill="none" stroke="currentColor" />
             <rect x="1" y="1" width="4" height="4" fill="currentColor" />
@@ -531,13 +531,13 @@ export default function AeViewer(props: Props) {
             <rect x="9" y="9" width="4" height="4" fill="currentColor" />
           </svg>
         </button>
-        <button type="button" className={`aev-icon-btn${ui.showGrid ? ' is-on' : ''}`} title="Raster ein/aus" data-automation-id="ae.viewer.grid" onClick={() => props.setUi({ showGrid: !ui.showGrid })}>
+        <button type="button" className={`aev-icon-btn${ui.showGrid ? ' is-on' : ''}`} title="Grid on/off" data-automation-id="ae.viewer.grid" onClick={() => props.setUi({ showGrid: !ui.showGrid })}>
           <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none" stroke="currentColor">
             <rect x="1" y="1" width="12" height="12" />
             <path d="M5 1v12M9 1v12M1 5h12M1 9h12" />
           </svg>
         </button>
-        <button type="button" className={`aev-icon-btn${ui.showSafe ? ' is-on' : ''}`} title="Titel-/aktionssichere Ränder" data-automation-id="ae.viewer.safe" onClick={() => props.setUi({ showSafe: !ui.showSafe })}>
+        <button type="button" className={`aev-icon-btn${ui.showSafe ? ' is-on' : ''}`} title="Title/action safe areas" data-automation-id="ae.viewer.safe" onClick={() => props.setUi({ showSafe: !ui.showSafe })}>
           <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none" stroke="currentColor">
             <rect x="1" y="1" width="12" height="12" />
             <rect x="3.5" y="3.5" width="7" height="7" />
@@ -547,7 +547,7 @@ export default function AeViewer(props: Props) {
           {formatTimecode(time, comp.fps)}
         </span>
         <span className="aev-dim">
-          {comp.width} × {comp.height} · {comp.fps} fps · Vorschau {rw} × {rh}
+          {comp.width} × {comp.height} · {comp.fps}fps · preview {rw} × {rh}
         </span>
       </div>
     </div>

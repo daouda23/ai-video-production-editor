@@ -42,7 +42,7 @@ export function useSoundCommands(host: SoundCommandHost) {
     const h = hostRef.current;
     const outcome = runSoundCommand({ mix: h.mix, clips: h.clips, tracks: h.tracks, media: h.media, playhead: h.playhead }, id, params);
     if (outcome.ok === false) {
-      setLastError('error' in outcome ? outcome.error : 'Befehl fehlgeschlagen.');
+      setLastError('error' in outcome ? outcome.error : 'Command failed.');
       return null;
     }
     if (!('patch' in outcome)) return null;

@@ -38,7 +38,7 @@ test('image and video page tools are published with paid/destructive markers', a
     }
     assert.match(byName.get('image_gen_generate')!.description, /KOSTET CREDITS/);
     assert.match(byName.get('video_gen_generate')!.description, /KOSTET CREDITS/);
-    assert.match(byName.get('image_gen_clear_moodboard')!.description, /LÖSCHT/);
+    assert.match(byName.get('image_gen_clear_moodboard')!.description, /DELETES/);
     assert.doesNotMatch(byName.get('image_gen_get_state')!.description, /KOSTET/);
   } finally {
     mcp.dispose();

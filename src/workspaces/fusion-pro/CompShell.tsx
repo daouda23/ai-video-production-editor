@@ -38,10 +38,9 @@ class ViewBoundary extends React.Component<{ children: React.ReactNode; label: s
     if (this.state.error)
       return (
         <div className="fsh-empty">
-          <strong>{this.props.label} konnte nicht angezeigt werden.</strong>
+          <strong>{this.props.label}could not be displayed.</strong>
           <small>{this.state.error}</small>
-          <button type="button" className="fsh-btn" onClick={() => this.setState({ error: null })} data-automation-id="fusion-view-retry">
-            Erneut versuchen
+          <button type="button" className="fsh-btn" onClick={() => this.setState({ error: null })} data-automation-id="fusion-view-retry">Try again
           </button>
         </div>
       );
@@ -167,11 +166,11 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
   const addComp = useCallback((next: CompositionExt) => {
     setStore((prev) => stamp({ ...prev, comps: [...prev.comps, next], activeId: next.id }));
     setTime(0);
-    setStatus(`Komposition „${next.name}“ angelegt.`);
+    setStatus(`Composition “${next.name}” created.`);
   }, []);
   const newFromClip = useCallback(() => {
     if (!clipMedia) {
-      setStatus('Kein Clip ausgewählt – wähle einen Clip in der Timeline oder ein Medium.');
+      setStatus('No clip selected – choose a clip in the timeline or a media item.');
       return;
     }
     addComp(createCompFromMedia(clipMedia, { durationSeconds: clipDuration ?? undefined }));
@@ -183,15 +182,15 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
     },
     [mediaItems, addComp],
   );
-  const newEmpty = useCallback(() => addComp(createEmptyComp(`Komposition ${storeRef.current.comps.length + 1}`)), [addComp]);
+  const newEmpty = useCallback(() => addComp(createEmptyComp(`Composition ${storeRef.current.comps.length + 1}`)), [addComp]);
   const duplicateComp = useCallback(() => {
     if (!comp) return;
-    const copy: CompositionExt = { ...JSON.parse(JSON.stringify(comp)), id: `comp-${Date.now().toString(36)}`, name: `${comp.name} Kopie` };
+    const copy: CompositionExt = { ...JSON.parse(JSON.stringify(comp)), id: `comp-${Date.now().toString(36)}`, name: `${comp.name} copy` };
     addComp(copy);
   }, [comp, addComp]);
   const deleteComp = useCallback(() => {
     if (!comp) return;
-    if (typeof window !== 'undefined' && !window.confirm(`Komposition „${comp.name}“ löschen?`)) return;
+    if (typeof window !== 'undefined' && !window.confirm(`Composition “${comp.name}” – delete?`)) return;
     setStore((prev) => {
       const comps = prev.comps.filter((entry) => entry.id !== comp.id);
       return stamp({ ...prev, comps, activeId: comps[0]?.id ?? null });
@@ -224,9 +223,9 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
   // ------------------------------------------------------------ rendering
   const renderToMedia = useCallback(
     async (target: CompositionExt | null = comp, range?: CompRange, addToTimeline = false) => {
-      if (!target) throw new Error('Keine Komposition aktiv.');
+      if (!target) throw new Error('No composition active.');
       setRendering({ frame: 0, frameCount: 1 });
-      setStatus('Rendere …');
+      setStatus('Rendering …');
       try {
         const item = await renderCompToMedia(target, {
           mediaItems,
@@ -238,10 +237,10 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
         onAddGeneratedMedia(item);
         if (addToTimeline) onAddToTimeline?.(item);
         setLastRender(item);
-        setStatus(item.type === 'video' ? `Video „${item.name}“ im Medienpool.` : `Standbild „${item.name}“ im Medienpool${window.electron?.fx ? '' : ' (Browser: nur PNG)'}.`);
+        setStatus(item.type === 'video' ? `Video “${item.name}” in the media pool.` : `Still “${item.name}” in the media pool${window.electron?.fx ? '' : ' (browser: PNG only)'}.`);
         return item;
       } catch (error) {
-        setStatus(`Render fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`);
+        setStatus(`Render failed: ${error instanceof Error ? error.message : String(error)}`);
         throw error;
       } finally {
         setRendering(null);
@@ -285,7 +284,7 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
         'fusion.store.get': () => storeRef.current,
         'fusion.store.set': (args) => {
           const next = storeFromUnknown(args.store);
-          if (!next) throw new Error('Ungültige Kompositionsdaten.');
+          if (!next) throw new Error('Invalid composition data.');
           setStore(next);
           setHist(null);
           const active = next.comps.find((entry) => entry.id === next.activeId);
@@ -295,10 +294,10 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
         'fusion.render.frame': async (args) => {
           const s = storeRef.current;
           const target = s.comps.find((entry) => entry.id === (args.compId ?? s.activeId) || entry.name === args.compId);
-          if (!target) throw new Error('Komposition nicht gefunden.');
+          if (!target) throw new Error('Composition not found.');
           const t = typeof args.time === 'number' && Number.isFinite(args.time) ? clampTime(target, args.time) : live.current.time;
           const nodeId = typeof args.nodeId === 'string' ? target.nodes.find((node) => node.id === args.nodeId || node.name === args.nodeId)?.id : undefined;
-          if (typeof args.nodeId === 'string' && !nodeId) throw new Error(`Knoten ${args.nodeId} nicht gefunden.`);
+          if (typeof args.nodeId === 'string' && !nodeId) throw new Error(`Node ${args.nodeId} not found.`);
           const item = await live.current.renderFrame(target, t, nodeId);
           if (args.addToTimeline) live.current.onAddToTimeline?.(item);
           return { mediaId: item.id, name: item.name, type: item.type, time: t };
@@ -306,7 +305,7 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
         'fusion.render.media': async (args) => {
           const s = storeRef.current;
           const target = s.comps.find((entry) => entry.id === (args.compId ?? s.activeId) || entry.name === args.compId);
-          if (!target) throw new Error('Komposition nicht gefunden.');
+          if (!target) throw new Error('Composition not found.');
           const base = getRenderRange(target);
           const range = getRenderRange(setRenderRange(target, { start: typeof args.renderStart === 'number' ? args.renderStart : base.start, end: typeof args.renderEnd === 'number' ? args.renderEnd : base.end }));
           const item = await live.current.renderToMedia(target, range, Boolean(args.addToTimeline));
@@ -368,16 +367,16 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
       <div className="fsh-bar">
         <div className="fsh-group">
           <Clapperboard size={15} />
-          <select className="fsh-select" value={comp?.id ?? ''} onChange={(event) => selectComp(event.target.value)} disabled={!store.comps.length} data-automation-id="fusion-comp-select" title="Aktive Komposition">
-            {!store.comps.length && <option value="">Keine Komposition</option>}
+          <select className="fsh-select" value={comp?.id ?? ''} onChange={(event) => selectComp(event.target.value)} disabled={!store.comps.length} data-automation-id="fusion-comp-select" title="Active composition">
+            {!store.comps.length && <option value="">No composition</option>}
             {store.comps.map((entry) => (
               <option key={entry.id} value={entry.id}>
                 {entry.name}
               </option>
             ))}
           </select>
-          <button type="button" className="fsh-btn" onClick={newFromClip} disabled={!clipMedia} title={clipMedia ? `Neue Komposition aus „${clipMedia.name}“` : 'Erst einen Clip in der Timeline auswählen'} data-automation-id="fusion-comp-new-from-clip">
-            <Film size={13} /> Neue Komposition aus Clip
+          <button type="button" className="fsh-btn" onClick={newFromClip} disabled={!clipMedia} title={clipMedia ? `New composition from “${clipMedia.name}”` : 'Select a clip in the timeline first'} data-automation-id="fusion-comp-new-from-clip">
+            <Film size={13} />New composition from clip
           </button>
           <select
             className="fsh-select"
@@ -387,26 +386,26 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
               if (event.target.value) newFromMedia(event.target.value);
             }}
             data-automation-id="fusion-comp-new-from-media"
-            title="Neue Komposition aus einem Medium"
+            title="New composition from a media item"
           >
-            <option value="">Aus Medium …</option>
+            <option value="">From media …</option>
             {visualMedia.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
               </option>
             ))}
           </select>
-          <button type="button" className="fsh-btn" onClick={newEmpty} title="Leere Komposition" data-automation-id="fusion-comp-new-empty">
+          <button type="button" className="fsh-btn" onClick={newEmpty} title="Empty composition" data-automation-id="fusion-comp-new-empty">
             <FilePlus2 size={13} />
           </button>
-          <button type="button" className="fsh-btn" onClick={duplicateComp} disabled={!comp} title="Komposition duplizieren" data-automation-id="fusion-comp-duplicate">
+          <button type="button" className="fsh-btn" onClick={duplicateComp} disabled={!comp} title="Duplicate composition" data-automation-id="fusion-comp-duplicate">
             <Copy size={13} />
           </button>
-          <button type="button" className="fsh-btn" onClick={deleteComp} disabled={!comp} title="Komposition löschen" data-automation-id="fusion-comp-delete">
+          <button type="button" className="fsh-btn" onClick={deleteComp} disabled={!comp} title="Delete composition" data-automation-id="fusion-comp-delete">
             <Trash2 size={13} />
           </button>
         </div>
-        <div className="fsh-views" role="tablist" aria-label="Ansicht">
+        <div className="fsh-views" role="tablist" aria-label="View">
           {VIEWS.map((view) => (
             <button key={view.id} type="button" role="tab" aria-selected={store.view === view.id} className={`fsh-view ${store.view === view.id ? 'fsh-view--on' : ''}`} onClick={() => setView(view.id)} data-automation-id={`fusion-view-${view.id}`}>
               {view.label}
@@ -414,29 +413,29 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
           ))}
         </div>
         <div className="fsh-group fsh-group--end">
-          <button type="button" className="fsh-btn" onClick={undo} disabled={!hist?.past.length} title="Rückgängig (⌘/Ctrl+Z)" data-automation-id="fusion-undo">
+          <button type="button" className="fsh-btn" onClick={undo} disabled={!hist?.past.length} title="Undo (⌘/Ctrl+Z)" data-automation-id="fusion-undo">
             <Undo2 size={13} />
           </button>
-          <button type="button" className="fsh-btn" onClick={redo} disabled={!hist?.future.length} title="Wiederholen (⌘/Ctrl+Shift+Z)" data-automation-id="fusion-redo">
+          <button type="button" className="fsh-btn" onClick={redo} disabled={!hist?.future.length} title="Redo (⌘/Ctrl+Shift+Z)" data-automation-id="fusion-redo">
             <Redo2 size={13} />
           </button>
-          <button type="button" className="fsh-btn fsh-btn--primary" onClick={() => void renderToMedia().catch(() => undefined)} disabled={!comp || Boolean(rendering)} title="Render-Bereich als Video (Desktop) bzw. PNG in den Medienpool" data-automation-id="fusion-render-to-media">
-            {rendering ? `Rendere ${rendering.frame}/${rendering.frameCount}` : 'Rendern → Medien'}
+          <button type="button" className="fsh-btn fsh-btn--primary" onClick={() => void renderToMedia().catch(() => undefined)} disabled={!comp || Boolean(rendering)} title="Render range as video (desktop) or PNG into the media pool" data-automation-id="fusion-render-to-media">
+            {rendering ? `Rendering ${rendering.frame}/${rendering.frameCount}` : 'Render → media'}
           </button>
           {lastRender && onAddToTimeline && (
-            <button type="button" className="fsh-btn" onClick={() => onAddToTimeline(lastRender)} title="Letzten Render an der Abspielposition einfügen" data-automation-id="fusion-add-render-to-timeline">
+            <button type="button" className="fsh-btn" onClick={() => onAddToTimeline(lastRender)} title="Insert the last render at the playhead" data-automation-id="fusion-add-render-to-timeline">
               In Timeline
             </button>
           )}
           <button type="button" className="fsh-btn" onClick={onOpenTools} title="KI-Werkzeuge (Keyer, Relight, Pose, Reframe, Kling, Merge-Tool, Node Studio, Natron/Nuke-Export)" data-automation-id="fusion-open-tools">
-            <Wrench size={13} /> Werkzeuge
+            <Wrench size={13} />Tools
           </button>
         </div>
       </div>
       {status && (
         <div className="fsh-status" role="status" data-automation-id="fusion-status">
           {status}
-          <button type="button" onClick={() => setStatus(null)} aria-label="Meldung schließen">
+          <button type="button" onClick={() => setStatus(null)} aria-label="Close message">
             ×
           </button>
         </div>
@@ -444,20 +443,18 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
       <div className="fsh-body">
         {!viewProps ? (
           <div className="fsh-empty" data-automation-id="fusion-empty">
-            <strong>Noch keine Komposition</strong>
-            <small>Eine Komposition ist ein Knotengraph – dieselbe Komposition lässt sich als Fusion-, After-Effects- oder Nuke-Ansicht bearbeiten.</small>
+            <strong>No composition yet</strong>
+            <small>A composition is a node graph – the same composition can be edited as a Fusion, After Effects or Nuke view.</small>
             <div className="fsh-empty__actions">
-              <button type="button" className="fsh-btn fsh-btn--primary" onClick={newFromClip} disabled={!clipMedia} data-automation-id="fusion-empty-from-clip">
-                Neue Komposition aus Clip{clipMedia ? ` („${clipMedia.name}“)` : ''}
+              <button type="button" className="fsh-btn fsh-btn--primary" onClick={newFromClip} disabled={!clipMedia} data-automation-id="fusion-empty-from-clip">New composition from clip{clipMedia ? ` (“${clipMedia.name}”)` : ''}
               </button>
-              <button type="button" className="fsh-btn" onClick={newEmpty} data-automation-id="fusion-empty-new">
-                Leere Komposition
+              <button type="button" className="fsh-btn" onClick={newEmpty} data-automation-id="fusion-empty-new">Empty composition
               </button>
             </div>
             {visualMedia.length > 0 && (
               <div className="fsh-empty__media">
                 {visualMedia.slice(0, 12).map((item) => (
-                  <button key={item.id} type="button" className="fsh-media" onClick={() => newFromMedia(item.id)} title={`Neue Komposition aus „${item.name}“`} data-automation-id={`fusion-empty-media-${item.id}`}>
+                  <button key={item.id} type="button" className="fsh-media" onClick={() => newFromMedia(item.id)} title={`New composition from “${item.name}”`} data-automation-id={`fusion-empty-media-${item.id}`}>
                     {item.type === 'image' ? <img src={item.url} alt="" draggable={false} /> : <video src={item.url} muted preload="metadata" />}
                     <span>{item.name}</span>
                   </button>
@@ -466,17 +463,17 @@ const CompShell: React.FC<CompShellProps> = ({ mediaItems, currentProjectPath, o
             )}
           </div>
         ) : store.view === 'ae' ? (
-          <ViewBoundary key={`ae-${comp!.id}`} label="After-Effects-Ansicht">
-            <Suspense fallback={<div className="fsh-empty">After-Effects-Ansicht wird geladen …</div>}>
+          <ViewBoundary key={`ae-${comp!.id}`} label="After Effects view">
+            <Suspense fallback={<div className="fsh-empty">Loading After Effects view …</div>}>
               <AfterEffectsView {...viewProps} />
             </Suspense>
           </ViewBoundary>
         ) : store.view === 'nuke' ? (
-          <ViewBoundary key={`nuke-${comp!.id}`} label="Nuke-Ansicht">
+          <ViewBoundary key={`nuke-${comp!.id}`} label="Nuke view">
             <NukeView {...viewProps} />
           </ViewBoundary>
         ) : (
-          <ViewBoundary key={`fusion-${comp!.id}`} label="Fusion-Ansicht">
+          <ViewBoundary key={`fusion-${comp!.id}`} label="Fusion view">
             <FusionView {...viewProps} />
           </ViewBoundary>
         )}

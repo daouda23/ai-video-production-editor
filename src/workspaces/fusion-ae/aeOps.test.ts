@@ -330,9 +330,9 @@ test('work area edges stay ordered', () => {
 });
 
 test('text layer at a click position', () => {
-  const r = newTextLayer(base(), { text: 'Hallo', position: { x: 100, y: -50 } });
+  const r = newTextLayer(base(), { text: 'Hello', position: { x: 100, y: -50 } });
   const layer = aeLayers(r.comp)[0];
-  assert.equal(layer.source.params.text, 'Hallo');
+  assert.equal(layer.source.params.text, 'Hello');
   assert.equal(getNode(r.comp, layer.transformId)!.params.x, 100);
 });
 
@@ -346,7 +346,7 @@ test('shortcut map', () => {
   assert.equal(k('b'), 'workArea.start');
   assert.equal(k('n'), 'workArea.end');
   assert.equal(k('[', { code: 'BracketLeft' }), 'layer.inToTime');
-  assert.equal(k('“', { code: 'BracketLeft', altKey: true }), 'layer.trimIn');
+  assert.equal(k('”', { code: 'BracketLeft', altKey: true }), 'layer.trimIn');
   assert.equal(k(']', { code: 'BracketRight', altKey: true }), 'layer.trimOut');
   assert.equal(k('[', { code: 'Digit5', altKey: true }), 'layer.inToTime'); // German layout types [ with Alt+5
   assert.equal(k(']', { code: 'BracketRight', metaKey: true }), 'layer.forward');

@@ -61,9 +61,9 @@ const InputQueue: React.FC<Props> = ({
       data-automation-id="upscale-input-queue"
     >
       <div className="ups-section-head">
-        <span>Eingänge ({inputs.length})</span>
+        <span>Inputs ({inputs.length})</span>
         <div style={{ display: 'flex', gap: 2 }}>
-          <label className="ups-icon-btn" title="Dateien hinzufügen" data-automation-id="upscale-add-files">
+          <label className="ups-icon-btn" title="Add files" data-automation-id="upscale-add-files">
             <Upload />
             <input
               type="file"
@@ -77,8 +77,8 @@ const InputQueue: React.FC<Props> = ({
               }}
             />
           </label>
-          <button type="button" className="ups-icon-btn" title="Aus Media-Bin" aria-pressed={picker === 'bin'} onClick={() => setPicker(picker === 'bin' ? 'none' : 'bin')} data-automation-id="upscale-add-from-bin"><Plus /></button>
-          <button type="button" className="ups-icon-btn" title="Aus Bibliothek" aria-pressed={picker === 'library'} onClick={() => setPicker(picker === 'library' ? 'none' : 'library')} data-automation-id="upscale-add-from-library"><Library /></button>
+          <button type="button" className="ups-icon-btn" title="From Media Bin" aria-pressed={picker === 'bin'} onClick={() => setPicker(picker === 'bin' ? 'none' : 'bin')} data-automation-id="upscale-add-from-bin"><Plus /></button>
+          <button type="button" className="ups-icon-btn" title="From library" aria-pressed={picker === 'library'} onClick={() => setPicker(picker === 'library' ? 'none' : 'library')} data-automation-id="upscale-add-from-library"><Library /></button>
         </div>
       </div>
 
@@ -101,8 +101,8 @@ const InputQueue: React.FC<Props> = ({
               <div style={{ minWidth: 0 }}>
                 <div className="ups-queue-name" title={input.name}>{input.name}</div>
                 <div className="ups-queue-meta">
-                  {input.status === 'probing' && <span><LoaderCircle size={10} className="ups-spin" /> wird gelesen…</span>}
-                  {input.status === 'error' && <span style={{ color: 'var(--ups-err)' }}><TriangleAlert size={10} /> {input.error || 'Fehler'}</span>}
+                  {input.status === 'probing' && <span><LoaderCircle size={10} className="ups-spin" />reading…</span>}
+                  {input.status === 'error' && <span style={{ color: 'var(--ups-err)' }}><TriangleAlert size={10} /> {input.error || 'Error'}</span>}
                   {input.status === 'ready' && (
                     <span>
                       {input.width}×{input.height}
@@ -112,14 +112,14 @@ const InputQueue: React.FC<Props> = ({
                 </div>
                 {jobStatus && (
                   <span className={`ups-badge${jobStatus === 'done' ? ' is-ok' : jobStatus === 'failed' ? ' is-err' : ' is-accent'}`} style={{ marginTop: 2 }}>
-                    {jobStatus === 'running' ? 'läuft' : jobStatus === 'queued' ? 'wartet' : jobStatus === 'done' ? 'fertig' : 'Fehler'}
+                    {jobStatus === 'running' ? 'running' : jobStatus === 'queued' ? 'waiting' : jobStatus === 'done' ? 'done' : 'Error'}
                   </span>
                 )}
               </div>
               <button
                 type="button"
                 className="ups-icon-btn"
-                title="Aus der Liste entfernen"
+                title="Remove from list"
                 onClick={(event) => { event.stopPropagation(); onRemove(input.id); }}
                 data-automation-id={`upscale-input-remove-${input.id}`}
               >
@@ -128,22 +128,21 @@ const InputQueue: React.FC<Props> = ({
             </div>
           );
         })}
-        <div className={`ups-drop${dragOver ? ' is-over' : ''}`}>
-          Videos und Bilder hierher ziehen<br />
-          <span className="ups-faint">aus Finder, Media-Bin oder Bibliothek</span>
+        <div className={`ups-drop${dragOver ? ' is-over' : ''}`}>Drag videos and images here<br />
+          <span className="ups-faint">from Finder, Media Bin or library</span>
         </div>
       </div>
 
       {picker !== 'none' && (
         <div className="ups-picker" data-automation-id={`upscale-picker-${picker}`}>
           <div className="ups-section-head">
-            <span>{picker === 'bin' ? 'Media-Bin' : 'Bibliothek'}</span>
-            <button type="button" className="ups-icon-btn" onClick={() => setPicker('none')} title="Schließen"><X /></button>
+            <span>{picker === 'bin' ? 'Media-Bin' : 'Library'}</span>
+            <button type="button" className="ups-icon-btn" onClick={() => setPicker('none')} title="Close"><X /></button>
           </div>
           {picker === 'library' && (
             <div style={{ padding: '6px 6px 0' }}>
-              <input className="ups-input" placeholder="Bibliothek durchsuchen…" value={search} onChange={(event) => setSearch(event.target.value)} data-automation-id="upscale-library-search" />
-              {libraryLoading && <div className="ups-hint" style={{ padding: 4 }}>Lade Bibliothek…</div>}
+              <input className="ups-input" placeholder="Search library…" value={search} onChange={(event) => setSearch(event.target.value)} data-automation-id="upscale-library-search" />
+              {libraryLoading && <div className="ups-hint" style={{ padding: 4 }}>Loading library…</div>}
             </div>
           )}
           <div className="ups-picker-list">
@@ -153,14 +152,14 @@ const InputQueue: React.FC<Props> = ({
                 <span title={item.name}>{item.name}</span>
               </button>
             ))}
-            {picker === 'bin' && binItems.length === 0 && <div className="ups-hint" style={{ gridColumn: '1 / -1' }}>Keine Bilder oder Videos im Media-Bin.</div>}
+            {picker === 'bin' && binItems.length === 0 && <div className="ups-hint" style={{ gridColumn: '1 / -1' }}>No images or videos in the Media Bin.</div>}
             {picker === 'library' && libraryItems.map((asset) => (
               <button key={asset.id} type="button" className="ups-picker-tile" onClick={() => onAddLibraryAsset(asset)} data-automation-id={`upscale-library-${asset.id}`}>
                 <div className="ups-picker-img">{asset.kind === 'video' ? <Film size={18} /> : <img src={asset.url || ''} alt="" />}</div>
                 <span title={`${asset.name} · ${asset.projectName}`}>{asset.name}</span>
               </button>
             ))}
-            {picker === 'library' && !libraryLoading && libraryItems.length === 0 && <div className="ups-hint" style={{ gridColumn: '1 / -1' }}>Keine passenden Assets.</div>}
+            {picker === 'library' && !libraryLoading && libraryItems.length === 0 && <div className="ups-hint" style={{ gridColumn: '1 / -1' }}>No matching assets.</div>}
           </div>
         </div>
       )}

@@ -63,7 +63,7 @@ const ToolsPanel: React.FC<Props> = ({ tool, lastUsed, onSelect, fg, bg, onFg, o
   };
 
   return (
-    <div className="psx-tools" role="toolbar" aria-label="Werkzeuge" aria-orientation="vertical" data-automation-id="photo.tools">
+    <div className="psx-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical" data-automation-id="photo.tools">
       {TOOL_GROUPS.map((group) => {
         const shown = group.tools.includes(tool) ? tool : (lastUsed[group.id] ?? group.tools[0]);
         const Icon = TOOL_ICONS[shown];
@@ -94,16 +94,16 @@ const ToolsPanel: React.FC<Props> = ({ tool, lastUsed, onSelect, fg, bg, onFg, o
         );
       })}
       <div className="psx-tools__colors">
-        <label className="psx-swatch psx-swatch--fg" style={{ background: fg }} title="Vordergrundfarbe festlegen">
+        <label className="psx-swatch psx-swatch--fg" style={{ background: fg }} title="Set foreground color">
           <input type="color" value={fg} onChange={(e) => onFg(e.target.value)} data-automation-id="photo.color.fg" />
         </label>
-        <label className="psx-swatch psx-swatch--bg" style={{ background: bg }} title="Hintergrundfarbe festlegen">
+        <label className="psx-swatch psx-swatch--bg" style={{ background: bg }} title="Set background color">
           <input type="color" value={bg} onChange={(e) => onBg(e.target.value)} data-automation-id="photo.color.bg" />
         </label>
-        <button type="button" className="psx-tools__mini" style={{ right: -2, top: 0 }} title="Vorder- und Hintergrundfarbe vertauschen (X)" onClick={onSwap} data-automation-id="photo.color.swap">
+        <button type="button" className="psx-tools__mini" style={{ right: -2, top: 0 }} title="Swap foreground and background colors (X)" onClick={onSwap} data-automation-id="photo.color.swap">
           <ArrowLeftRight size={9} />
         </button>
-        <button type="button" className="psx-tools__mini" style={{ left: 0, bottom: -2 }} title="Standardfarben (D)" onClick={onReset} data-automation-id="photo.color.default">
+        <button type="button" className="psx-tools__mini" style={{ left: 0, bottom: -2 }} title="Default colors (D)" onClick={onReset} data-automation-id="photo.color.default">
           <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden><rect x="0.5" y="0.5" width="5" height="5" fill="#000" stroke="#fff" strokeWidth="0.8" /><rect x="4" y="4" width="5" height="5" fill="#fff" stroke="#000" strokeWidth="0.8" /></svg>
         </button>
       </div>
@@ -112,7 +112,7 @@ const ToolsPanel: React.FC<Props> = ({ tool, lastUsed, onSelect, fg, bg, onFg, o
         className="psx-tools__btn"
         style={{ marginTop: 6 }}
         aria-pressed={quickMask}
-        title="Im Maskierungsmodus bearbeiten (Q)"
+        title="Edit in Quick Mask mode (Q)"
         onClick={onToggleQuickMask}
         data-automation-id="photo.quickmask"
       >

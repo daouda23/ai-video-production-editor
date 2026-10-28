@@ -31,7 +31,7 @@ const InsertSlots: React.FC<{ target: string; inserts: InsertSlot[]; run: RunCom
             className="snd-strip__slot snd-strip__slot--empty"
             data-automation-id={`${idPrefix}-insert-add-${SLOT_LETTERS[i]}`}
             value=""
-            aria-label={`Insert ${SLOT_LETTERS[i]} hinzufügen`}
+            aria-label={`Insert ${SLOT_LETTERS[i]} add`}
             onChange={(e) => {
               const result = run('mixer.addInsert', { target, kind: e.target.value, index: i }) as { insertId?: string } | null;
               if (result && typeof result === 'object' && result.insertId) onEdit({ target, insertId: result.insertId });
@@ -39,7 +39,7 @@ const InsertSlots: React.FC<{ target: string; inserts: InsertSlot[]; run: RunCom
           >
             <option value="">{SLOT_LETTERS[i]} ·</option>
             <option value="eq">EQ</option>
-            <option value="compressor">Kompressor</option>
+            <option value="compressor">Compressor</option>
             <option value="gate">Gate</option>
             <option value="limiter">Limiter</option>
             <option value="delay">Delay</option>
@@ -52,7 +52,7 @@ const InsertSlots: React.FC<{ target: string; inserts: InsertSlot[]; run: RunCom
           key={slot.id}
           className={`snd-strip__slot ${slot.bypass ? 'snd-strip__slot--bypass' : ''} ${active ? 'snd-strip__slot--active' : ''}`}
           data-automation-id={`${idPrefix}-insert-${SLOT_LETTERS[i]}`}
-          title="Klick: bearbeiten · ⌘-Klick: Bypass · ⌥-Klick: entfernen"
+          title="Click: edit · ⌘-click: bypass · ⌥-click: remove"
           onClick={(e) => {
             if (e.altKey) run('mixer.removeInsert', { target, insertId: slot.id });
             else if (e.metaKey || e.ctrlKey) run('mixer.bypassInsert', { target, insertId: slot.id });
@@ -106,7 +106,7 @@ export const TrackStrip: React.FC<{
             />
           </div>
           <div className="snd-strip__section">
-            <span className="snd-strip__label">Dynamik</span>
+            <span className="snd-strip__label">Dynamics</span>
             <button
               type="button"
               className={`snd-strip__slot ${comp ? '' : 'snd-strip__slot--empty'} ${comp && comp.bypass ? 'snd-strip__slot--bypass' : ''}`}
@@ -119,7 +119,7 @@ export const TrackStrip: React.FC<{
                 }
               }}
             >
-              {comp && comp.kind === 'compressor' ? `${comp.params.ratio}:1 @ ${comp.params.thresholdDb}` : 'Kompressor +'}
+              {comp && comp.kind === 'compressor' ? `${comp.params.ratio}:1 @ ${comp.params.thresholdDb}` : 'Compressor +'}
             </button>
             <div className="snd-strip__gr">{meter && meter.reductionDb < -0.2 ? `GR ${meter.reductionDb.toFixed(1)}` : ''}</div>
           </div>
@@ -144,7 +144,7 @@ export const TrackStrip: React.FC<{
               const bus = mix.buses.find((b) => b.id === send.busId);
               return (
                 <div key={send.busId} className={`snd-strip__slot ${send.enabled ? '' : 'snd-strip__slot--bypass'}`} data-automation-id={`${id}-send-${SLOT_LETTERS[i]}`}
-                  title="Rad: Pegel · Klick: an/aus · ⌥-Klick: entfernen · ⇧-Klick: pre/post"
+                  title="Wheel: level · Click: on/off · ⌥-click: remove · ⇧-click: pre/post"
                   onClick={(e) => {
                     if (e.altKey) run('mixer.removeSend', { trackId: track.id, busId: send.busId });
                     else if (e.shiftKey) run('mixer.setSend', { trackId: track.id, busId: send.busId, preFader: !send.preFader });
@@ -168,7 +168,7 @@ export const TrackStrip: React.FC<{
 
       {variant === 'studio' && (
         <div className="snd-strip__section">
-          <span className="snd-strip__label">Rolle</span>
+          <span className="snd-strip__label">Role</span>
           <select className="snd-select" data-automation-id={`${id}-role`} value={t.role ?? 'none'} onChange={(e) => run('mixer.setRole', { trackId: track.id, role: e.target.value })}>
             <option value="none">–</option>
             {(Object.keys(STEM_LABELS) as StemRole[]).map((r) => <option key={r} value={r}>{STEM_LABELS[r]}</option>)}
@@ -187,10 +187,10 @@ export const TrackStrip: React.FC<{
 
       <PanControl pan={t.pan} id={`${id}-pan`} onChange={(pan) => run('mixer.setPan', { trackId: track.id, pan })} />
       <div className="snd-strip__toggles">
-        {variant !== 'studio' && <button type="button" className="snd-tog snd-tog--r" aria-pressed={t.recordArm} data-automation-id={`${id}-arm`} title="Aufnahmebereit" onClick={() => run('mixer.toggleRecordArm', { trackId: track.id })}>R</button>}
+        {variant !== 'studio' && <button type="button" className="snd-tog snd-tog--r" aria-pressed={t.recordArm} data-automation-id={`${id}-arm`} title="Record ready" onClick={() => run('mixer.toggleRecordArm', { trackId: track.id })}>R</button>}
         <button type="button" className="snd-tog snd-tog--s" aria-pressed={Boolean(track.isSolo)} data-automation-id={`${id}-solo`} title="Solo" onClick={() => run('mixer.toggleSolo', { trackId: track.id })}>S</button>
-        <button type="button" className="snd-tog snd-tog--m" aria-pressed={track.isMuted} data-automation-id={`${id}-mute`} title="Stumm" onClick={() => run('mixer.toggleMute', { trackId: track.id })}>M</button>
-        {variant === 'fairlight' && <button type="button" className="snd-tog snd-tog--p" aria-pressed={t.phaseInvert} data-automation-id={`${id}-phase`} title="Phase drehen" onClick={() => run('mixer.togglePhase', { trackId: track.id })}>Ø</button>}
+        <button type="button" className="snd-tog snd-tog--m" aria-pressed={track.isMuted} data-automation-id={`${id}-mute`} title="Mute" onClick={() => run('mixer.toggleMute', { trackId: track.id })}>M</button>
+        {variant === 'fairlight' && <button type="button" className="snd-tog snd-tog--p" aria-pressed={t.phaseInvert} data-automation-id={`${id}-phase`} title="Invert phase" onClick={() => run('mixer.togglePhase', { trackId: track.id })}>Ø</button>}
       </div>
       <div className="snd-strip__faderzone">
         <Fader db={t.gainDb} id={`${id}-fader`} onChange={(db) => run('mixer.setFader', { trackId: track.id, db })} />

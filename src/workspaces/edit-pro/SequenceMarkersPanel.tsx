@@ -61,15 +61,15 @@ const SequenceMarkersPanel: React.FC<Props> = ({
     return (
         <div className="ppx-markers" data-automation-id="pp.markers">
             <div className="ppx-markers__bar">
-                <button type="button" className="ppx-btn" onClick={onAddMarker} title="Marke an der Abspielposition (M)" data-automation-id="pp.markers.add">
-                    <Bookmark size={12} /> Marke hinzufügen
+                <button type="button" className="ppx-btn" onClick={onAddMarker} title="Marker at the playhead (M)" data-automation-id="pp.markers.add">
+                    <Bookmark size={12} />Add marker
                 </button>
-                <span className="ppx-markers__count">{markers.length} {markers.length === 1 ? 'Marke' : 'Marken'}</span>
+                <span className="ppx-markers__count">{markers.length} {markers.length === 1 ? 'Marker' : 'Markers'}</span>
             </div>
 
             <div className="ppx-list">
                 {markers.length === 0 && (
-                    <p className="ppx-hint">Noch keine Sequenzmarken. <kbd className="edit-kbd">M</kbd> setzt eine Marke an der Abspielposition, <kbd className="edit-kbd">Shift+M</kbd> springt zur nächsten.</p>
+                    <p className="ppx-hint">No sequence markers yet. <kbd className="edit-kbd">M</kbd>sets a marker at the playhead, <kbd className="edit-kbd">Shift+M</kbd>jumps to the next one.</p>
                 )}
                 {markers.map((marker, index) => (
                     <div
@@ -106,12 +106,12 @@ const SequenceMarkersPanel: React.FC<Props> = ({
                         <TimecodeField value={selected.time} onCommit={(time) => { onUpdateMarker(selected.id, { time }); onSeek(time); }} automationId="pp.markers.editor.time" />
                     </div>
                     <div className="ppx-prop">
-                        <span className="ppx-prop__label">Dauer</span>
+                        <span className="ppx-prop__label">Duration</span>
                         <TimecodeField value={selected.duration} onCommit={(duration) => onUpdateMarker(selected.id, { duration })} automationId="pp.markers.editor.duration" title="Dauer der Marke (0 = Punktmarke)" />
                     </div>
                     <div className="ppx-prop">
-                        <span className="ppx-prop__label">Farbe</span>
-                        <div className="ppx-swatches" role="radiogroup" aria-label="Markenfarbe">
+                        <span className="ppx-prop__label">Color</span>
+                        <div className="ppx-swatches" role="radiogroup" aria-label="Brand color">
                             {MARKER_COLORS.map((color) => (
                                 <button
                                     key={color.id}
@@ -128,7 +128,7 @@ const SequenceMarkersPanel: React.FC<Props> = ({
                         </div>
                     </div>
                     <div className="ppx-prop ppx-prop--top">
-                        <span className="ppx-prop__label">Kommentar</span>
+                        <span className="ppx-prop__label">Comment</span>
                         <textarea
                             className="ppx-input ppx-input--area"
                             rows={2}
@@ -139,7 +139,7 @@ const SequenceMarkersPanel: React.FC<Props> = ({
                     </div>
                     <div className="ppx-marker-edit__actions">
                         <button type="button" className="ppx-btn" onClick={() => { onRemoveMarker(selected.id); onSelectMarker(null); }} data-automation-id="pp.markers.editor.delete">
-                            <Trash2 size={12} /> Marke löschen
+                            <Trash2 size={12} />Delete marker
                         </button>
                     </div>
                 </div>
@@ -154,12 +154,12 @@ const SequenceMarkersPanel: React.FC<Props> = ({
                     <span className="ppx-list__tc">{programOut === null ? '––:––:––:––' : formatTimecode(programOut)}</span><span>Out</span>
                 </button>
                 {(programIn !== null || programOut !== null) && (
-                    <button type="button" className="ppx-link" style={{ marginLeft: 8, alignSelf: 'flex-start' }} onClick={onClearProgramMarks} data-automation-id="pp.markers.clear">In/Out löschen</button>
+                    <button type="button" className="ppx-link" style={{ marginLeft: 8, alignSelf: 'flex-start' }} onClick={onClearProgramMarks} data-automation-id="pp.markers.clear">Clear In/Out</button>
                 )}
                 <div className="ppx-list__group">Quelle In/Out</div>
                 <div className="ppx-list__row ppx-list__row--static"><span className="ppx-list__tc">{sourceIn === null ? '––' : formatTimecode(sourceIn)}</span><span>In</span></div>
                 <div className="ppx-list__row ppx-list__row--static"><span className="ppx-list__tc">{sourceOut === null ? '––' : formatTimecode(sourceOut)}</span><span>Out</span></div>
-                <div className="ppx-list__group">Schnittpunkte ({editPoints.length})</div>
+                <div className="ppx-list__group">Edit points ({editPoints.length})</div>
                 {editPoints.map(([time, entries]) => (
                     <button
                         key={time}
@@ -173,7 +173,7 @@ const SequenceMarkersPanel: React.FC<Props> = ({
                         <span className="truncate">{entries.join(' · ')}</span>
                     </button>
                 ))}
-                {!persisted && <p className="ppx-hint">Marken werden mit dem Projekt gespeichert, sobald ein Projektordner gewählt ist.</p>}
+                {!persisted && <p className="ppx-hint">Markers are saved with the project once a project folder is chosen.</p>}
             </div>
         </div>
     );

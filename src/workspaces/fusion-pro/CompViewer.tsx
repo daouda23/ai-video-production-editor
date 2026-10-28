@@ -150,16 +150,16 @@ const CompViewer: React.FC<CompViewerProps> = ({ comp, nodeId, time, resolveMedi
         <div className="cv-frame" style={{ width: display.width || undefined, height: display.height || undefined }}>
           <canvas ref={canvasRef} className="cv-canvas" />
           {wipe && wipeNode && (
-            <div className="cv-wipe" style={{ left: `${Math.min(1, Math.max(0, wipe.position)) * 100}%` }} onPointerDown={startWipeDrag} data-automation-id={`${automationId}-wipe-handle`} title="Wipe verschieben">
+            <div className="cv-wipe" style={{ left: `${Math.min(1, Math.max(0, wipe.position)) * 100}%` }} onPointerDown={startWipeDrag} data-automation-id={`${automationId}-wipe-handle`} title="Move wipe">
               <span className="cv-wipe__tag cv-wipe__tag--a">A</span>
               <span className="cv-wipe__tag cv-wipe__tag--b">B</span>
             </div>
           )}
         </div>
       ) : (
-        <div className="cv-empty">{emptyHint ?? 'Kein Knoten im Viewer'}</div>
+        <div className="cv-empty">{emptyHint ?? 'No node in the viewer'}</div>
       )}
-      {error && <div className="cv-error">Viewer-Fehler: {error}</div>}
+      {error && <div className="cv-error">Viewer error: {error}</div>}
       {children}
     </div>
   );

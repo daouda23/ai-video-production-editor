@@ -80,7 +80,7 @@ function pickComp(ctx: StudioToolContext, args: Record<string, unknown>, create 
   if (!comp && typeof args.compId === 'string' && args.compId) throw new Error(`Composition ${args.compId} not found.`);
   if (!comp) {
     if (!create) throw new Error('No composition yet. Create one on the Fusion page or call ae_layer_add.');
-    comp = sanitizeComposition(createComposition({ name: 'Komposition 1' }))!;
+    comp = sanitizeComposition(createComposition({ name: 'Composition 1' }))!;
     store = { ...store, comps: [...store.comps, comp], activeId: comp.id };
   }
   return { store, comp };

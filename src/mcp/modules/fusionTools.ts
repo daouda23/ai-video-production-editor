@@ -193,7 +193,7 @@ export const FUSION_TOOL_MODULE: StudioToolModule = {
           durationSeconds: args.durationSeconds !== undefined ? numArg(args, 'durationSeconds') : clip ? Math.max(0.04, clip.end - clip.start) : undefined,
         };
         const store = await readCompStore(ctx);
-        let comp = media ? createCompFromMedia(media, options) : createEmptyComp(`Komposition ${store.comps.length + 1}`, options);
+        let comp = media ? createCompFromMedia(media, options) : createEmptyComp(`Composition ${store.comps.length + 1}`, options);
         if (typeof args.name === 'string' && args.name.trim()) comp = { ...comp, name: args.name.trim() };
         await writeCompStore(ctx, { ...store, comps: [...store.comps, comp], activeId: comp.id });
         return { comp: summarizeComp(comp), nodes: comp.nodes.map((node) => ({ id: node.id, name: node.name, type: node.type })) };

@@ -41,10 +41,10 @@ type Props = {
 
 const TABS: Array<{ id: WorkspaceTab; label: string }> = [
   { id: 'layout', label: 'Layout' },
-  { id: 'camera', label: 'Kamera' },
-  { id: 'lighting', label: 'Licht' },
+  { id: 'camera', label: 'Camera' },
+  { id: 'lighting', label: 'Light' },
   { id: 'assets', label: 'Assets' },
-  { id: 'classic', label: 'Klassisch' },
+  { id: 'classic', label: 'Classic' },
 ];
 
 const isModelUrl = (url?: string | null) => !!url && /\.(glb|gltf|obj|fbx)(\?|#|$)/i.test(url);
@@ -53,11 +53,11 @@ const shortcut = (id: string) => getCommand(id)?.shortcut;
 type MenuState = { kind: 'add' | 'delete' | 'shading' | 'context' | 'header'; x: number; y: number; header?: string } | null;
 
 const LIGHT_PRESETS: Array<{ label: string; hint: string; args: Record<string, unknown> }> = [
-  { label: 'Tageslicht (Sonne)', hint: '5600 K, 4 W/m²', args: { lightType: 'sun', name: 'Sonne', temperature: 5600, power: 4, location: [4, -6, 8], lookAtPoint: [0, 0, 0] } },
-  { label: 'Fensterlicht', hint: 'Fläche 2 × 1,5 m, 6500 K', args: { lightType: 'area', name: 'Fenster', temperature: 6500, power: 150, size: 2, sizeY: 1.5, location: [0, -3, 1.6], lookAtPoint: [0, 0, 1.2] } },
-  { label: 'Stufenlinse 1 kW', hint: 'Spot 30°, 3200 K', args: { lightType: 'spot', name: 'Stufenlinse', temperature: 3200, power: 600, spotSize: 30, spotBlend: 0.25, location: [3, -3, 3], lookAtPoint: [0, 0, 1] } },
-  { label: 'Praktikable', hint: 'Punkt, 2700 K, 60 W', args: { lightType: 'point', name: 'Praktikable', temperature: 2700, power: 60, location: [0, 0, 1.8] } },
-  { label: 'Aufheller', hint: 'Fläche 1 × 1 m, 5600 K', args: { lightType: 'area', name: 'Aufheller', temperature: 5600, power: 40, size: 1, location: [-2.5, -2, 1.5], lookAtPoint: [0, 0, 1.2] } },
+  { label: 'Daylight (sun)', hint: '5600 K, 4 W/m²', args: { lightType: 'sun', name: 'Sun', temperature: 5600, power: 4, location: [4, -6, 8], lookAtPoint: [0, 0, 0] } },
+  { label: 'Window light', hint: 'Area 2 × 1.5 m, 6500 K', args: { lightType: 'area', name: 'Window', temperature: 6500, power: 150, size: 2, sizeY: 1.5, location: [0, -3, 1.6], lookAtPoint: [0, 0, 1.2] } },
+  { label: 'Fresnel 1 kW', hint: 'Spot 30°, 3200 K', args: { lightType: 'spot', name: 'Fresnel', temperature: 3200, power: 600, spotSize: 30, spotBlend: 0.25, location: [3, -3, 3], lookAtPoint: [0, 0, 1] } },
+  { label: 'Practicals', hint: 'Point, 2700 K, 60 W', args: { lightType: 'point', name: 'Practicals', temperature: 2700, power: 60, location: [0, 0, 1.8] } },
+  { label: 'Fill light', hint: 'Area 1 × 1 m, 5600 K', args: { lightType: 'area', name: 'Fill light', temperature: 5600, power: 40, size: 1, location: [-2.5, -2, 1.5], lookAtPoint: [0, 0, 1.2] } },
 ];
 
 const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPrompts = [], recentProjects, currentProjectName, currentProjectPath, onAddGeneratedMedia, classic }) => {
@@ -105,7 +105,7 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      showToast('Blender-Skript gespeichert (avpe_set.py). In Blender: Scripting › Öffnen › Ausführen.');
+      showToast('Blender script saved (avpe_set.py). In Blender: Scripting › Open › Run.');
     } catch (error) {
       showToast(error instanceof Error ? error.message : String(error));
     }
@@ -138,7 +138,7 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
   };
 
   const capture = async () => {
-    if (!bus.hasAction('captureFrame')) { showToast('Referenzframes gehen nur im Editor-Fenster (WebGL).'); return; }
+    if (!bus.hasAction('captureFrame')) { showToast('Reference frames only work in the editor window (WebGL).'); return; }
     setCapturing(true);
     try {
       const shotNumber = captureShot ? Number(captureShot) : undefined;
@@ -146,10 +146,10 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
       const media = (mediaItems || []).find((item) => item.id === result.mediaId);
       setLastCapture({ url: media?.url || '', text: result.setup?.en || '' });
       const notes = (result.done || []).map((note) => note
-        .replace('added to media', 'in den Medien')
-        .replace(/^set on shot (\d+)$/, 'auf Shot $1')
-        .replace(/^added to reference (.+)$/, 'bei Referenz „$1“'));
-      showToast(`Referenzframe gespeichert${notes.length ? `: ${notes.join(', ')}` : ''}.`);
+        .replace('added to media', 'in the media')
+        .replace(/^set on shot (\d+)$/, 'on shot $1')
+        .replace(/^added to reference (.+)$/, 'for reference “$1”'));
+      showToast(`Reference frame saved${notes.length ? `: ${notes.join(', ')}` : ''}.`);
     } catch (error) {
       showToast(error instanceof Error ? error.message : String(error));
     } finally {
@@ -215,7 +215,7 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
             const id = bus.getUi().activeId;
             const ref = id ? findSceneObject(bus.getScene(), id) : null;
             if (ref?.kind === 'camera') { run('camera.set_active', { object: ref.object.id }); run('view.camera', { on: true }); }
-            else showToast('Erst eine Kamera auswählen (Strg+Num0 macht sie zur aktiven Kamera).');
+            else showToast('Select a camera first (Ctrl+Num0 makes it the active camera).');
           }
           break;
         default: break;
@@ -232,90 +232,90 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
     { kind: 'section', label: 'Mesh' },
     ...PRIMITIVES.map((p) => ({ label: p.label, icon: <ObjectIcon type={p.id} />, shortcut: p.hint, onSelect: () => run('object.add_primitive', { primitive: p.id }), automationId: `setdesign-add-${p.id}` })),
     { kind: 'separator' },
-    { kind: 'section', label: 'Kamera' },
-    { label: 'Kamera aus Ansicht', icon: <ObjectIcon type="camera" />, onSelect: addCameraFromView, automationId: 'setdesign-add-camera' },
-    { kind: 'section', label: 'Licht' },
+    { kind: 'section', label: 'Camera' },
+    { label: 'Camera from view', icon: <ObjectIcon type="camera" />, onSelect: addCameraFromView, automationId: 'setdesign-add-camera' },
+    { kind: 'section', label: 'Light' },
     ...LIGHT_TYPES.map((l) => ({ label: l.label, icon: <ObjectIcon type={l.id} />, onSelect: () => run('object.add_light', { lightType: l.id }), automationId: `setdesign-add-light-${l.id}` })),
     { kind: 'separator' },
-    { label: '3D-Modell importieren …', icon: <Upload size={14} />, shortcut: 'GLB, OBJ, FBX', onSelect: () => fileInputRef.current?.click(), automationId: 'setdesign-add-import' },
+    { label: 'Import 3D model …', icon: <Upload size={14} />, shortcut: 'GLB, OBJ, FBX', onSelect: () => fileInputRef.current?.click(), automationId: 'setdesign-add-import' },
   ];
 
   const objectItems = (): PopupItem[] => {
     const isCamera = activeObject?.kind === 'camera';
     return [
-      { label: 'Verschieben', shortcut: 'G', onSelect: () => viewportRef.current?.startModal('grab'), disabled: !ui.selectedIds.length },
-      { label: 'Drehen', shortcut: 'R', onSelect: () => viewportRef.current?.startModal('rotate'), disabled: !ui.selectedIds.length },
-      { label: 'Skalieren', shortcut: 'S', onSelect: () => viewportRef.current?.startModal('scale'), disabled: !ui.selectedIds.length },
+      { label: 'Move', shortcut: 'G', onSelect: () => viewportRef.current?.startModal('grab'), disabled: !ui.selectedIds.length },
+      { label: 'Rotate', shortcut: 'R', onSelect: () => viewportRef.current?.startModal('rotate'), disabled: !ui.selectedIds.length },
+      { label: 'Scale', shortcut: 'S', onSelect: () => viewportRef.current?.startModal('scale'), disabled: !ui.selectedIds.length },
       { kind: 'separator' },
-      { label: 'Duplizieren', shortcut: 'Shift+D', icon: <Copy size={14} />, onSelect: () => viewportRef.current?.startModal('grab', true), disabled: !ui.selectedIds.length },
-      { label: 'Umbenennen', shortcut: 'F2', onSelect: () => ui.activeId && setRenamingId(ui.activeId), disabled: !ui.activeId },
-      { label: 'Ausblenden', shortcut: 'H', onSelect: () => run('object.hide'), disabled: !ui.selectedIds.length },
-      { label: 'Alles einblenden', shortcut: 'Alt+H', onSelect: () => run('object.hide', { unhideAll: true }) },
-      { label: 'Position zurücksetzen', shortcut: 'Alt+G', onSelect: () => ui.selectedIds.forEach((id) => run('object.transform', { object: id, location: [0, 0, 0] })), disabled: !ui.selectedIds.length },
-      { label: 'Drehung zurücksetzen', shortcut: 'Alt+R', onSelect: () => ui.selectedIds.forEach((id) => run('object.transform', { object: id, rotation: [0, 0, 0] })), disabled: !ui.selectedIds.length },
+      { label: 'Duplicate', shortcut: 'Shift+D', icon: <Copy size={14} />, onSelect: () => viewportRef.current?.startModal('grab', true), disabled: !ui.selectedIds.length },
+      { label: 'Rename', shortcut: 'F2', onSelect: () => ui.activeId && setRenamingId(ui.activeId), disabled: !ui.activeId },
+      { label: 'Hide', shortcut: 'H', onSelect: () => run('object.hide'), disabled: !ui.selectedIds.length },
+      { label: 'Show all', shortcut: 'Alt+H', onSelect: () => run('object.hide', { unhideAll: true }) },
+      { label: 'Reset position', shortcut: 'Alt+G', onSelect: () => ui.selectedIds.forEach((id) => run('object.transform', { object: id, location: [0, 0, 0] })), disabled: !ui.selectedIds.length },
+      { label: 'Reset rotation', shortcut: 'Alt+R', onSelect: () => ui.selectedIds.forEach((id) => run('object.transform', { object: id, rotation: [0, 0, 0] })), disabled: !ui.selectedIds.length },
       { kind: 'separator' },
       ...(isCamera ? [
-        { label: 'Als aktive Kamera setzen', shortcut: 'Strg+Num0', icon: <Video size={14} />, onSelect: () => { run('camera.set_active', { object: activeObject!.object.id }); run('view.camera', { on: true }); } },
+        { label: 'Set as active camera', shortcut: 'Ctrl+Num0', icon: <Video size={14} />, onSelect: () => { run('camera.set_active', { object: activeObject!.object.id }); run('view.camera', { on: true }); } },
       ] as PopupItem[] : []),
       ...(activeObject && activeObject.kind !== 'asset' ? [
-        { label: 'Auf Auswahlmitte ausrichten', onSelect: () => {
+        { label: 'Align to selection center', onSelect: () => {
           const others = ui.selectedIds.filter((id) => id !== activeObject.object.id);
           if (others.length) run('object.aim', { object: activeObject.object.id, lookAt: others[0] });
-          else showToast('Zweites Objekt auswählen (Shift+Klick), dann ausrichten.');
+          else showToast('Select a second object (Shift+click), then align.');
         } },
       ] as PopupItem[] : []),
-      { label: 'Löschen', shortcut: 'X', onSelect: () => run('object.delete'), disabled: !ui.selectedIds.length, automationId: 'setdesign-menu-delete' },
+      { label: 'Delete', shortcut: 'X', onSelect: () => run('object.delete'), disabled: !ui.selectedIds.length, automationId: 'setdesign-menu-delete' },
     ];
   };
 
   const viewItems: PopupItem[] = [
-    { label: 'Durch Kamera schauen', shortcut: 'Num0', icon: <Video size={14} />, onSelect: () => run('view.camera') },
-    { label: 'Aktive Kamera an Ansicht', shortcut: 'Strg+Alt+Num0', onSelect: () => run('camera.from_view') },
-    { label: 'Kamera aus Ansicht hinzufügen', onSelect: addCameraFromView },
+    { label: 'Look through camera', shortcut: 'Num0', icon: <Video size={14} />, onSelect: () => run('view.camera') },
+    { label: 'Active camera to view', shortcut: 'Ctrl+Alt+Num0', onSelect: () => run('camera.from_view') },
+    { label: 'Add camera from view', onSelect: addCameraFromView },
     { kind: 'separator' },
-    { label: 'Vorne', shortcut: 'Num1', onSelect: () => run('view.preset', { view: 'front' }) },
-    { label: 'Hinten', shortcut: 'Strg+Num1', onSelect: () => run('view.preset', { view: 'back' }) },
-    { label: 'Rechts', shortcut: 'Num3', onSelect: () => run('view.preset', { view: 'right' }) },
-    { label: 'Links', shortcut: 'Strg+Num3', onSelect: () => run('view.preset', { view: 'left' }) },
-    { label: 'Oben', shortcut: 'Num7', onSelect: () => run('view.preset', { view: 'top' }) },
-    { label: 'Unten', shortcut: 'Strg+Num7', onSelect: () => run('view.preset', { view: 'bottom' }) },
+    { label: 'Front', shortcut: 'Num1', onSelect: () => run('view.preset', { view: 'front' }) },
+    { label: 'Back', shortcut: 'Ctrl+Num1', onSelect: () => run('view.preset', { view: 'back' }) },
+    { label: 'Right', shortcut: 'Num3', onSelect: () => run('view.preset', { view: 'right' }) },
+    { label: 'Left', shortcut: 'Ctrl+Num3', onSelect: () => run('view.preset', { view: 'left' }) },
+    { label: 'Top', shortcut: 'Num7', onSelect: () => run('view.preset', { view: 'top' }) },
+    { label: 'Bottom', shortcut: 'Ctrl+Num7', onSelect: () => run('view.preset', { view: 'bottom' }) },
     { label: 'Perspektive/Orthografisch', shortcut: 'Num5', onSelect: () => run('view.toggle_ortho') },
     { kind: 'separator' },
-    { label: 'Alles zeigen', shortcut: 'Pos1', onSelect: () => run('view.frame', { what: 'all' }) },
-    { label: 'Auswahl zeigen', shortcut: 'Num ,', onSelect: () => run('view.frame', { what: 'selected' }), disabled: !ui.selectedIds.length },
-    { label: 'Gehen (Walk)', shortcut: 'Shift+`', icon: <Footprints size={14} />, onSelect: () => viewportRef.current?.startWalk() },
-    { label: 'Als Blender-Skript exportieren …', onSelect: exportBlender, automationId: 'setdesign-export-blender' },
+    { label: 'Show all', shortcut: 'Pos1', onSelect: () => run('view.frame', { what: 'all' }) },
+    { label: 'Show selection', shortcut: 'Num ,', onSelect: () => run('view.frame', { what: 'selected' }), disabled: !ui.selectedIds.length },
+    { label: 'Walk', shortcut: 'Shift+`', icon: <Footprints size={14} />, onSelect: () => viewportRef.current?.startWalk() },
+    { label: 'Export as Blender script …', onSelect: exportBlender, automationId: 'setdesign-export-blender' },
     { kind: 'separator' },
-    { label: ui.sidebar ? 'Seitenleiste ausblenden' : 'Seitenleiste', shortcut: 'N', onSelect: () => bus.setUi({ sidebar: !ui.sidebar }) },
-    { label: ui.toolbar ? 'Werkzeugleiste ausblenden' : 'Werkzeugleiste', shortcut: 'T', onSelect: () => bus.setUi({ toolbar: !ui.toolbar }) },
-    { label: maximized ? 'Bereich wiederherstellen' : 'Viewport maximieren', shortcut: 'Strg+Leertaste', onSelect: () => setMaximized(!maximized) },
+    { label: ui.sidebar ? 'Hide sidebar' : 'Sidebar', shortcut: 'N', onSelect: () => bus.setUi({ sidebar: !ui.sidebar }) },
+    { label: ui.toolbar ? 'Hide toolbar' : 'Toolbar', shortcut: 'T', onSelect: () => bus.setUi({ toolbar: !ui.toolbar }) },
+    { label: maximized ? 'Restore range' : 'Maximize viewport', shortcut: 'Ctrl+Space', onSelect: () => setMaximized(!maximized) },
   ];
 
   const selectItems: PopupItem[] = [
-    { label: 'Alles', shortcut: 'A', onSelect: () => run('select.all') },
-    { label: 'Nichts', shortcut: 'Alt+A', onSelect: () => run('select.all', { deselect: true }) },
-    { kind: 'section', label: 'Nach Typ' },
-    { label: 'Kameras', onSelect: () => run('select.set', { objects: (scene.cameras || []).filter((c) => !c.hidden).map((c) => c.id) }) },
-    { label: 'Lichter', onSelect: () => run('select.set', { objects: scene.lights.filter((l) => !l.hidden && l.type !== 'ambient').map((l) => l.id) }) },
-    { label: 'Objekte', onSelect: () => run('select.set', { objects: scene.assets.filter((a) => !a.hidden && !a.locked).map((a) => a.id) }) },
+    { label: 'All', shortcut: 'A', onSelect: () => run('select.all') },
+    { label: 'Nothing', shortcut: 'Alt+A', onSelect: () => run('select.all', { deselect: true }) },
+    { kind: 'section', label: 'By type' },
+    { label: 'Cameras', onSelect: () => run('select.set', { objects: (scene.cameras || []).filter((c) => !c.hidden).map((c) => c.id) }) },
+    { label: 'Highlights', onSelect: () => run('select.set', { objects: scene.lights.filter((l) => !l.hidden && l.type !== 'ambient').map((l) => l.id) }) },
+    { label: 'Objects', onSelect: () => run('select.set', { objects: scene.assets.filter((a) => !a.hidden && !a.locked).map((a) => a.id) }) },
   ];
 
   const shadingItems: PopupItem[] = [
-    { label: 'Drahtgitter', icon: <Globe size={14} />, onSelect: () => run('view.shading', { mode: 'wireframe' }) },
+    { label: 'Wireframe', icon: <Globe size={14} />, onSelect: () => run('view.shading', { mode: 'wireframe' }) },
     { label: 'Solid', icon: <Circle size={14} />, onSelect: () => run('view.shading', { mode: 'solid' }) },
-    { label: 'Materialvorschau', icon: <Palette size={14} />, onSelect: () => run('view.shading', { mode: 'material' }) },
-    { label: 'Gerendert', icon: <SunMedium size={14} />, onSelect: () => run('view.shading', { mode: 'rendered' }) },
+    { label: 'Material preview', icon: <Palette size={14} />, onSelect: () => run('view.shading', { mode: 'material' }) },
+    { label: 'Rendered', icon: <SunMedium size={14} />, onSelect: () => run('view.shading', { mode: 'rendered' }) },
   ];
 
-  const headerMenus: Record<string, PopupItem[]> = { Ansicht: viewItems, Auswahl: selectItems, Hinzufügen: addItems, Objekt: objectItems() };
+  const headerMenus: Record<string, PopupItem[]> = { View: viewItems, Select: selectItems, Add: addItems, Object: objectItems() };
 
   const menuItems = (): { title?: string; items: PopupItem[] } => {
     if (!menu) return { items: [] };
-    if (menu.kind === 'add') return { title: 'Hinzufügen', items: addItems };
-    if (menu.kind === 'delete') return { title: 'Löschen?', items: [{ label: `${ui.selectedIds.length} Objekt${ui.selectedIds.length === 1 ? '' : 'e'} löschen`, onSelect: () => run('object.delete'), automationId: 'setdesign-confirm-delete' }] };
+    if (menu.kind === 'add') return { title: 'Add', items: addItems };
+    if (menu.kind === 'delete') return { title: 'Delete?', items: [{ label: `${ui.selectedIds.length} Object${ui.selectedIds.length === 1 ? '' : 'e'} delete`, onSelect: () => run('object.delete'), automationId: 'setdesign-confirm-delete' }] };
     if (menu.kind === 'shading') return { title: 'Shading', items: shadingItems };
     if (menu.kind === 'header' && menu.header) return { items: headerMenus[menu.header] || [] };
-    return { title: activeObject?.object.name || 'Objekt', items: objectItems() };
+    return { title: activeObject?.object.name || 'Object', items: objectItems() };
   };
 
   // ------------------------------------------------------------------ panels per tab
@@ -323,7 +323,7 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
   const cameraPanel = (
     <>
       <div className="sdx-left__section">
-        <div className="sdx-left__title"><Video size={14} /> Kameras</div>
+        <div className="sdx-left__title"><Video size={14} />Cameras</div>
         {(scene.cameras || []).map((camera) => (
           <div key={camera.id} className={`sdx-list-item${camera.id === active?.id ? ' is-on' : ''}`} onClick={() => { run('camera.set_active', { object: camera.id }); run('select.set', { objects: [camera.id] }); run('view.camera', { on: true }); }} data-automation-id={`setdesign-camera-item-${camera.id}`}>
             <ObjectIcon type="camera" />
@@ -332,20 +332,20 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
           </div>
         ))}
         <div style={{ display: 'flex', gap: 4 }}>
-          <button type="button" className="sdx-btn" style={{ flex: 1 }} onClick={addCameraFromView} data-automation-id="setdesign-camera-add"><Plus size={13} /> Aus Ansicht</button>
-          <button type="button" className="sdx-btn" style={{ flex: 1 }} onClick={() => run('camera.from_view')} title="Strg+Alt+Num0">An Ansicht</button>
+          <button type="button" className="sdx-btn" style={{ flex: 1 }} onClick={addCameraFromView} data-automation-id="setdesign-camera-add"><Plus size={13} />From view</button>
+          <button type="button" className="sdx-btn" style={{ flex: 1 }} onClick={() => run('camera.from_view')} title="Ctrl+Alt+Num0">To view</button>
         </div>
       </div>
       {active && (
         <div className="sdx-left__section">
           <div className="sdx-left__title">{active.name}</div>
-          <Prop label="Brennweite"><NumberField value={active.lensMm} unit="mm" digits={1} step={1} min={1} max={2000} onBegin={() => bus.beginInteraction('Brennweite')} onEnd={(c) => bus.endInteraction(c)} onChange={(v) => run('object.update', { object: active.id, lensMm: v })} automationId="setdesign-camtab-lens" /></Prop>
+          <Prop label="Focal length"><NumberField value={active.lensMm} unit="mm" digits={1} step={1} min={1} max={2000} onBegin={() => bus.beginInteraction('Focal length')} onEnd={(c) => bus.endInteraction(c)} onChange={(v) => run('object.update', { object: active.id, lensMm: v })} automationId="setdesign-camtab-lens" /></Prop>
           <div className="sdx-chips">
             {LENS_PRESETS_MM.map((mm) => <button key={mm} type="button" className={`sdx-chip${Math.abs(active.lensMm - mm) < 0.05 ? ' is-on' : ''}`} onClick={() => run('object.update', { object: active.id, lensMm: mm })}>{mm}</button>)}
           </div>
           <Prop label="Sensor">
             <select className="sdx-select" style={{ width: '100%' }} value={SENSOR_PRESETS.find((p) => Math.abs(p.widthMm - active.sensorWidthMm) < 0.05)?.id || ''} onChange={(event) => event.target.value && run('object.update', { object: active.id, sensorPreset: event.target.value })}>
-              <option value="">Eigene Größe</option>
+              <option value="">Custom size</option>
               {SENSOR_PRESETS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
           </Prop>
@@ -355,42 +355,42 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
               {OUTPUT_PRESETS.map((p) => <option key={p.label} value={p.label}>{p.label}</option>)}
             </select>
           </Prop>
-          <label className="sdx-check"><input type="checkbox" checked={ui.lockCameraToView} onChange={(event) => run('view.options', { lockCameraToView: event.target.checked })} data-automation-id="setdesign-lock-camera" /> Kamera an Ansicht sperren</label>
-          <div className="sdx-note">Gesperrt bewegen Orbit, Verschieben, Zoom und Gehen (Shift+`) die Kamera selbst.</div>
+          <label className="sdx-check"><input type="checkbox" checked={ui.lockCameraToView} onChange={(event) => run('view.options', { lockCameraToView: event.target.checked })} data-automation-id="setdesign-lock-camera" />Lock camera to view</label>
+          <div className="sdx-note">When locked, orbit, pan, zoom and walk (Shift+`) move the camera itself.</div>
         </div>
       )}
       <div className="sdx-left__section">
-        <div className="sdx-left__title">Rahmen</div>
-        <label className="sdx-check"><input type="checkbox" checked={ui.overlays.thirds} onChange={(event) => run('view.overlays', { thirds: event.target.checked })} /> Drittel</label>
-        <label className="sdx-check"><input type="checkbox" checked={ui.overlays.safeAreas} onChange={(event) => run('view.overlays', { safeAreas: event.target.checked })} /> Sicherheitsbereiche</label>
-        <Prop label="Passepartout"><NumberField value={ui.overlays.passepartout} digits={2} step={0.05} min={0} max={1} slider onChange={(v) => run('view.overlays', { passepartout: v })} /></Prop>
+        <div className="sdx-left__title">Frame</div>
+        <label className="sdx-check"><input type="checkbox" checked={ui.overlays.thirds} onChange={(event) => run('view.overlays', { thirds: event.target.checked })} />Thirds</label>
+        <label className="sdx-check"><input type="checkbox" checked={ui.overlays.safeAreas} onChange={(event) => run('view.overlays', { safeAreas: event.target.checked })} />Safe areas</label>
+        <Prop label="Passe-partout"><NumberField value={ui.overlays.passepartout} digits={2} step={0.05} min={0} max={1} slider onChange={(v) => run('view.overlays', { passepartout: v })} /></Prop>
       </div>
       <div className="sdx-left__section" data-automation-id="setdesign-capture-panel">
-        <div className="sdx-left__title"><Camera size={14} /> Referenzframe</div>
+        <div className="sdx-left__title"><Camera size={14} />Reference frame</div>
         <div className="sdx-seg" style={{ width: '100%' }}>
-          {([['beauty', 'Ansicht'], ['clay', 'Clay'], ['depth', 'Tiefe']] as const).map(([id, label]) => (
+          {([['beauty', 'View'], ['clay', 'Clay'], ['depth', 'Depth']] as const).map(([id, label]) => (
             <button key={id} type="button" style={{ flex: 1 }} className={capturePass === id ? 'is-on' : ''} onClick={() => setCapturePass(id)} data-automation-id={`setdesign-capture-pass-${id}`}>{label}</button>
           ))}
         </div>
         <Prop label="Storyboard">
           <select className="sdx-select" style={{ width: '100%' }} value={captureShot} onChange={(event) => setCaptureShot(event.target.value)} data-automation-id="setdesign-capture-shot">
-            <option value="">kein Shot</option>
+            <option value="">no shot</option>
             {shotPrompts.map((shot) => <option key={shot.shot} value={shot.shot}>Shot {shot.shot}{shot.description ? ` – ${shot.description.slice(0, 32)}` : ''}</option>)}
           </select>
         </Prop>
-        <Prop label="Referenz">
+        <Prop label="Reference">
           <select className="sdx-select" style={{ width: '100%' }} value={captureReference} onChange={(event) => setCaptureReference(event.target.value)} data-automation-id="setdesign-capture-reference">
-            <option value="">keine</option>
-            {[...references].sort((a, b) => (a.type === 'environment' ? -1 : 0) - (b.type === 'environment' ? -1 : 0)).map((ref) => <option key={ref.id} value={ref.id}>{ref.type === 'environment' ? 'Location' : ref.type === 'character' ? 'Figur' : ref.type === 'product' ? 'Produkt' : 'Requisit'}: {ref.name}</option>)}
+            <option value="">none</option>
+            {[...references].sort((a, b) => (a.type === 'environment' ? -1 : 0) - (b.type === 'environment' ? -1 : 0)).map((ref) => <option key={ref.id} value={ref.id}>{ref.type === 'environment' ? 'Location' : ref.type === 'character' ? 'Character' : ref.type === 'product' ? 'Product' : 'Prop'}: {ref.name}</option>)}
           </select>
         </Prop>
-        <button type="button" className="sdx-btn sdx-btn--primary" disabled={capturing || !active} onClick={() => void capture()} data-automation-id="setdesign-capture"><Camera size={13} /> {capturing ? 'Rendert …' : `Aufnehmen (${output.width} × ${output.height})`}</button>
-        <div className="sdx-note">Rendert die aktive Kamera ohne Raster und Symbole in die Medien. Clay = neutrales Grau, Tiefe = hell ist nah – gut als Struktur-Vorlage für Bild- und Edit-Modelle.</div>
-        {lastCapture?.url && <img className="sdx-thumb" src={lastCapture.url} alt="Letzter Referenzframe" />}
+        <button type="button" className="sdx-btn sdx-btn--primary" disabled={capturing || !active} onClick={() => void capture()} data-automation-id="setdesign-capture"><Camera size={13} /> {capturing ? 'Rendering …' : `Record (${output.width} × ${output.height})`}</button>
+        <div className="sdx-note">Renders the active camera without grid and icons into the media. Clay = neutral gray, Depth = bright is near – good as a structure guide for image and edit models.</div>
+        {lastCapture?.url && <img className="sdx-thumb" src={lastCapture.url} alt="Last reference frame" />}
         {active && (
           <div className="sdx-prompt" style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
             <span style={{ flex: 1 }}>{describeCamera(active, output.width / output.height).en}</span>
-            <button type="button" className="sdx-btn sdx-btn--icon" title="Kamerazeile für den Prompt kopieren" onClick={() => void navigator.clipboard?.writeText(describeCamera(active, output.width / output.height).en).catch(() => undefined)}><Copy size={12} /></button>
+            <button type="button" className="sdx-btn sdx-btn--icon" title="Copy the camera line for the prompt" onClick={() => void navigator.clipboard?.writeText(describeCamera(active, output.width / output.height).en).catch(() => undefined)}><Copy size={12} /></button>
           </div>
         )}
       </div>
@@ -400,7 +400,7 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
   const lightPanel = (
     <>
       <div className="sdx-left__section">
-        <div className="sdx-left__title"><Lightbulb size={14} /> Licht setzen</div>
+        <div className="sdx-left__title"><Lightbulb size={14} />Place light</div>
         {LIGHT_PRESETS.map((preset) => (
           <button key={preset.label} type="button" className="sdx-tile" onClick={() => run('object.add_light', preset.args)} data-automation-id={`setdesign-light-preset-${preset.label}`}>
             <ObjectIcon type={String(preset.args.lightType)} />
@@ -409,8 +409,8 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
         ))}
       </div>
       <div className="sdx-left__section">
-        <div className="sdx-left__title">Lichter im Set</div>
-        {scene.lights.filter((l) => l.type !== 'ambient').length === 0 && <div className="sdx-note">Noch keine Lichter.</div>}
+        <div className="sdx-left__title">Lights in the set</div>
+        {scene.lights.filter((l) => l.type !== 'ambient').length === 0 && <div className="sdx-note">No lights yet.</div>}
         {scene.lights.filter((l) => l.type !== 'ambient').map((light) => (
           <div key={light.id} className={`sdx-list-item${ui.selectedIds.includes(light.id) ? ' is-on' : ''}`} onClick={() => run('select.set', { objects: [light.id] })}>
             <ObjectIcon type={light.type === 'directional' ? 'sun' : light.type} />
@@ -421,8 +421,8 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
       </div>
       <div className="sdx-left__section">
         <div className="sdx-left__title">Welt</div>
-        <Prop label="Umgebung"><NumberField value={scene.world?.strength ?? 0.6} digits={2} step={0.05} min={0} max={5} onBegin={() => bus.beginInteraction('Welt')} onEnd={(c) => bus.endInteraction(c)} onChange={(v) => run('scene.world', { strength: v })} /></Prop>
-        <div className="sdx-note">Der Licht-Tab schaltet auf „Gerendert“: Schatten und Lichtfarben wie im Referenzframe.</div>
+        <Prop label="Environment"><NumberField value={scene.world?.strength ?? 0.6} digits={2} step={0.05} min={0} max={5} onBegin={() => bus.beginInteraction('Welt')} onEnd={(c) => bus.endInteraction(c)} onChange={(v) => run('scene.world', { strength: v })} /></Prop>
+        <div className="sdx-note">The Light tab switches to “Rendered”: shadows and light colors as in the reference frame.</div>
       </div>
     </>
   );
@@ -430,15 +430,15 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
   const assetsPanel = (
     <>
       <div className="sdx-left__section">
-        <div className="sdx-left__title"><Upload size={14} /> Importieren</div>
-        <button type="button" className="sdx-btn sdx-btn--primary" onClick={() => fileInputRef.current?.click()} data-automation-id="setdesign-import-file"><Upload size={13} /> Datei (GLB, glTF, OBJ, FBX)</button>
+        <div className="sdx-left__title"><Upload size={14} />Import</div>
+        <button type="button" className="sdx-btn sdx-btn--primary" onClick={() => fileInputRef.current?.click()} data-automation-id="setdesign-import-file"><Upload size={13} />File (GLB, glTF, OBJ, FBX)</button>
         <div style={{ display: 'flex', gap: 4 }}>
           <input className="sdx-input" style={{ flex: 1 }} placeholder="https://…/modell.glb" value={urlInput} onChange={(event) => setUrlInput(event.target.value)} onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Enter' && urlInput.trim()) { run('object.add_model', { url: urlInput.trim() }); setUrlInput(''); } }} data-automation-id="setdesign-import-url" />
           <button type="button" className="sdx-btn" onClick={() => { if (urlInput.trim()) { run('object.add_model', { url: urlInput.trim() }); setUrlInput(''); } }}><Link size={13} /></button>
         </div>
       </div>
       <div className="sdx-left__section">
-        <div className="sdx-left__title">Grundkörper</div>
+        <div className="sdx-left__title">Primitive</div>
         <div className="sdx-grid2">
           {PRIMITIVES.map((p) => (
             <button key={p.id} type="button" className="sdx-tile" onClick={() => run('object.add_primitive', { primitive: p.id })} title={p.hint} data-automation-id={`setdesign-asset-${p.id}`}>
@@ -448,8 +448,8 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
         </div>
       </div>
       <div className="sdx-left__section">
-        <div className="sdx-left__title"><ImageIcon size={14} /> Bibliothek</div>
-        {libraryModels.length === 0 && <div className="sdx-note">Keine 3D-Modelle in der Bibliothek.</div>}
+        <div className="sdx-left__title"><ImageIcon size={14} />Library</div>
+        {libraryModels.length === 0 && <div className="sdx-note">No 3D models in the library.</div>}
         {libraryModels.map((asset) => (
           <div key={asset.id} className="sdx-list-item" onClick={() => run('object.add_model', { url: asset.url, name: asset.name.replace(/\.[^.]+$/, '') })}>
             <ObjectIcon type="model" /> <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset.name}</span> <span className="sdx-note">{asset.projectName}</span>
@@ -458,8 +458,8 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
       </div>
       <div className="sdx-left__section">
         <div className="sdx-left__title"><Sparkles size={14} /> KI-Werkzeuge</div>
-        <div className="sdx-note">KI-Blockout aus einem Referenzbild (Hunyuan3D, Trellis, Rodin), World-Labs-Welten, Sketchfab-Suche, HDRI und Render-Presets sind im Tab „Klassisch“. Was dort entsteht, erscheint hier im selben Set.</div>
-        <button type="button" className="sdx-btn" onClick={() => run('workspace.tab', { tab: 'classic' })}>Zu „Klassisch“</button>
+        <div className="sdx-note">AI blockout from a reference image (Hunyuan3D, Trellis, Rodin), World Labs worlds, Sketchfab search, HDRI and render presets are in the “Classic” tab. What you make there appears here in the same set.</div>
+        <button type="button" className="sdx-btn" onClick={() => run('workspace.tab', { tab: 'classic' })}>To “Classic”</button>
       </div>
     </>
   );
@@ -467,11 +467,11 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
   // ------------------------------------------------------------------ render
 
   const tools: Array<{ id: SetDesignUiState['tool']; label: string; icon: React.ReactNode; key: string }> = [
-    { id: 'select', label: 'Auswählen', icon: <MousePointer2 size={16} />, key: 'W' },
-    { id: 'move', label: 'Verschieben', icon: <Move size={16} />, key: 'G' },
-    { id: 'rotate', label: 'Drehen', icon: <Rotate3d size={16} />, key: 'R' },
-    { id: 'scale', label: 'Skalieren', icon: <Scale3d size={16} />, key: 'S' },
-    { id: 'transform', label: 'Transformieren', icon: <Move3d size={16} />, key: '' },
+    { id: 'select', label: 'Select', icon: <MousePointer2 size={16} />, key: 'W' },
+    { id: 'move', label: 'Move', icon: <Move size={16} />, key: 'G' },
+    { id: 'rotate', label: 'Rotate', icon: <Rotate3d size={16} />, key: 'R' },
+    { id: 'scale', label: 'Scale', icon: <Scale3d size={16} />, key: 'S' },
+    { id: 'transform', label: 'Transform', icon: <Move3d size={16} />, key: '' },
   ];
   const leftPanel = tab === 'camera' ? cameraPanel : tab === 'lighting' ? lightPanel : tab === 'assets' ? assetsPanel : null;
   const history = bus.history();
@@ -493,10 +493,10 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
         <span className="sdx-topbar__spacer" />
         {tab !== 'classic' && (
           <>
-            <button type="button" className="sdx-btn sdx-btn--icon" title={history.undo.length ? `Rückgängig: ${history.undo[history.undo.length - 1]} (Strg+Z)` : 'Rückgängig'} disabled={!history.undo.length} onClick={() => run('edit.undo')} data-automation-id="setdesign-undo"><Undo2 size={14} /></button>
-            <button type="button" className="sdx-btn sdx-btn--icon" title={history.redo.length ? `Wiederholen: ${history.redo[history.redo.length - 1]}` : 'Wiederholen'} disabled={!history.redo.length} onClick={() => run('edit.redo')} data-automation-id="setdesign-redo"><Redo2 size={14} /></button>
+            <button type="button" className="sdx-btn sdx-btn--icon" title={history.undo.length ? `Undo: ${history.undo[history.undo.length - 1]} (Ctrl+Z)` : 'Undo'} disabled={!history.undo.length} onClick={() => run('edit.undo')} data-automation-id="setdesign-undo"><Undo2 size={14} /></button>
+            <button type="button" className="sdx-btn sdx-btn--icon" title={history.redo.length ? `Redo: ${history.redo[history.redo.length - 1]}` : 'Redo'} disabled={!history.redo.length} onClick={() => run('edit.redo')} data-automation-id="setdesign-redo"><Redo2 size={14} /></button>
             <span className="sdx-topbar__meta">{output.width} × {output.height}</span>
-            <button type="button" className="sdx-btn sdx-btn--primary" disabled={capturing || !active} onClick={() => void capture()} title="Aktive Kamera als Referenzframe in die Medien (F12)" data-automation-id="setdesign-topbar-capture"><Camera size={13} /> Referenzframe</button>
+            <button type="button" className="sdx-btn sdx-btn--primary" disabled={capturing || !active} onClick={() => void capture()} title="Active camera as a reference frame into the media (F12)" data-automation-id="setdesign-topbar-capture"><Camera size={13} />Reference frame</button>
           </>
         )}
       </div>
@@ -508,22 +508,22 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
           {leftPanel && !maximized && <aside className="sdx-left">{leftPanel}</aside>}
           <div className="sdx-main">
             <div className="sdx-areahead" data-automation-id="setdesign-viewport-header">
-              <span className="sdx-mode">Objektmodus</span>
+              <span className="sdx-mode">Object mode</span>
               {Object.keys(headerMenus).map((name) => (
                 <button key={name} type="button" className={`sdx-menu-btn${menu?.kind === 'header' && menu.header === name ? ' is-open' : ''}`} onClick={(event) => { const r = event.currentTarget.getBoundingClientRect(); openMenu('header', name, { x: r.left, y: r.bottom + 2 }); }} data-automation-id={`setdesign-menu-${name}`}>{name}</button>
               ))}
               <span style={{ flex: 1 }} />
-              <div className="sdx-seg" title="Ausrichtung des Gizmos">
+              <div className="sdx-seg" title="Gizmo orientation">
                 <button type="button" className={ui.orientation === 'global' ? 'is-on' : ''} onClick={() => run('view.options', { orientation: 'global' })}>Global</button>
-                <button type="button" className={ui.orientation === 'local' ? 'is-on' : ''} onClick={() => run('view.options', { orientation: 'local' })}>Lokal</button>
+                <button type="button" className={ui.orientation === 'local' ? 'is-on' : ''} onClick={() => run('view.options', { orientation: 'local' })}>Local</button>
               </div>
-              <button type="button" className={`sdx-btn sdx-btn--icon${ui.snap ? ' sdx-btn--on' : ''}`} title="Einrasten (Strg hält es beim Ziehen umgekehrt)" onClick={() => run('view.options', { snap: !ui.snap })} data-automation-id="setdesign-snap"><Magnet size={14} /></button>
+              <button type="button" className={`sdx-btn sdx-btn--icon${ui.snap ? ' sdx-btn--on' : ''}`} title="Snapping (Ctrl inverts it while dragging)" onClick={() => run('view.options', { snap: !ui.snap })} data-automation-id="setdesign-snap"><Magnet size={14} /></button>
               <button type="button" className="sdx-menu-btn" onClick={(event) => {
                 const r = event.currentTarget.getBoundingClientRect();
-                setMenu({ kind: 'header', header: 'Überlagerungen', x: r.left, y: r.bottom + 2 });
-              }}>Überlagerungen <ChevronDown size={11} /></button>
+                setMenu({ kind: 'header', header: 'Overlays', x: r.left, y: r.bottom + 2 });
+              }}>Overlays <ChevronDown size={11} /></button>
               <div className="sdx-seg" title="Shading (Z)" data-automation-id="setdesign-shading">
-                {([['wireframe', <Globe key="w" size={14} />, 'Drahtgitter'], ['solid', <Circle key="s" size={14} fill="currentColor" />, 'Solid'], ['material', <Palette key="m" size={14} />, 'Materialvorschau'], ['rendered', <SunMedium key="r" size={14} />, 'Gerendert']] as const).map(([mode, icon, label]) => (
+                {([['wireframe', <Globe key="w" size={14} />, 'Wireframe'], ['solid', <Circle key="s" size={14} fill="currentColor" />, 'Solid'], ['material', <Palette key="m" size={14} />, 'Material preview'], ['rendered', <SunMedium key="r" size={14} />, 'Rendered']] as const).map(([mode, icon, label]) => (
                   <button key={mode} type="button" title={label} className={(scene.shading || 'solid') === mode ? 'is-on' : ''} onClick={() => run('view.shading', { mode })} data-automation-id={`setdesign-shading-${mode}`}>{icon}</button>
                 ))}
               </div>
@@ -542,16 +542,16 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
                     <button key={t.id} type="button" title={`${t.label}${t.key ? ` (${t.key})` : ''}`} className={ui.tool === t.id ? 'is-on' : ''} onClick={() => run('tool.set', { tool: t.id })} data-automation-id={`setdesign-tool-${t.id}`}>{t.icon}</button>
                   ))}
                   <hr />
-                  <button type="button" title="Kamera aus Ansicht hinzufügen" onClick={addCameraFromView}><Video size={16} /></button>
-                  <button type="button" title="Gehen (Shift+`)" onClick={() => viewportRef.current?.startWalk()}><Footprints size={16} /></button>
+                  <button type="button" title="Add camera from view" onClick={addCameraFromView}><Video size={16} /></button>
+                  <button type="button" title="Walk (Shift+`)" onClick={() => viewportRef.current?.startWalk()}><Footprints size={16} /></button>
                 </div>
               )}
               {ui.sidebar && (
                 <div className="sdx-vp-sidebar" data-automation-id="setdesign-sidebar">
-                  <Panel title="Ansicht">
-                    <Prop label="Brennweite"><NumberField value={lensForVerticalFov(scene.camera.fov || 45, { sensorWidthMm: 36 }, 16 / 9)} unit="mm" digits={0} step={1} min={5} max={250} onChange={(mm) => run('view.set', { fov: verticalFovDeg({ lensMm: mm, sensorWidthMm: 36 }, 16 / 9) })} title="Brennweite der freien Ansicht (Vollformat, 16:9)" /></Prop>
-                    <label className="sdx-check"><input type="checkbox" checked={ui.lockCameraToView} onChange={(event) => run('view.options', { lockCameraToView: event.target.checked })} /> Kamera an Ansicht sperren</label>
-                    <label className="sdx-check"><input type="checkbox" checked={ui.emulateNumpad} onChange={(event) => run('view.options', { emulateNumpad: event.target.checked })} /> Ziffern als Numpad</label>
+                  <Panel title="View">
+                    <Prop label="Focal length"><NumberField value={lensForVerticalFov(scene.camera.fov || 45, { sensorWidthMm: 36 }, 16 / 9)} unit="mm" digits={0} step={1} min={5} max={250} onChange={(mm) => run('view.set', { fov: verticalFovDeg({ lensMm: mm, sensorWidthMm: 36 }, 16 / 9) })} title="Focal length of the free view (full frame, 16:9)" /></Prop>
+                    <label className="sdx-check"><input type="checkbox" checked={ui.lockCameraToView} onChange={(event) => run('view.options', { lockCameraToView: event.target.checked })} />Lock camera to view</label>
+                    <label className="sdx-check"><input type="checkbox" checked={ui.emulateNumpad} onChange={(event) => run('view.options', { emulateNumpad: event.target.checked })} />Digits as numpad</label>
                   </Panel>
                 </div>
               )}
@@ -574,18 +574,18 @@ const SetProWorkspace: React.FC<Props> = ({ mediaItems, references = [], shotPro
             return <span key={hint}><b>{keys}</b> {label}</span>;
           })}
           <span className="sdx-status__right">
-            {scene.assets.length} Objekte · {active ? `${active.name} ${Math.round(active.lensMm)} mm` : 'keine Kamera'}{history.undo.length ? ` · Zuletzt: ${history.undo[history.undo.length - 1]}` : ''}
+            {scene.assets.length}Objects · {active ? `${active.name} ${Math.round(active.lensMm)} mm` : 'no camera'}{history.undo.length ? ` · Recent: ${history.undo[history.undo.length - 1]}` : ''}
           </span>
         </div>
       )}
 
       {menu && (
-        menu.kind === 'header' && menu.header === 'Überlagerungen' ? (
-          <Popup x={menu.x} y={menu.y} title="Überlagerungen" onClose={() => setMenu(null)} items={[
-            { label: `${ui.overlays.grid ? '✓ ' : ''}Bodenraster`, onSelect: () => run('view.overlays', { grid: !ui.overlays.grid }) },
-            { label: `${ui.overlays.cameraFrames ? '✓ ' : ''}Kamerasymbole`, onSelect: () => run('view.overlays', { cameraFrames: !ui.overlays.cameraFrames }) },
-            { label: `${ui.overlays.thirds ? '✓ ' : ''}Drittel (Kamera)`, onSelect: () => run('view.overlays', { thirds: !ui.overlays.thirds }) },
-            { label: `${ui.overlays.safeAreas ? '✓ ' : ''}Sicherheitsbereiche (Kamera)`, onSelect: () => run('view.overlays', { safeAreas: !ui.overlays.safeAreas }) },
+        menu.kind === 'header' && menu.header === 'Overlays' ? (
+          <Popup x={menu.x} y={menu.y} title="Overlays" onClose={() => setMenu(null)} items={[
+            { label: `${ui.overlays.grid ? '✓ ' : ''}Floor grid`, onSelect: () => run('view.overlays', { grid: !ui.overlays.grid }) },
+            { label: `${ui.overlays.cameraFrames ? '✓ ' : ''}Camera icons`, onSelect: () => run('view.overlays', { cameraFrames: !ui.overlays.cameraFrames }) },
+            { label: `${ui.overlays.thirds ? '✓ ' : ''}Thirds (camera)`, onSelect: () => run('view.overlays', { thirds: !ui.overlays.thirds }) },
+            { label: `${ui.overlays.safeAreas ? '✓ ' : ''}Safe areas (camera)`, onSelect: () => run('view.overlays', { safeAreas: !ui.overlays.safeAreas }) },
           ]} />
         ) : (
           <Popup x={menu.x} y={menu.y} title={menuData.title} items={menuData.items} onClose={() => setMenu(null)} automationId={`setdesign-popup-${menu.kind}`} />

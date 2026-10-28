@@ -37,14 +37,14 @@ const GlobalRow: React.FC<PaletteProps & { top: boolean }> = ({ values, onPatch,
   return top ? (
     <div className="cp-fieldrow">
       {s('temperature', 'Temp', 0, -100, 100, 0.25, signed(1), 1, (t) => Number(t.replace('+', '')))}
-      {s('tint', 'Tönung', 0, -100, 100, 0.25, signed(1), 1, (t) => Number(t.replace('+', '')))}
-      {s('contrast', 'Kontrast', 1, 0, 3, 0.004, undefined, 3)}
+      {s('tint', 'Tint', 0, -100, 100, 0.25, signed(1), 1, (t) => Number(t.replace('+', '')))}
+      {s('contrast', 'Contrast', 1, 0, 3, 0.004, undefined, 3)}
       {s('pivot', 'Pivot', 0.435, 0, 1, 0.002, undefined, 3)}
     </div>
   ) : (
     <div className="cp-fieldrow">
-      {s('saturation', 'Sättigung', 1, 0, 4, 0.004, (v) => (v * 50).toFixed(1), 2, (t) => Number(t) / 50)}
-      {s('hue', 'Farbton', 0, -180, 180, 0.5, (v) => (50 + v / 3.6).toFixed(1), 2, (t) => (Number(t) - 50) * 3.6)}
+      {s('saturation', 'Saturation', 1, 0, 4, 0.004, (v) => (v * 50).toFixed(1), 2, (t) => Number(t) / 50)}
+      {s('hue', 'Hue', 0, -180, 180, 0.5, (v) => (50 + v / 3.6).toFixed(1), 2, (t) => (Number(t) - 50) * 3.6)}
       {s('lumMix', 'Lum Mix', 1, 0, 1, 0.003, (v) => (v * 100).toFixed(1), 2, (t) => Number(t) / 100)}
     </div>
   );
@@ -56,16 +56,16 @@ export const PrimariesPalette: React.FC<PaletteProps & { mode: PrimariesMode }> 
       <div>
         <GlobalRow values={values} onPatch={onPatch} top />
         <div className="cp-wheels">
-          <GradeWheel kind="logShadow" label="Schatten" values={values} onPatch={onPatch} automationId="color.log.shadow" />
+          <GradeWheel kind="logShadow" label="Shadows" values={values} onPatch={onPatch} automationId="color.log.shadow" />
           <GradeWheel kind="logMid" label="Mitten" values={values} onPatch={onPatch} automationId="color.log.mid" />
-          <GradeWheel kind="logHigh" label="Lichter" values={values} onPatch={onPatch} automationId="color.log.high" />
+          <GradeWheel kind="logHigh" label="Highlights" values={values} onPatch={onPatch} automationId="color.log.high" />
           <GradeWheel kind="offset" label="Offset" values={values} onPatch={onPatch} automationId="color.log.offset" />
         </div>
         <div className="cp-fieldrow">
-          <Field label="Unterer Bereich">
+          <Field label="Lower area">
             <ScrubNumber value={num(values, 'logLowRange', 0.333)} def={0.333} min={0} max={1} step={0.002} digits={3} onChange={(v) => onPatch({ logLowRange: v })} automationId="color.log.lowRange" />
           </Field>
-          <Field label="Oberer Bereich">
+          <Field label="Upper area">
             <ScrubNumber value={num(values, 'logHighRange', 0.55)} def={0.55} min={0} max={1} step={0.002} digits={3} onChange={(v) => onPatch({ logHighRange: v })} automationId="color.log.highRange" />
           </Field>
           <GlobalRow values={values} onPatch={onPatch} top={false} />
@@ -244,10 +244,10 @@ export const CurvesPalette: React.FC<PaletteProps & { scopes: ScopeData | null }
       </svg>
       <div className="cp-curves__side">
         <select className="cp-select" value={mode} onChange={(event) => setMode(event.target.value as CurveMode)} data-automation-id="color.curves.mode">
-          <option value="custom">Kurven – Benutzerdefiniert</option>
-          <option value="hueHue">Farbton vs. Farbton</option>
-          <option value="hueSat">Farbton vs. Sättigung</option>
-          <option value="hueLum">Farbton vs. Luminanz</option>
+          <option value="custom">Curves – Custom</option>
+          <option value="hueHue">Hue vs. hue</option>
+          <option value="hueSat">Hue vs. saturation</option>
+          <option value="hueLum">Hue vs. luminance</option>
         </select>
         {mode === 'custom' && (
           <div className="flex gap-1">
@@ -258,22 +258,19 @@ export const CurvesPalette: React.FC<PaletteProps & { scopes: ScopeData | null }
             ))}
           </div>
         )}
-        <button type="button" className="cp-btn cp-btn--outline" onClick={() => onPatch({ [key]: '' })} data-automation-id="color.curves.reset">Kurve zurücksetzen</button>
+        <button type="button" className="cp-btn cp-btn--outline" onClick={() => onPatch({ [key]: '' })} data-automation-id="color.curves.reset">Reset curve</button>
         <button
           type="button"
           className="cp-btn cp-btn--outline"
           onClick={() => onPatch({ curveY: '', curveR: '', curveG: '', curveB: '', hueHue: '', hueSat: '', hueLum: '' })}
           data-automation-id="color.curves.resetAll"
-        >
-          Alle Kurven zurücksetzen
+        >Reset all curves
         </button>
         {mode === 'custom' && (
-          <button type="button" className="cp-btn cp-btn--outline" onClick={() => onPatch({ curveY: serializeCurve([[0, 0], [0.25, 0.2], [0.75, 0.82], [1, 1]]) })} data-automation-id="color.curves.sCurve">
-            S-Kurve (Y)
+          <button type="button" className="cp-btn cp-btn--outline" onClick={() => onPatch({ curveY: serializeCurve([[0, 0], [0.25, 0.2], [0.75, 0.82], [1, 1]]) })} data-automation-id="color.curves.sCurve">S-curve (Y)
           </button>
         )}
-        <p className="cp-note" style={{ padding: 0 }}>
-          Klick fügt einen Punkt hinzu, Ziehen verschiebt, Doppelklick oder Rechtsklick löscht. {periodic ? 'Mitte = neutral.' : ''} {CURVE_LUT_SIZE}-Punkt-LUT auf der GPU.
+        <p className="cp-note" style={{ padding: 0 }}>Click adds a point, drag moves it, double-click or right-click deletes it. {periodic ? 'Center = neutral.' : ''} {CURVE_LUT_SIZE}-point LUT on the GPU.
         </p>
       </div>
     </div>
@@ -295,37 +292,35 @@ export const QualifierPalette: React.FC<PaletteProps & { picking: boolean; onTog
   return (
     <div>
       <div className="cp-fieldrow">
-        <Check label="Qualifier aktiv" checked={enabled} onChange={(v) => onPatch({ qualEnabled: v })} automationId="color.qualifier.enabled" />
-        <button type="button" className={`cp-btn cp-btn--outline ${picking ? 'cp-btn--on' : ''}`} onClick={onTogglePick} data-automation-id="color.qualifier.pick" title="Im Viewer auf die Farbe klicken, die ausgewählt werden soll">
+        <Check label="Qualifier active" checked={enabled} onChange={(v) => onPatch({ qualEnabled: v })} automationId="color.qualifier.enabled" />
+        <button type="button" className={`cp-btn cp-btn--outline ${picking ? 'cp-btn--on' : ''}`} onClick={onTogglePick} data-automation-id="color.qualifier.pick" title="Click the color to select in the viewer">
           Pipette
         </button>
-        <button type="button" className={`cp-btn cp-btn--outline ${highlight ? 'cp-btn--on' : ''}`} onClick={onToggleHighlight} data-automation-id="color.qualifier.highlight" title="Maske im Viewer als Graustufen anzeigen">
-          Maske anzeigen
+        <button type="button" className={`cp-btn cp-btn--outline ${highlight ? 'cp-btn--on' : ''}`} onClick={onToggleHighlight} data-automation-id="color.qualifier.highlight" title="Show the mask in the viewer as grayscale">Show mask
         </button>
-        <Check label="Invertieren" checked={flag(values, 'qualInvert')} onChange={(v) => onPatch({ qualInvert: v, qualEnabled: true })} automationId="color.qualifier.invert" />
+        <Check label="Invert" checked={flag(values, 'qualInvert')} onChange={(v) => onPatch({ qualInvert: v, qualEnabled: true })} automationId="color.qualifier.invert" />
         <span className="cp-note" style={{ padding: 0 }}>
-          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: `hsl(${hue} 80% 50%)`, verticalAlign: -1, marginRight: 4 }} />
-          HSL-Key begrenzt die Korrektur dieses Nodes.
+          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: `hsl(${hue} 80% 50%)`, verticalAlign: -1, marginRight: 4 }} />An HSL key limits the correction of this node.
         </span>
       </div>
       <div className="cp-sliders">
-        <Check label="Farbton" checked={flag(values, 'qualHueOn', true)} onChange={(v) => onPatch({ qualHueOn: v, qualEnabled: true })} automationId="color.qualifier.hueOn" />
+        <Check label="Hue" checked={flag(values, 'qualHueOn', true)} onChange={(v) => onPatch({ qualHueOn: v, qualEnabled: true })} automationId="color.qualifier.hueOn" />
         <span />
-        {row('qualHue', 'Mitte', 0, 0, 360, deg)}
-        {row('qualHueWidth', 'Breite', 30, 0, 180, deg)}
-        {row('qualHueSoft', 'Weichheit', 10, 0, 90, deg)}
+        {row('qualHue', 'Center', 0, 0, 360, deg)}
+        {row('qualHueWidth', 'Width', 30, 0, 180, deg)}
+        {row('qualHueSoft', 'Softness', 10, 0, 90, deg)}
         <span />
-        <Check label="Sättigung" checked={flag(values, 'qualSatOn', true)} onChange={(v) => onPatch({ qualSatOn: v, qualEnabled: true })} automationId="color.qualifier.satOn" />
+        <Check label="Saturation" checked={flag(values, 'qualSatOn', true)} onChange={(v) => onPatch({ qualSatOn: v, qualEnabled: true })} automationId="color.qualifier.satOn" />
         <span />
         {row('qualSatLow', 'Min', 0, 0, 1, pct)}
         {row('qualSatHigh', 'Max', 1, 0, 1, pct)}
-        {row('qualSatSoft', 'Weichheit', 0.05, 0, 0.5, pct)}
+        {row('qualSatSoft', 'Softness', 0.05, 0, 0.5, pct)}
         <span />
-        <Check label="Luminanz" checked={flag(values, 'qualLumOn', true)} onChange={(v) => onPatch({ qualLumOn: v, qualEnabled: true })} automationId="color.qualifier.lumOn" />
+        <Check label="Luminance" checked={flag(values, 'qualLumOn', true)} onChange={(v) => onPatch({ qualLumOn: v, qualEnabled: true })} automationId="color.qualifier.lumOn" />
         <span />
         {row('qualLumLow', 'Min', 0, 0, 1, pct)}
         {row('qualLumHigh', 'Max', 1, 0, 1, pct)}
-        {row('qualLumSoft', 'Weichheit', 0.05, 0, 0.5, pct)}
+        {row('qualLumSoft', 'Softness', 0.05, 0, 0.5, pct)}
       </div>
     </div>
   );
@@ -343,28 +338,27 @@ export const WindowPalette: React.FC<PaletteProps> = ({ values, onPatch }) => {
   return (
     <div>
       <div className="cp-fieldrow">
-        <div className="cp-seg" role="radiogroup" aria-label="Fenstertyp">
+        <div className="cp-seg" role="radiogroup" aria-label="Window type">
           {WINDOW_TYPES.map((label, index) => (
             <button key={label} type="button" className={`cp-btn ${type === index ? 'cp-btn--on' : ''}`} onClick={() => onPatch({ winType: index })} data-automation-id={`color.window.type.${index}`}>
               {label}
             </button>
           ))}
         </div>
-        <Check label="Invertieren" checked={flag(values, 'winInvert')} onChange={(v) => onPatch({ winInvert: v })} automationId="color.window.invert" />
-        <button type="button" className="cp-btn cp-btn--outline" onClick={() => onPatch({ winX: 0.5, winY: 0.5, winSizeX: 0.3, winSizeY: 0.3, winRotation: 0, winSoftness: 0.15 })} data-automation-id="color.window.reset">
-          Zurücksetzen
+        <Check label="Invert" checked={flag(values, 'winInvert')} onChange={(v) => onPatch({ winInvert: v })} automationId="color.window.invert" />
+        <button type="button" className="cp-btn cp-btn--outline" onClick={() => onPatch({ winX: 0.5, winY: 0.5, winSizeX: 0.3, winSizeY: 0.3, winRotation: 0, winSoftness: 0.15 })} data-automation-id="color.window.reset">Reset
         </button>
       </div>
       {type === 0 ? (
-        <p className="cp-note">Wähle Kreis, Linear (Rechteck) oder Verlauf. Das Fenster begrenzt die Korrektur dieses Nodes; im Viewer kannst du die Mitte ziehen.</p>
+        <p className="cp-note">Choose circle, linear (rectangle) or gradient. The window limits the correction of this node; you can drag its center in the viewer.</p>
       ) : (
         <div className="cp-sliders">
-          {row('winX', 'Mitte X', 0.5, 0, 1)}
-          {row('winY', 'Mitte Y', 0.5, 0, 1)}
-          {type !== 3 && row('winSizeX', 'Breite', 0.3, 0.01, 1.5)}
-          {type !== 3 && row('winSizeY', 'Höhe', 0.3, 0.01, 1.5)}
-          {row('winRotation', 'Drehung', 0, -180, 180, (v) => `${v.toFixed(0)}°`)}
-          {row('winSoftness', 'Weiche Kante', 0.15, 0, 1)}
+          {row('winX', 'Center X', 0.5, 0, 1)}
+          {row('winY', 'Center Y', 0.5, 0, 1)}
+          {type !== 3 && row('winSizeX', 'Width', 0.3, 0.01, 1.5)}
+          {type !== 3 && row('winSizeY', 'Height', 0.3, 0.01, 1.5)}
+          {row('winRotation', 'Rotation', 0, -180, 180, (v) => `${v.toFixed(0)}°`)}
+          {row('winSoftness', 'Feather', 0.15, 0, 1)}
         </div>
       )}
     </div>
@@ -378,22 +372,22 @@ export const WindowPalette: React.FC<PaletteProps> = ({ values, onPatch }) => {
 export const BlurPalette: React.FC<PaletteProps> = ({ values, onPatch }) => (
   <div>
     <div className="cp-sliders">
-      <SliderRow label="Weichzeichnen" value={num(values, 'blurRadius', 0)} def={0} min={0} max={32} step={0.1} format={(v) => `${v.toFixed(1)} px`} onChange={(v) => onPatch({ blurRadius: v })} automationId="color.blur.radius" />
-      <SliderRow label="Schärfen" value={num(values, 'sharpen', 0)} def={0} min={0} max={2} step={0.01} onChange={(v) => onPatch({ sharpen: v })} automationId="color.blur.sharpen" />
+      <SliderRow label="Blur" value={num(values, 'blurRadius', 0)} def={0} min={0} max={32} step={0.1} format={(v) => `${v.toFixed(1)} px`} onChange={(v) => onPatch({ blurRadius: v })} automationId="color.blur.radius" />
+      <SliderRow label="Sharpen" value={num(values, 'sharpen', 0)} def={0} min={0} max={2} step={0.01} onChange={(v) => onPatch({ sharpen: v })} automationId="color.blur.sharpen" />
     </div>
-    <p className="cp-note">Radius in Pixeln bezogen auf 1080p – Vorschau und Export bleiben gleich. Schärfen wirkt nur ohne Weichzeichnen. Qualifier und Fenster begrenzen auch diesen Bereich.</p>
+    <p className="cp-note">Radius in pixels relative to 1080p – preview and export stay the same. Sharpen works only without blur. Qualifier and window also limit this range.</p>
   </div>
 );
 
 export const KeyPalette: React.FC<PaletteProps & { mix: number; onMix: (mix: number) => void }> = ({ values, onPatch, mix, onMix }) => (
   <div>
     <div className="cp-sliders">
-      <SliderRow label="Key-Verstärkung" value={num(values, 'keyGain', 1)} def={1} min={0} max={2} step={0.005} onChange={(v) => onPatch({ keyGain: v })} automationId="color.key.gain" />
+      <SliderRow label="Key gain" value={num(values, 'keyGain', 1)} def={1} min={0} max={2} step={0.005} onChange={(v) => onPatch({ keyGain: v })} automationId="color.key.gain" />
       <SliderRow label="Key-Offset" value={num(values, 'keyOffset', 0)} def={0} min={-1} max={1} step={0.005} onChange={(v) => onPatch({ keyOffset: v })} automationId="color.key.offset" />
       <SliderRow label="Node-Mischung" value={mix} def={1} min={0} max={1} step={0.005} format={(v) => `${Math.round(v * 100)}%`} parse={(t) => parseFloat(t) / 100} onChange={onMix} automationId="color.key.mix" />
-      <Check label="Key invertieren" checked={flag(values, 'keyInvert')} onChange={(v) => onPatch({ keyInvert: v })} automationId="color.key.invert" />
+      <Check label="Invert key" checked={flag(values, 'keyInvert')} onChange={(v) => onPatch({ keyInvert: v })} automationId="color.key.invert" />
     </div>
-    <p className="cp-note">Der Key ist Qualifier × Fenster. Verstärkung/Offset formen ihn, die Node-Mischung blendet den ganzen Node über seinen Eingang.</p>
+    <p className="cp-note">The key is qualifier × window. Gain/offset shape it; the node mix blends the whole node over its input.</p>
   </div>
 );
 
@@ -403,10 +397,10 @@ export const SizingPalette: React.FC<PaletteProps> = ({ values, onPatch }) => (
       <SliderRow label="Pan" value={num(values, 'sizePan', 0)} def={0} min={-1} max={1} step={0.001} onChange={(v) => onPatch({ sizePan: v })} automationId="color.sizing.pan" />
       <SliderRow label="Tilt" value={num(values, 'sizeTilt', 0)} def={0} min={-1} max={1} step={0.001} onChange={(v) => onPatch({ sizeTilt: v })} automationId="color.sizing.tilt" />
       <SliderRow label="Zoom" value={num(values, 'sizeZoom', 1)} def={1} min={0.25} max={4} step={0.005} format={(v) => v.toFixed(3)} onChange={(v) => onPatch({ sizeZoom: v })} automationId="color.sizing.zoom" />
-      <SliderRow label="Drehung" value={num(values, 'sizeRotate', 0)} def={0} min={-180} max={180} step={0.1} format={(v) => `${v.toFixed(1)}°`} onChange={(v) => onPatch({ sizeRotate: v })} automationId="color.sizing.rotate" />
-      <Check label="Horizontal spiegeln" checked={flag(values, 'sizeFlipH')} onChange={(v) => onPatch({ sizeFlipH: v })} automationId="color.sizing.flipH" />
-      <Check label="Vertikal spiegeln" checked={flag(values, 'sizeFlipV')} onChange={(v) => onPatch({ sizeFlipV: v })} automationId="color.sizing.flipV" />
+      <SliderRow label="Rotation" value={num(values, 'sizeRotate', 0)} def={0} min={-180} max={180} step={0.1} format={(v) => `${v.toFixed(1)}°`} onChange={(v) => onPatch({ sizeRotate: v })} automationId="color.sizing.rotate" />
+      <Check label="Flip horizontal" checked={flag(values, 'sizeFlipH')} onChange={(v) => onPatch({ sizeFlipH: v })} automationId="color.sizing.flipH" />
+      <Check label="Flip vertical" checked={flag(values, 'sizeFlipV')} onChange={(v) => onPatch({ sizeFlipV: v })} automationId="color.sizing.flipV" />
     </div>
-    <p className="cp-note">Node-Sizing: verschiebt, skaliert und dreht das Ergebnis dieses Nodes (außerhalb transparent).</p>
+    <p className="cp-note">Node sizing: moves, scales and rotates the result of this node (transparent outside).</p>
   </div>
 );

@@ -87,7 +87,7 @@ const ExportViewer: React.FC<ExportViewerProps> = (props) => {
         <div className="xp-viewer">
             <div className="xp-viewer__stage" ref={stageRef}>
                 {timelineClips.length === 0 ? (
-                    <div className="xp-viewer__empty">Die Timeline ist leer – im Schnitt Clips anlegen, dann hier exportieren.</div>
+                    <div className="xp-viewer__empty">The timeline is empty – add clips in the edit, then export here.</div>
                 ) : (
                     <div className="xp-viewer__frame" style={{ width: box.width, height: box.height }}>
                         <PreviewPlayer
@@ -115,17 +115,17 @@ const ExportViewer: React.FC<ExportViewerProps> = (props) => {
             </div>
             <div className="xp-transport">
                 <span className="xp-transport__tc" data-automation-id={`${automationPrefix}.timecode`}>{formatTimecode(time, fps)}</span>
-                <button type="button" className="xp-btn xp-btn--icon" title="Zum Anfang (Pos1)" data-automation-id={`${automationPrefix}.home`} onClick={() => onSeek(showRange ? rangeStart : 0)}><SkipBack size={13} /></button>
-                <button type="button" className="xp-btn xp-btn--icon" title="Ein Bild zurück (←)" data-automation-id={`${automationPrefix}.stepBack`} onClick={() => onSeek(Math.max(0, time - frame))}><StepBack size={13} /></button>
-                <button type="button" className="xp-btn xp-btn--icon" title="Wiedergabe (Leertaste)" data-automation-id={`${automationPrefix}.play`} disabled={recording} onClick={onTogglePlay}>{playing ? <Pause size={13} /> : <Play size={13} />}</button>
-                <button type="button" className="xp-btn xp-btn--icon" title="Ein Bild vor (→)" data-automation-id={`${automationPrefix}.stepForward`} onClick={() => onSeek(Math.min(duration, time + frame))}><StepForward size={13} /></button>
-                <button type="button" className="xp-btn xp-btn--icon" title="Zum Ende (Ende)" data-automation-id={`${automationPrefix}.end`} onClick={() => onSeek(showRange ? rangeEnd : duration)}><SkipForward size={13} /></button>
+                <button type="button" className="xp-btn xp-btn--icon" title="Go to start (Home)" data-automation-id={`${automationPrefix}.home`} onClick={() => onSeek(showRange ? rangeStart : 0)}><SkipBack size={13} /></button>
+                <button type="button" className="xp-btn xp-btn--icon" title="Previous frame (←)" data-automation-id={`${automationPrefix}.stepBack`} onClick={() => onSeek(Math.max(0, time - frame))}><StepBack size={13} /></button>
+                <button type="button" className="xp-btn xp-btn--icon" title="Play (Space)" data-automation-id={`${automationPrefix}.play`} disabled={recording} onClick={onTogglePlay}>{playing ? <Pause size={13} /> : <Play size={13} />}</button>
+                <button type="button" className="xp-btn xp-btn--icon" title="Next frame (→)" data-automation-id={`${automationPrefix}.stepForward`} onClick={() => onSeek(Math.min(duration, time + frame))}><StepForward size={13} /></button>
+                <button type="button" className="xp-btn xp-btn--icon" title="Go to end (End)" data-automation-id={`${automationPrefix}.end`} onClick={() => onSeek(showRange ? rangeEnd : duration)}><SkipForward size={13} /></button>
                 <div
                     className="xp-scrub"
                     ref={scrubRef}
                     data-automation-id={`${automationPrefix}.scrub`}
                     role="slider"
-                    aria-label="Vorschau-Position"
+                    aria-label="Preview position"
                     aria-valuemin={0}
                     aria-valuemax={duration}
                     aria-valuenow={time}
@@ -143,9 +143,9 @@ const ExportViewer: React.FC<ExportViewerProps> = (props) => {
                     <div className="xp-scrub__head" style={{ left: pct(time) }} />
                 </div>
                 <span className="xp-transport__tc xp-transport__tc--dim">{formatTimecode(duration, fps)}</span>
-                <button type="button" className="xp-btn xp-btn--sm" title="In-Punkt setzen (I)" data-automation-id={`${automationPrefix}.markIn`} onClick={onMarkIn}>In</button>
-                <button type="button" className="xp-btn xp-btn--sm" title="Out-Punkt setzen (O)" data-automation-id={`${automationPrefix}.markOut`} onClick={onMarkOut}>Out</button>
-                <button type="button" className="xp-btn xp-btn--sm" title="In/Out löschen" data-automation-id={`${automationPrefix}.clearMarks`} disabled={inPoint === null && outPoint === null} onClick={onClearMarks}>×</button>
+                <button type="button" className="xp-btn xp-btn--sm" title="Set In point (I)" data-automation-id={`${automationPrefix}.markIn`} onClick={onMarkIn}>In</button>
+                <button type="button" className="xp-btn xp-btn--sm" title="Set Out point (O)" data-automation-id={`${automationPrefix}.markOut`} onClick={onMarkOut}>Out</button>
+                <button type="button" className="xp-btn xp-btn--sm" title="Clear In/Out" data-automation-id={`${automationPrefix}.clearMarks`} disabled={inPoint === null && outPoint === null} onClick={onClearMarks}>×</button>
             </div>
         </div>
     );

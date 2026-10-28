@@ -68,7 +68,7 @@ test('parseStore falls back to the first comp when activeId is unknown; upsert r
   const parsed = parseStore(serializeStore({ ...emptyStore(), comps: [comp], activeId: 'missing', view: 'xx' as never }));
   assert.equal(parsed.activeId, comp.id);
   assert.equal(parsed.view, 'fusion');
-  const renamed = { ...comp, name: 'Neu' };
-  assert.equal(upsertComp([comp], renamed)[0].name, 'Neu');
+  const renamed = { ...comp, name: 'New' };
+  assert.equal(upsertComp([comp], renamed)[0].name, 'New');
   assert.equal(upsertComp([comp], { ...comp, id: 'other' }).length, 2);
 });

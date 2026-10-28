@@ -40,7 +40,7 @@ const r2 = (v: number) => Math.round(v * 100) / 100;
 export const toolNameForCommand = (id: string) => `scene_map_${id.replace(/\./g, '_').replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}`;
 
 const requireOk = (out: { ok: boolean; error?: string }) => {
-  if (!out.ok) throw new Error(out.error || 'Befehl fehlgeschlagen.');
+  if (!out.ok) throw new Error(out.error || 'Command failed.');
 };
 
 /** Compact, agent-friendly reading of the plan at a time. */
@@ -52,7 +52,7 @@ export const describePlan = (timeS?: number) => {
   const cams = camerasAt(stage, t, chars);
   const aspect = stage.aspectRatio || 16 / 9;
   return {
-    units: 'Meter; Draufsicht x nach rechts, z nach unten (Süden); yawDeg 0 = Blick nach oben/Norden (-z), positiv = gegen den Uhrzeigersinn',
+    units: 'Meters; top view x to the right, z downward (south); yawDeg 0 = facing up/north (-z), positive = counterclockwise',
     timeS: r2(t),
     durationS: stage.animation.durationS,
     fps: stage.animation.fps,
@@ -73,7 +73,7 @@ export const describePlan = (timeS?: number) => {
 
 const withTime = (schema: ReturnType<typeof commandJsonSchema>): JsonSchema => ({
   type: 'object',
-  properties: { ...(schema.properties as Record<string, JsonSchema>), atTimeS: { type: 'number', description: 'Optional: Playhead vorher auf diese Zeit (s) setzen.' } },
+  properties: { ...(schema.properties as Record<string, JsonSchema>), atTimeS: { type: 'number', description: 'Optional: set the playhead to this time (s) first.' } },
   required: schema.required,
 });
 
@@ -98,7 +98,7 @@ const overviewState = (): SceneMapState => {
 };
 const setOverview = (next: SceneMapState) => {
   const b = getBridge();
-  if (!b?.setSceneMap) throw new Error('Scene-Map-Übersicht ist nicht verbunden.');
+  if (!b?.setSceneMap) throw new Error('The Scene Map overview is not connected.');
   b.setSceneMap(next);
 };
 const OVERVIEW_TYPES: SceneMapElementType[] = ['character', 'prop', 'environment', 'camera', 'light', 'area'];
@@ -106,19 +106,19 @@ const OVERVIEW_TYPES: SceneMapElementType[] = ['character', 'prop', 'environment
 const EXTRA_TOOLS: StudioTool[] = [
   {
     name: 'scene_map_get_plan',
-    description: 'Scene Map (Kameraplan) lesen: Set-Elemente, Figuren, Kameras mit Brennweite und Bildwinkel, Bewegungsmarken, 180°-Linie, Shot-Liste, Achssprung-Warnungen, Playhead, Auswahl. Zuerst aufrufen. timeS liest den Stand zu einer anderen Zeit.',
+    description: 'Read the Scene Map (camera plan): set elements, characters, cameras with focal length and field of view, motion keys, 180° line, shot list, axis-jump warnings, playhead, selection. Call this first. timeS reads the state at another time.',
     parameters: { type: 'object', properties: { timeS: { type: 'number', description: 'Zeitpunkt in s (Standard: Playhead).' } } },
     handler: (args) => describePlan(args.timeS === undefined ? undefined : finite(args.timeS, 0)),
   },
   {
     name: 'scene_map_list_commands',
-    description: 'Alle Scene-Map-Befehle mit Gruppe, Tastenkürzel und Parametern; jeder Befehl hat auch ein eigenes Tool scene_map_<gruppe>_<aktion>.',
+    description: 'All Scene Map commands with group, shortcut and parameters; each command also has its own tool scene_map_<group>_<action>.',
     parameters: { type: 'object', properties: {} },
     handler: () => ({ commands: describeCommands().map((c) => ({ ...c, tool: toolNameForCommand(c.id) })), elementCategories: PLAN_LIBRARY.map((e) => ({ category: e.category, label: e.label, w: e.w, d: e.d, h: e.h })), templates: TEMPLATES }),
   },
   {
     name: 'scene_map_run_commands',
-    description: 'Mehrere Scene-Map-Befehle als ein Schritt (ein Rückgängig-Eintrag), z. B. Raum + Figuren + Kameras auf einmal. Bricht beim ersten Fehler ab, ohne etwas zu ändern.',
+    description: 'Several Scene Map commands as one step (one undo entry), e.g. room + characters + cameras at once. Stops at the first error without changing anything.',
     writes: true,
     parameters: { type: 'object', properties: { commands: { type: 'array', description: 'Liste von { command: "character.add", params: {…} }.', items: { type: 'object' } } }, required: ['commands'] },
     handler: (args) => {
@@ -130,40 +130,40 @@ const EXTRA_TOOLS: StudioTool[] = [
   },
   {
     name: 'scene_map_set_time',
-    description: 'Playhead der Szene setzen (s). Verschieben/Drehen setzt bei animierten Objekten die Marke zu dieser Zeit.',
-    parameters: { type: 'object', properties: { timeS: { type: 'number', description: 'Zeit in Sekunden.' } }, required: ['timeS'] },
+    description: 'Set the scene playhead (s). Moving/rotating animated objects sets their key at this time.',
+    parameters: { type: 'object', properties: { timeS: { type: 'number', description: 'Time in seconds.' } }, required: ['timeS'] },
     handler: (args) => { setTime(finite(args.timeS, 0)); return { timeS: getSession().timeS }; },
   },
   {
     name: 'scene_map_play',
-    description: 'Blocking abspielen oder anhalten (Vorschau in der Scene Map). speed ändert das Abspieltempo.',
+    description: 'Play or pause blocking (preview in the Scene Map). speed changes the playback rate.',
     parameters: { type: 'object', properties: { playing: { type: 'boolean', description: 'true = abspielen, false = anhalten.' }, speed: { type: 'number', description: 'Abspieltempo, 1 = Echtzeit.' } }, required: ['playing'] },
     handler: (args) => { updateSession({ playing: args.playing === true, ...(args.speed !== undefined ? { speed: finite(args.speed, 1, 0.1, 8) } : {}) }); return { playing: getSession().playing, speed: getSession().speed }; },
   },
   {
     name: 'scene_map_select',
-    description: 'Objekte in der Scene Map auswählen (IDs von Figuren, Kameras, Elementen). Leere Liste hebt die Auswahl auf.',
+    description: 'Select objects in the Scene Map (IDs of characters, cameras, elements). An empty list clears the selection.',
     parameters: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' }, description: 'Objekt-IDs.' } }, required: ['ids'] },
     handler: (args) => { updateSession({ selection: Array.isArray(args.ids) ? (args.ids as unknown[]).filter((v): v is string => typeof v === 'string') : [], selectedKeyId: null }); return { selection: getSession().selection }; },
   },
   {
     name: 'scene_map_undo',
-    description: 'Letzte Änderung am Kameraplan rückgängig machen (gilt für Benutzer und Agent gleich).',
+    description: 'Undo the last change to the camera plan (same for user and agent).',
     writes: true,
     parameters: { type: 'object', properties: {} },
     handler: () => ({ undone: undo(), ...historyState() }),
   },
   {
     name: 'scene_map_redo',
-    description: 'Rückgängig gemachte Änderung am Kameraplan wiederholen.',
+    description: 'Redo the undone change to the camera plan.',
     writes: true,
     parameters: { type: 'object', properties: {} },
     handler: () => ({ redone: redo(), ...historyState() }),
   },
   {
     name: 'scene_map_open',
-    description: 'Scene Map öffnen und Ansicht wählen: plan (Kameraplan/Shot Designer), overview (klassische Übersicht), 3d (3D-Blockout).',
-    parameters: { type: 'object', properties: { view: { type: 'string', enum: ['plan', 'overview', '3d'], description: 'Ansicht.' } } },
+    description: 'Open the Scene Map and choose a view: plan (camera plan/Shot Designer), overview (classic overview), 3d (3D blockout).',
+    parameters: { type: 'object', properties: { view: { type: 'string', enum: ['plan', 'overview', '3d'], description: 'View.' } } },
     handler: (args) => {
       const view = (['plan', 'overview', '3d'].includes(String(args.view)) ? args.view : 'plan') as SceneMapView;
       updateSession({ view });
@@ -173,7 +173,7 @@ const EXTRA_TOOLS: StudioTool[] = [
   },
   {
     name: 'scene_map_set_view_options',
-    description: 'Anzeige im Kameraplan: Sichtkegel, Bewegungspfade, Raster, Beschriftungen, Storyboard-Frames ein/aus.',
+    description: 'Camera plan display: view cones, motion paths, grid, labels, storyboard frames on/off.',
     parameters: { type: 'object', properties: { showCones: { type: 'boolean' }, showPaths: { type: 'boolean' }, showGrid: { type: 'boolean' }, showLabels: { type: 'boolean' }, showFrames: { type: 'boolean' } } },
     handler: (args) => {
       const patch: Record<string, boolean> = {};
@@ -185,7 +185,7 @@ const EXTRA_TOOLS: StudioTool[] = [
   },
   {
     name: 'scene_map_list_shots',
-    description: 'Shot-Liste aus dem Kameraplan: Code (1A, 1B …), Kamera, Einstellungsgröße, Objektiv, Bewegung, Perspektive, Figuren im Bild, Zeitbereich, Beschreibung, Storyboard-Verknüpfung; order=shoot (Drehfolge) oder setup.',
+    description: 'Shot list from the camera plan: code (1A, 1B …), camera, shot size, lens, movement, angle, characters in frame, time range, description, storyboard link; order=shoot (shooting order) or setup.',
     parameters: { type: 'object', properties: { order: { type: 'string', enum: ['shoot', 'setup'] } } },
     handler: (args) => {
       const stage = getHost().stage;
@@ -197,13 +197,13 @@ const EXTRA_TOOLS: StudioTool[] = [
   },
   {
     name: 'scene_map_render_view',
-    description: 'Sucherbild einer Kamera (schematische Perspektive mit echter Brennweite) als SVG plus PNG-data-URL in der App. Zum Prüfen der Kadrierung.',
-    parameters: { type: 'object', properties: { cameraId: { type: 'string', description: 'Kamera-ID (Standard: aktive Kamera).' }, timeS: { type: 'number' }, widthPx: { type: 'number', description: 'Breite in px (Standard 960).' }, includePng: { type: 'boolean' } } },
+    description: 'Viewfinder image of a camera (schematic perspective with the real focal length) as SVG plus a PNG data URL in the app. For checking framing.',
+    parameters: { type: 'object', properties: { cameraId: { type: 'string', description: 'Camera ID (default: active camera).' }, timeS: { type: 'number' }, widthPx: { type: 'number', description: 'Width in px (default 960).' }, includePng: { type: 'boolean' } } },
     handler: async (args) => {
       const host = getHost();
       const t = args.timeS === undefined ? getSession().timeS : finite(args.timeS, 0);
       const frame = renderCameraView(host, typeof args.cameraId === 'string' ? args.cameraId : null, t, finite(args.widthPx, 960, 64, 4096));
-      if (!frame) throw new Error('Keine Kamera im Plan.');
+      if (!frame) throw new Error('No camera in the plan.');
       const svg = cameraViewToSvg(frame, { info: `${frame.camera.name} · ${Math.round(frame.camera.focalLengthMm)} mm` });
       const png = args.includePng === false ? null : await renderFrameUrl(host, frame.camera.id, t, frame.width);
       return { cameraId: frame.camera.id, widthPx: frame.width, heightPx: frame.height, horizontalFovDeg: r2(frame.hFov), visible: frame.labels.map((l) => l.text), svg, pngDataUrl: png && png.startsWith('data:image/png') ? png : null };
@@ -211,41 +211,41 @@ const EXTRA_TOOLS: StudioTool[] = [
   },
   {
     name: 'scene_map_render_plan',
-    description: 'Grundriss als SVG (Draufsicht mit Maßstab, Sichtkegeln, Pfaden) zu einem Zeitpunkt.',
+    description: 'Floor plan as SVG (top view with scale, view cones, paths) at a point in time.',
     parameters: { type: 'object', properties: { timeS: { type: 'number' }, widthPx: { type: 'number' }, theme: { type: 'string', enum: ['light', 'dark'] } } },
     handler: (args) => {
-      const out = planToSvg(getHost(), { timeS: args.timeS === undefined ? getSession().timeS : finite(args.timeS, 0), widthPx: finite(args.widthPx, 1600, 200, 8000), theme: args.theme === 'dark' ? 'dark' : 'light', title: getBridge()?.getProjectName?.() || 'Kameraplan' });
+      const out = planToSvg(getHost(), { timeS: args.timeS === undefined ? getSession().timeS : finite(args.timeS, 0), widthPx: finite(args.widthPx, 1600, 200, 8000), theme: args.theme === 'dark' ? 'dark' : 'light', title: getBridge()?.getProjectName?.() || 'Camera plan' });
       return { svg: out.svg, widthPx: out.widthPx, heightPx: out.heightPx, boundsM: out.bounds };
     },
   },
   {
     name: 'scene_map_capture_frame',
-    description: 'Sucherbild einer Kamera als Storyboard-Frame am Shot speichern (wird im Plan neben der Kamera und in der Shot-Liste gezeigt).',
+    description: 'Save a camera viewfinder image as the storyboard frame of the shot (shown in the plan next to the camera and in the shot list).',
     writes: true,
-    parameters: { type: 'object', properties: { shotId: { type: 'string', description: 'Shot-ID oder Code wie 1A.' } }, required: ['shotId'] },
+    parameters: { type: 'object', properties: { shotId: { type: 'string', description: 'Shot ID or code such as 1A.' } }, required: ['shotId'] },
     handler: async (args) => {
       const host = getHost();
       const key = String(args.shotId || '');
       const shot = host.stage.shots.find((s) => s.id === key || `${s.number}${s.version}`.toUpperCase() === key.toUpperCase());
-      if (!shot) throw new Error(`Kein Shot „${key}“.`);
+      if (!shot) throw new Error(`No shot “${key}”.`);
       const url = await renderFrameUrl(host, shot.cameraId, shot.startS, 960, `${shot.number}${shot.version}`);
-      if (!url) throw new Error('Sucherbild konnte nicht erzeugt werden.');
+      if (!url) throw new Error('The viewfinder image could not be created.');
       requireOk(dispatch('shot.link', { id: shot.id, frameUrl: url }));
       return { shotId: shot.id, frame: url.slice(0, 40) };
     },
   },
   {
     name: 'scene_map_send_to_storyboard',
-    description: 'Shots ins Storyboard übernehmen: legt Storyboard-Shots an oder aktualisiert verknüpfte (Beschreibung, Kamerawinkel, Objektiv, Figuren) und setzt das Sucherbild als Kompositionsreferenz. Ohne shotIds alle Shots.',
+    description: 'Send shots to the storyboard: creates storyboard shots or updates linked ones (description, camera angle, lens, characters) and sets the viewfinder image as the composition reference. Without shotIds, all shots.',
     writes: true,
-    parameters: { type: 'object', properties: { shotIds: { type: 'array', items: { type: 'string' }, description: 'Shot-IDs oder Codes.' }, withFrames: { type: 'boolean', description: 'Sucherbild als Referenz mitgeben (Standard true).' } } },
+    parameters: { type: 'object', properties: { shotIds: { type: 'array', items: { type: 'string' }, description: 'Shot IDs or codes.' }, withFrames: { type: 'boolean', description: 'Pass the viewfinder image as a reference (default true).' } } },
     handler: async (args) => {
       const b = getBridge();
-      if (!b?.getShotPrompts || !b.setShotPrompts) throw new Error('Storyboard ist nicht verbunden.');
+      if (!b?.getShotPrompts || !b.setShotPrompts) throw new Error('The storyboard is not connected.');
       const host = getHost();
       const keys = Array.isArray(args.shotIds) ? (args.shotIds as unknown[]).map(String) : [];
       const ids = keys.length ? host.stage.shots.filter((s) => keys.includes(s.id) || keys.map((k) => k.toUpperCase()).includes(`${s.number}${s.version}`)).map((s) => s.id) : [];
-      if (keys.length && !ids.length) throw new Error('Keiner der Shots gefunden.');
+      if (keys.length && !ids.length) throw new Error('None of the shots found.');
       const frames: Record<string, string> = {};
       if (args.withFrames !== false) {
         for (const s of host.stage.shots.filter((x) => !ids.length || ids.includes(x.id))) {
@@ -263,11 +263,11 @@ const EXTRA_TOOLS: StudioTool[] = [
   },
   {
     name: 'scene_map_export',
-    description: 'Kameraplan exportieren: pdf (Grundriss + Shot-Liste + Storyboard), png/svg (Grundriss), csv/xlsx (Shot-Liste), json (ganze Szene). saveToProject legt die Datei im Projektordner unter exports/scene-map ab, sonst kommt der Inhalt zurück (Text oder base64).',
-    parameters: { type: 'object', properties: { format: { type: 'string', enum: ['pdf', 'png', 'svg', 'csv', 'xlsx', 'json'] }, title: { type: 'string' }, saveToProject: { type: 'boolean' }, timeS: { type: 'number', description: 'Zeitpunkt für den Grundriss.' } }, required: ['format'] },
+    description: 'Export the camera plan: pdf (floor plan + shot list + storyboard), png/svg (floor plan), csv/xlsx (shot list), json (whole scene). saveToProject puts the file in the project folder under exports/scene-map; otherwise the content is returned (text or base64).',
+    parameters: { type: 'object', properties: { format: { type: 'string', enum: ['pdf', 'png', 'svg', 'csv', 'xlsx', 'json'] }, title: { type: 'string' }, saveToProject: { type: 'boolean' }, timeS: { type: 'number', description: 'Time for the floor plan.' } }, required: ['format'] },
     handler: async (args) => {
       const format = String(args.format) as SceneMapExportFormat;
-      if (!['pdf', 'png', 'svg', 'csv', 'xlsx', 'json'].includes(format)) throw new Error('Format: pdf, png, svg, csv, xlsx oder json.');
+      if (!['pdf', 'png', 'svg', 'csv', 'xlsx', 'json'].includes(format)) throw new Error('Format: pdf, png, svg, csv, xlsx or json.');
       const b = getBridge();
       const out = await exportSceneMap(getHost(), format, { title: typeof args.title === 'string' ? args.title : b?.getProjectName?.(), timeS: args.timeS === undefined ? 0 : finite(args.timeS, 0) });
       const isText = typeof out.data === 'string';
@@ -275,13 +275,13 @@ const EXTRA_TOOLS: StudioTool[] = [
       if (args.saveToProject) {
         const folderPath = b?.getProjectPath?.();
         const api = (globalThis as { window?: { electron?: { writeProjectFile?: (p: unknown) => Promise<unknown> } } }).window?.electron;
-        if (!folderPath || !api?.writeProjectFile) throw new Error('Speichern braucht ein gespeichertes Projekt in der Desktop-App.');
+        if (!folderPath || !api?.writeProjectFile) throw new Error('Saving needs a saved project in the desktop app.');
         const relativePath = `exports/scene-map/${out.fileName}`;
         await api.writeProjectFile({ folderPath, relativePath, data: isText ? out.data : bytesToBase64(out.data as Uint8Array), encoding: isText ? 'utf8' : 'base64' });
         return { saved: true, path: `${folderPath}/${relativePath}`, fileName: out.fileName, bytes: size, note: out.note };
       }
       const limit = 4_000_000;
-      if (size > limit) throw new Error(`Export ist ${size} Byte groß – bitte saveToProject nutzen.`);
+      if (size > limit) throw new Error(`Export is ${size} bytes – please use saveToProject.`);
       return isText
         ? { fileName: out.fileName, mime: out.mime, text: out.data, note: out.note }
         : { fileName: out.fileName, mime: out.mime, base64: bytesToBase64(out.data as Uint8Array), bytes: size, note: out.note };
@@ -289,13 +289,13 @@ const EXTRA_TOOLS: StudioTool[] = [
   },
   {
     name: 'scene_map_import_overview',
-    description: 'Elemente der klassischen Scene-Map-Übersicht (Figuren, Kameras, Requisiten, Licht, Bereiche) in den Kameraplan übernehmen (50 px = 1 m). Die Übersicht bleibt unverändert.',
+    description: 'Copy the elements of the classic Scene Map overview (characters, cameras, props, lights, areas) into the camera plan (50 px = 1 m). The overview stays unchanged.',
     writes: true,
-    parameters: { type: 'object', properties: { sceneId: { type: 'string', description: 'Szene der Übersicht (Standard: aktive).' } } },
+    parameters: { type: 'object', properties: { sceneId: { type: 'string', description: 'Overview scene (default: active).' } } },
     handler: (args) => {
       const state = overviewState();
       const scene = state.scenes.find((s) => s.id === args.sceneId) ?? state.scenes.find((s) => s.id === state.activeSceneId) ?? state.scenes[0];
-      if (!scene) throw new Error('Keine Szene in der Übersicht.');
+      if (!scene) throw new Error('No scene in the overview.');
       const commands = importOverviewScene(scene);
       if (!commands.length) return { imported: 0 };
       const out = dispatchBatch(commands);
@@ -306,7 +306,7 @@ const EXTRA_TOOLS: StudioTool[] = [
   // Classic overview (beats and locations map)
   {
     name: 'scene_map_overview_get',
-    description: 'Klassische Scene-Map-Übersicht lesen: Szenen-Tabs und ihre Elemente (Figur, Requisite, Umgebung, Kamera, Licht, Bereich) mit Pixel-Lage, Größe, Drehung, Cast-Referenz und verknüpften Storyboard-Shots.',
+    description: 'Read the classic Scene Map overview: scene tabs and their elements (character, prop, environment, camera, light, area) with pixel position, size, rotation, cast reference and linked storyboard shots.',
     parameters: { type: 'object', properties: {} },
     handler: () => {
       const state = overviewState();
@@ -315,7 +315,7 @@ const EXTRA_TOOLS: StudioTool[] = [
   },
   {
     name: 'scene_map_overview_add_scene',
-    description: 'Neuen Szenen-Tab in der Scene-Map-Übersicht anlegen und aktivieren.',
+    description: 'Create and activate a new scene tab in the Scene Map overview.',
     writes: true,
     parameters: { type: 'object', properties: { name: { type: 'string' }, description: { type: 'string' } } },
     handler: (args) => {
@@ -327,18 +327,18 @@ const EXTRA_TOOLS: StudioTool[] = [
   },
   {
     name: 'scene_map_overview_select_scene',
-    description: 'Szenen-Tab der Übersicht aktivieren.',
+    description: 'Activate an overview scene tab.',
     parameters: { type: 'object', properties: { sceneId: { type: 'string' } }, required: ['sceneId'] },
     handler: (args) => {
       const state = overviewState();
-      if (!state.scenes.some((s) => s.id === args.sceneId)) throw new Error('Szene nicht gefunden.');
+      if (!state.scenes.some((s) => s.id === args.sceneId)) throw new Error('Scene not found.');
       setOverview({ ...state, activeSceneId: String(args.sceneId) });
       return { activeSceneId: args.sceneId };
     },
   },
   {
     name: 'scene_map_overview_add_element',
-    description: 'Element in die Übersicht setzen (type character|prop|environment|camera|light|area, Lage in Pixel, optional Cast-/Location-Referenz).',
+    description: 'Place an element in the overview (type character|prop|environment|camera|light|area, position in pixels, optional cast/location reference).',
     writes: true,
     parameters: { type: 'object', properties: { type: { type: 'string', enum: OVERVIEW_TYPES }, x: { type: 'number' }, y: { type: 'number' }, label: { type: 'string' }, referenceId: { type: 'string' }, sceneId: { type: 'string' } }, required: ['type'] },
     handler: (args) => {
@@ -347,14 +347,14 @@ const EXTRA_TOOLS: StudioTool[] = [
       const type = (OVERVIEW_TYPES.includes(args.type as SceneMapElementType) ? args.type : 'prop') as SceneMapElementType;
       const ref = typeof args.referenceId === 'string' ? getBridge()?.getReferences?.().find((r) => r.id === args.referenceId) : undefined;
       const el = createSceneMapElement(type, { x: finite(args.x, 200), y: finite(args.y, 200) }, { ...(args.label || ref?.name ? { label: String(args.label || ref?.name) } : {}), ...(ref ? { referenceId: ref.id, imageUrl: ref.imageUrl || undefined } : {}) });
-      if (!state.scenes.some((s) => s.id === sceneId)) throw new Error('Szene nicht gefunden.');
+      if (!state.scenes.some((s) => s.id === sceneId)) throw new Error('Scene not found.');
       setOverview({ ...state, activeSceneId: state.activeSceneId ?? sceneId, scenes: state.scenes.map((s) => (s.id === sceneId ? { ...s, elements: [...s.elements, el] } : s)) });
       return { elementId: el.id, sceneId };
     },
   },
   {
     name: 'scene_map_overview_update_element',
-    description: 'Übersichts-Element ändern: Lage, Größe, Drehung, Beschriftung, Farbe, verknüpfte Storyboard-Shots.',
+    description: 'Change an overview element: position, size, rotation, label, color, linked storyboard shots.',
     writes: true,
     parameters: { type: 'object', properties: { elementId: { type: 'string' }, x: { type: 'number' }, y: { type: 'number' }, width: { type: 'number' }, height: { type: 'number' }, rotation: { type: 'number' }, label: { type: 'string' }, color: { type: 'string' }, linkedShotNumbers: { type: 'array', items: { type: 'number' } } }, required: ['elementId'] },
     handler: (args) => {
@@ -376,14 +376,14 @@ const EXTRA_TOOLS: StudioTool[] = [
           };
         }),
       }));
-      if (!found) throw new Error('Element nicht gefunden.');
+      if (!found) throw new Error('Element not found.');
       setOverview({ ...state, scenes });
       return { elementId: args.elementId };
     },
   },
   {
     name: 'scene_map_overview_delete_element',
-    description: 'Element aus der Scene-Map-Übersicht entfernen.',
+    description: 'Remove an element from the Scene Map overview.',
     writes: true,
     destructive: true,
     parameters: { type: 'object', properties: { elementId: { type: 'string' } }, required: ['elementId'] },
@@ -391,7 +391,7 @@ const EXTRA_TOOLS: StudioTool[] = [
       const state = overviewState();
       const before = state.scenes.reduce((n, s) => n + s.elements.length, 0);
       const scenes = state.scenes.map((s) => ({ ...s, elements: s.elements.filter((e) => e.id !== args.elementId) }));
-      if (scenes.reduce((n, s) => n + s.elements.length, 0) === before) throw new Error('Element nicht gefunden.');
+      if (scenes.reduce((n, s) => n + s.elements.length, 0) === before) throw new Error('Element not found.');
       setOverview({ ...state, scenes });
       return { deleted: args.elementId };
     },

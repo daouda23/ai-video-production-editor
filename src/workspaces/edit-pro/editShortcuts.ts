@@ -90,14 +90,14 @@ export const formatShuttleRate = (rate: number): string => (rate === 0 ? '' : `$
 
 /** Entries for the shortcuts sheet (keeps docs next to the map). */
 export const EDIT_SHORTCUT_DOCS: Array<{ keys: string; desc: string }> = [
-    { keys: 'M', desc: 'Marke an der Abspielposition setzen' },
-    { keys: 'Shift+M / Cmd+Shift+M', desc: 'Nächste / vorherige Marke' },
+    { keys: 'M', desc: 'Set marker at the playhead' },
+    { keys: 'Shift+M / Cmd+Shift+M', desc: 'Next / previous marker' },
     { keys: '; / \'', desc: 'Herausheben / Extrahieren (In/Out)' },
-    { keys: ', / .', desc: 'Einfügen / Überschreiben aus der Quelle' },
-    { keys: 'J / K / L', desc: 'Shuttle rückwärts / Stopp / vorwärts (1×, 2×, 4×)' },
-    { keys: 'K+J / K+L', desc: 'Ein Bild zurück / vor' },
-    { keys: '↑ / ↓', desc: 'Vorheriger / nächster Schnittpunkt' },
-    { keys: '= / - / \\', desc: 'Timeline zoomen / Sequenz einpassen' },
-    { keys: 'Shift+= / Shift+-', desc: 'Alle Spuren höher / niedriger' },
-    { keys: 'Shift+Entf / Alt+Entf', desc: 'Löschen und Lücke schließen' },
+    { keys: ', / .', desc: 'Insert / Overwrite from source' },
+    { keys: 'J / K / L', desc: 'Shuttle reverse / stop / forward (1×, 2×, 4×)' },
+    { keys: 'K+J / K+L', desc: 'Previous / next frame' },
+    { keys: '↑ / ↓', desc: 'Previous / next edit point' },
+    { keys: '= / - / \\', desc: 'Zoom timeline / fit sequence' },
+    { keys: 'Shift+= / Shift+-', desc: 'All tracks taller / shorter' },
+    { keys: 'Shift+Entf / Alt+Entf', desc: 'Delete and close gap' },
 ];

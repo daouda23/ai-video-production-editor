@@ -43,7 +43,7 @@ const doc3d = (): StoredDocument => ({
     // Stand-in made in 3D: rotation.y 0 → nose along +Z → faces the camera side (south) in the plan.
     { id: 'p-1', name: 'Mia', kind: 'primitive', primitive: 'person', position: { x: 1, y: 0.875, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 }, material: { color: '#aabbcc', roughness: 0.4 } },
   ],
-  cameras: [{ id: 'cam-3d', name: 'Kamera', position: { x: 0, y: 1.5, z: 5 }, rotation: { x: 0, y: 0, z: 0 }, lensMm: 50, sensorWidthMm: 36, sensorHeightMm: 24, sensorFit: 'auto', shiftX: 0.1, clipStart: 0.05 }],
+  cameras: [{ id: 'cam-3d', name: 'Camera', position: { x: 0, y: 1.5, z: 5 }, rotation: { x: 0, y: 0, z: 0 }, lensMm: 50, sensorWidthMm: 36, sensorHeightMm: 24, sensorFit: 'auto', shiftX: 0.1, clipStart: 0.05 }],
   activeCameraId: 'cam-3d',
 });
 

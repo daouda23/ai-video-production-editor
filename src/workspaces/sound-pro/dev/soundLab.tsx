@@ -66,12 +66,12 @@ const media: MediaItem[] = [
   { id: 'm-dialog', name: 'Dialog Szene 4 (TTS).wav', type: 'audio', url: wavUrl(makeDialog(16)), source: 'generated', generatedBy: 'ElevenLabs Voiceover', duration: 16 },
   { id: 'm-music', name: 'Score Cue 1.wav', type: 'audio', url: wavUrl(makeMusic(26)), source: 'generated', generatedBy: 'Lyria 2 Music', duration: 26 },
   { id: 'm-sfx', name: 'Impacts.wav', type: 'audio', url: wavUrl(makeHits(5)), source: 'generated', generatedBy: 'Lyria 2 SFX', duration: 5 },
-  { id: 'm-room', name: 'Raumton Halle.wav', type: 'audio', url: wavUrl(makeRoom(26)), source: 'upload', duration: 26 },
+  { id: 'm-room', name: 'Room tone hall.wav', type: 'audio', url: wavUrl(makeRoom(26)), source: 'upload', duration: 26 },
 ];
 const tracksInit: TimelineTrack[] = [
   { id: 'a1', name: 'Dialog', type: 'audio', isLocked: false, isMuted: false },
-  { id: 'a2', name: 'Musik', type: 'audio', isLocked: false, isMuted: false },
-  { id: 'a3', name: 'Effekte', type: 'audio', isLocked: false, isMuted: false },
+  { id: 'a2', name: 'Music', type: 'audio', isLocked: false, isMuted: false },
+  { id: 'a3', name: 'Effects', type: 'audio', isLocked: false, isMuted: false },
   { id: 'a4', name: 'Atmo', type: 'audio', isLocked: false, isMuted: false },
 ];
 const clip = (id: string, mediaId: string, trackId: string, start: number, end: number, sourceIn = 0): TimelineClip => ({

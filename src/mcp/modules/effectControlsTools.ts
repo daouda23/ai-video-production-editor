@@ -135,7 +135,7 @@ function selectionFor(clip: TimelineClip, key: string, args: Record<string, unkn
 
 export const EFFECT_CONTROLS_TOOL_MODULE: StudioToolModule = {
   id: 'effect-controls',
-  label: 'Effekteinstellungen & Keyframes',
+  label: 'Effect controls & keyframes',
   tools: [
     {
       name: 'effect_controls_get',

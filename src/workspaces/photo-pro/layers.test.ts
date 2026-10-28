@@ -8,12 +8,12 @@ import {
 import type { PhotoDoc } from './layers.ts';
 import { defaultAdjustment } from './adjustments.ts';
 
-const bg = makeRasterLayer('L1', 'Hintergrund', 'px-1', 100, 50);
+const bg = makeRasterLayer('L1', 'Background', 'px-1', 100, 50);
 const base = (): PhotoDoc => createDoc('test.png', 100, 50, [bg]);
 
 test('add inserts above the active layer and activates it', () => {
   let doc = base();
-  doc = docReducer(doc, { type: 'add', layer: makeRasterLayer('L2', 'Ebene 1', 'px-2', 100, 50) });
+  doc = docReducer(doc, { type: 'add', layer: makeRasterLayer('L2', 'Layer 1', 'px-2', 100, 50) });
   doc = docReducer(doc, { type: 'select', id: 'L1' });
   doc = docReducer(doc, { type: 'add', layer: makeTextLayer('T1', 10, 10) });
   assert.deepEqual(doc.layers.map((l) => l.id), ['L1', 'T1', 'L2']);
@@ -22,7 +22,7 @@ test('add inserts above the active layer and activates it', () => {
 
 test('remove picks the layer below as active and respects locks', () => {
   let doc = base();
-  doc = docReducer(doc, { type: 'add', layer: makeRasterLayer('L2', 'Ebene 1', 'px-2', 100, 50) });
+  doc = docReducer(doc, { type: 'add', layer: makeRasterLayer('L2', 'Layer 1', 'px-2', 100, 50) });
   doc = docReducer(doc, { type: 'remove', id: 'L2' });
   assert.deepEqual(doc.layers.map((l) => l.id), ['L1']);
   assert.equal(doc.activeLayerId, 'L1');
@@ -54,16 +54,16 @@ test('duplicate shares the immutable pixel key and names the copy', () => {
   let doc = base();
   doc = docReducer(doc, { type: 'duplicate', id: 'L1', newId: 'L9' });
   assert.deepEqual(doc.layers.map((l) => l.id), ['L1', 'L9']);
-  assert.equal(doc.layers[1].name, 'Hintergrund Kopie');
+  assert.equal(doc.layers[1].name, 'Background copy');
   assert.equal((doc.layers[1] as any).pixelKey, 'px-1');
-  assert.equal(copyName(doc, 'Hintergrund'), 'Hintergrund Kopie 2');
+  assert.equal(copyName(doc, 'Background'), 'Background copy 2');
   assert.equal(doc.activeLayerId, 'L9');
 });
 
 test('replace (merge down / flatten) puts the result at the lowest position', () => {
   let doc = base();
   doc = docReducer(doc, { type: 'add', layer: makeRasterLayer('L2', 'A', 'px-2', 1, 1) });
-  doc = docReducer(doc, { type: 'add', layer: makeAdjustmentLayer('A1', 'Belichtung 1', defaultAdjustment('exposure')) });
+  doc = docReducer(doc, { type: 'add', layer: makeAdjustmentLayer('A1', 'Exposure 1', defaultAdjustment('exposure')) });
   assert.ok(canMergeDown(doc, 'A1'));
   assert.ok(!canMergeDown(doc, 'L1'), 'bottom layer has nothing below');
   const merged = makeRasterLayer('M', 'A', 'px-m', 100, 50);
@@ -98,9 +98,9 @@ test('selection keeps the previous one for "Erneut auswählen" and pixel keys ar
 
 test('layer names count up and blend modes map to canvas operations', () => {
   let doc = base();
-  assert.equal(nextLayerName(doc), 'Ebene 1');
-  doc = docReducer(doc, { type: 'add', layer: makeRasterLayer('L2', 'Ebene 4', 'px-2', 1, 1) });
-  assert.equal(nextLayerName(doc), 'Ebene 5');
+  assert.equal(nextLayerName(doc), 'Layer 1');
+  doc = docReducer(doc, { type: 'add', layer: makeRasterLayer('L2', 'Layer 4', 'px-2', 1, 1) });
+  assert.equal(nextLayerName(doc), 'Layer 5');
   assert.equal(blendToComposite('normal'), 'source-over');
   assert.equal(blendToComposite('multiply'), 'multiply');
 });

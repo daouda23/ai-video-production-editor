@@ -24,17 +24,17 @@ export const importOverviewScene = (scene: SceneMapScene): Array<{ command: stri
     const d = Math.max(0.2, (e.size?.height ?? 50) / OVERVIEW_PX_PER_M);
     switch (e.type) {
       case 'character':
-        out.push({ command: 'character.add', params: { name: label || 'Figur', x, z, yawDeg, ...(e.referenceId ? { referenceId: e.referenceId } : {}) } });
+        out.push({ command: 'character.add', params: { name: label || 'Character', x, z, yawDeg, ...(e.referenceId ? { referenceId: e.referenceId } : {}) } });
         break;
       case 'camera':
         out.push({ command: 'camera.add', params: { x, z, yawDeg, ...(label && label.length <= 3 ? { name: label } : {}) } });
         break;
       case 'light':
-        out.push({ command: 'plan.addElement', params: { category: 'light', x, z, yawDeg, label: label || 'Licht' } });
+        out.push({ command: 'plan.addElement', params: { category: 'light', x, z, yawDeg, label: label || 'Light' } });
         break;
       case 'area':
       case 'environment':
-        out.push({ command: 'plan.addElement', params: { category: 'rug', x, z, w, d, yawDeg, label: label || 'Bereich' } });
+        out.push({ command: 'plan.addElement', params: { category: 'rug', x, z, w, d, yawDeg, label: label || 'Range' } });
         break;
       default:
         out.push({ command: 'plan.addElement', params: { category: 'box', x, z, w: Math.min(w, 3), d: Math.min(d, 3), yawDeg, label: label || 'Requisite' } });

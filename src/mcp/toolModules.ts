@@ -103,7 +103,7 @@ export function collectStudioTools(getContext: () => StudioToolContext) {
     for (const tool of module.tools) {
       if (seen.has(tool.name)) throw new Error(`Duplicate MCP tool name "${tool.name}" (module ${module.id}).`);
       seen.add(tool.name);
-      const prefix = `${tool.cost === 'paid' ? '[KOSTET CREDITS] ' : ''}${tool.destructive ? '[LÖSCHT] ' : ''}`;
+      const prefix = `${tool.cost === 'paid' ? '[KOSTET CREDITS] ' : ''}${tool.destructive ? '[DELETES] ' : ''}`;
       declarations.push({ name: tool.name, description: `${prefix}${tool.description}${tool.writes ? ' (changes the project)' : ''}`, parameters: tool.parameters });
       executor[tool.name] = async (args) => {
         try {

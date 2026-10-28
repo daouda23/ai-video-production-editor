@@ -35,7 +35,7 @@ test('color_ai: look, LUTs, .cube export and paid AI colorist with confirm', asy
   try {
     const byName = new Map(mcp.list().map((tool) => [tool.name, tool]));
     for (const paid of ['color_ai_analyze', 'color_ai_match_reference', 'color_ai_prompt_grade', 'color_ai_audio_cues']) assert.match(byName.get(paid)!.description, /KOSTET CREDITS/);
-    for (const del of ['color_ai_look_reset', 'color_ai_lut_remove']) assert.match(byName.get(del)!.description, /LÖSCHT/);
+    for (const del of ['color_ai_look_reset', 'color_ai_lut_remove']) assert.match(byName.get(del)!.description, /DELETES/);
 
     await mcp.call('color_ai_look_set', { lut: 'kodak-2383', grain: 20 });
     assert.equal(look().grain, 20);

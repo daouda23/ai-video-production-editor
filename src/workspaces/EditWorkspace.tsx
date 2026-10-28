@@ -469,18 +469,18 @@ const SHORTCUT_SECTIONS: Array<{ title: string; shortcuts: Array<{ keys: string;
         ],
     },
     {
-        title: 'Profi-Layout: Marken, Schnitt, Shuttle',
+        title: 'Pro layout: markers, edit, shuttle',
         shortcuts: EDIT_SHORTCUT_DOCS,
     },
     {
-        title: 'Profi-Layout (Schnitt/Farbe/Effekte/Audio)',
+        title: 'Pro layout (edit/color/effects/audio)',
         shortcuts: [
-            { keys: 'V / A / B / C', desc: 'Auswahl / Spur vorwärts / Ripple / Rasierklinge' },
+            { keys: 'V / A / B / C', desc: 'Selection / Track forward / Ripple / Razor' },
             { keys: 'Y / H / T', desc: 'Slip / Hand / Text' },
-            { keys: 'Cmd/Ctrl+K', desc: 'Clip an der Abspielposition teilen' },
-            { keys: 'I / O', desc: 'In/Out (Quelle, wenn Quellmonitor fokussiert)' },
-            { keys: 'Space', desc: 'Abspielen (fokussierter Monitor)' },
-            { keys: '`', desc: 'Panel maximieren' },
+            { keys: 'Cmd/Ctrl+K', desc: 'Split the clip at the playhead' },
+            { keys: 'I / O', desc: 'In/Out (source when the source monitor is focused)' },
+            { keys: 'Space', desc: 'Play (focused monitor)' },
+            { keys: '`', desc: 'Maximize panel' },
         ],
     },
     {
@@ -684,7 +684,7 @@ const LINKED_SELECTION_KEY = 'edit_pro_linked_selection_v1';
 const PLAYBACK_RES_KEY = 'edit_pro_playback_resolution_v1';
 
 const MONITOR_ZOOM_OPTIONS: Array<{ value: MonitorZoom; label: string }> = [
-    { value: 'fit', label: 'Einpassen' },
+    { value: 'fit', label: 'Fit' },
     { value: 25, label: '25 %' },
     { value: 50, label: '50 %' },
     { value: 75, label: '75 %' },
@@ -905,7 +905,7 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
     const do3PE = (mode: 'insert' | 'overwrite', options: { silent?: boolean } = {}): { ok: boolean; message: string } => {
         // Non-blocking: a toast instead of window.alert (dialogs freeze the tab / automation).
         const fail = (message: string) => { if (!options.silent) setProNotice(message); return { ok: false, message }; };
-        if (!srcSource) return fail('Erst ein Medium in den Quellmonitor laden.');
+        if (!srcSource) return fail('Load media into the source monitor first.');
         if (srcSource.kind === 'library') {
             void props.onImportLibraryAsset(externalSourceAsset!, {
                 collectToProject: true,
@@ -1184,7 +1184,7 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
         });
 
         if (!best || best.score < 3) {
-            setProNotice('Kein passender Clip für die Lücke gefunden – im Projekt-Panel manuell wählen.');
+            setProNotice('No matching clip found for the gap – choose one manually in the project panel.');
             return;
         }
 
@@ -1477,7 +1477,7 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
         setSelectedMarkerId(result.marker.id);
         // Second M on the same frame opens the marker for editing (like an NLE marker dialog).
         if (!result.created) dispatchPro({ type: 'openPanel', panel: 'markers' });
-        else setProNotice(`Marke gesetzt · ${formatTimecode(result.marker.time)}`);
+        else setProNotice(`Marker set · ${formatTimecode(result.marker.time)}`);
     }, [setMarkers]);
     const updateMarkerById = useCallback((id: string, patch: MarkerPatch) => setMarkers((prev) => updateMarker(prev, id, patch, DEFAULT_TIMELINE_FPS)), [setMarkers]);
     const removeMarkerById = useCallback((id: string) => setMarkers((prev) => removeMarker(prev, id)), [setMarkers]);
@@ -1493,7 +1493,7 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
     const liftOrExtract = useCallback((mode: 'lift' | 'extract') => {
         const sequenceEnd = timelineClipsRef.current.reduce((max, clip) => Math.max(max, clip.end), 0);
         if (pgmIn === null && pgmOut === null) {
-            setProNotice('Erst In (I) und Out (O) im Programm setzen');
+            setProNotice('Set In (I) and Out (O) in the program first');
             return;
         }
         const start = pgmIn ?? 0;
@@ -1504,7 +1504,7 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
         const op = mode === 'lift' ? liftRange : extractRange;
         const result = op(timelineClipsRef.current, trackIds, start, end, { makeId, minLength: 1 / DEFAULT_TIMELINE_FPS });
         if (!result.changed) {
-            setProNotice('Im In/Out-Bereich liegt nichts auf den Zielspuren');
+            setProNotice('Nothing on the target tracks in the In/Out range');
             return;
         }
         props.onBatchUpdateClips(result.clips);
@@ -1513,7 +1513,7 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
         setPgmIn(null);
         setPgmOut(null);
         props.onPlayheadUpdate(start);
-        setProNotice(mode === 'lift' ? 'Herausgehoben (Lücke bleibt)' : 'Extrahiert (Lücke geschlossen)');
+        setProNotice(mode === 'lift' ? 'Lifted (gap stays)' : 'Extracted (gap closed)');
     }, [pgmIn, pgmOut, timelineTracks, props.onBatchUpdateClips, props.onPlayheadUpdate, props.onSelectClip, props.selectedClipId, setMarkers]);
 
     // J/K/L shuttle: 1× uses the app's normal playback (with audio); 2×/4× and reverse scrub the playhead.
@@ -1613,8 +1613,8 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
                 if (isPlaybackResolution(value)) setPlaybackRes((prev) => ({ ...prev, [target]: value }));
             }}
             title={target === 'program'
-                ? 'Wiedergabeauflösung: GPU-Effektvorschau in voller, halber oder Viertel-Auflösung (Export immer voll)'
-                : 'Wiedergabeauflösung der Quelle (für die Effektvorschau; Export immer voll)'}
+                ? 'Playback resolution: GPU effect preview at full, half or quarter resolution (export is always full)'
+                : 'Source playback resolution (for the effect preview; export is always full)'}
             data-automation-id={`pp.${target}.resolution`}
         >
             {PLAYBACK_RESOLUTIONS.map((entry) => <option key={entry.id} value={entry.id}>{entry.label}</option>)}
@@ -1788,7 +1788,7 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
         event.stopPropagation();
         const rect = event.currentTarget.getBoundingClientRect();
         props.onCreateTextClip({
-            content: 'Neuer Text',
+            content: 'New text',
             position: textPositionForPoint((event.clientX - rect.left) / Math.max(1, rect.width), (event.clientY - rect.top) / Math.max(1, rect.height)),
             startTime: props.playheadPosition,
         });
@@ -2018,7 +2018,7 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
                 ref={proStageRef}
                 className={`ppx-monitor__stage ${pro.monitorZoom !== 'fit' ? 'ppx-monitor__stage--zoomed' : ''}`}
                 onDoubleClick={() => { if (pro.tool !== 'type') setIsFullscreen(true); }}
-                title={pro.tool === 'type' ? 'Klicken: Textclip an der Abspielposition anlegen' : 'Doppelklick: Vollbild'}
+                title={pro.tool === 'type' ? 'Click: add a text clip at the playhead' : 'Double-click: full screen'}
             >
                 <div
                     className="ppx-monitor__canvas"
@@ -2059,20 +2059,20 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
                     )}
                     {pro.safeMargins && (
                         <div className="ppx-safe" aria-hidden data-automation-id="pp.program.safe-overlay">
-                            <div className="ppx-safe__box" style={{ inset: '5%' }} title="Aktionssicher" />
-                            <div className="ppx-safe__box" style={{ inset: '10%' }} title="Titelsicher" />
+                            <div className="ppx-safe__box" style={{ inset: '5%' }} title="Action safe" />
+                            <div className="ppx-safe__box" style={{ inset: '10%' }} title="Title safe" />
                             <div className="ppx-safe__cross" />
                         </div>
                     )}
                 </div>
                 {timelineClips.length === 0 && (
                     <div className="edit-monitor-empty">
-                        <strong>Die Sequenz ist leer</strong>
-                        <span>Medien aus dem Projekt-Panel auf eine Spur ziehen oder im Quellmonitor In/Out setzen und „Insert“ drücken.</span>
+                        <strong>The sequence is empty</strong>
+                        <span>Drag media from the project panel onto a track, or set In/Out in the source monitor and press “Insert”.</span>
                     </div>
                 )}
                 {props.selectedMedia?.type === 'image' && (
-                    <button onClick={(e) => { e.stopPropagation(); setImageEditorOpen(true); }} className="edit-monitor-panel__overlay-btn" title="Bildeditor öffnen" data-automation-id="pp.program.image-editor">
+                    <button onClick={(e) => { e.stopPropagation(); setImageEditorOpen(true); }} className="edit-monitor-panel__overlay-btn" title="Open image editor" data-automation-id="pp.program.image-editor">
                         <BrushIcon className="w-4 h-4" />
                     </button>
                 )}
@@ -2089,7 +2089,7 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
                     className="ppx-select"
                     value={String(pro.monitorZoom)}
                     onChange={(event) => dispatchPro({ type: 'setMonitorZoom', zoom: (event.target.value === 'fit' ? 'fit' : Number(event.target.value)) as MonitorZoom })}
-                    title="Zoomstufe"
+                    title="Zoom level"
                     data-automation-id="pp.program.zoom"
                 >
                     {MONITOR_ZOOM_OPTIONS.map((option) => <option key={String(option.value)} value={String(option.value)}>{option.label}</option>)}
@@ -2100,30 +2100,30 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
                     className={`ppx-icon ${pro.safeMargins ? 'ppx-icon--on' : ''}`}
                     onClick={() => dispatchPro({ type: 'setSafeMargins', value: !pro.safeMargins })}
                     aria-pressed={pro.safeMargins}
-                    title="Sicherheitsränder ein/aus"
+                    title="Safe areas on/off"
                     data-automation-id="pp.program.safe-margins"
                 >
                     <Frame size={13} />
                 </button>
-                <select value={guides} onChange={(e) => setGuides(e.target.value as typeof guides)} className="ppx-select" title="Hilfslinien" data-automation-id="pp.program.guides">
-                    <option value="off">Keine Hilfslinien</option>
-                    <option value="thirds">Drittel</option>
-                    <option value="safe">Sicherheitsbereiche</option>
-                    <option value="both">Drittel + Sicherheit</option>
+                <select value={guides} onChange={(e) => setGuides(e.target.value as typeof guides)} className="ppx-select" title="Guides" data-automation-id="pp.program.guides">
+                    <option value="off">No guides</option>
+                    <option value="thirds">Thirds</option>
+                    <option value="safe">Safe areas</option>
+                    <option value="both">Thirds + safe areas</option>
                 </select>
-                <select value={mask} onChange={(e) => setMask(e.target.value)} className="ppx-select" title="Seitenverhältnis-Maske" data-automation-id="pp.program.mask">
-                    {MASK_PRESETS.map((preset) => <option key={preset.id} value={preset.id}>{preset.id === 'none' ? 'Keine Maske' : preset.label}</option>)}
+                <select value={mask} onChange={(e) => setMask(e.target.value)} className="ppx-select" title="Aspect ratio mask" data-automation-id="pp.program.mask">
+                    {MASK_PRESETS.map((preset) => <option key={preset.id} value={preset.id}>{preset.id === 'none' ? 'No mask' : preset.label}</option>)}
                 </select>
                 <span className="ppx-monitor__spacer" />
-                <span className="ppx-monitor__name">{props.projectName || 'Unbenannte Sequenz'}</span>
-                <button type="button" className="ppx-icon" onClick={() => setIsFullscreen(true)} title="Vollbild (F11)" data-automation-id="pp.program.fullscreen">
+                <span className="ppx-monitor__name">{props.projectName || 'Untitled sequence'}</span>
+                <button type="button" className="ppx-icon" onClick={() => setIsFullscreen(true)} title="Full screen (F11)" data-automation-id="pp.program.fullscreen">
                     <Maximize size={13} />
                 </button>
-                <span className="ppx-monitor__dur" title="Sequenzdauer">{formatTimecode(sequenceDuration)}</span>
+                <span className="ppx-monitor__dur" title="Sequence duration">{formatTimecode(sequenceDuration)}</span>
             </div>
             <div className="ppx-transport-wrap">
             {markers.length > 0 && sequenceDuration > 0 && (
-                <div className="ppx-scrub-markers" aria-label="Sequenzmarken" data-automation-id="pp.program.markers">
+                <div className="ppx-scrub-markers" aria-label="Sequence markers" data-automation-id="pp.program.markers">
                     {markers.map((marker, index) => (
                         <button
                             key={marker.id}
@@ -2153,10 +2153,10 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
                 onClearMarks={() => { setPgmIn(null); setPgmOut(null); }}
                 trailing={(
                     <div className="edit-transport__actions">
-                        <button onClick={() => liftOrExtract('lift')} className="edit-icon-btn" disabled={pgmIn === null && pgmOut === null} title="Herausheben: In/Out-Bereich der Zielspuren entfernen, Lücke bleibt (;)" data-automation-id="pp.program.lift"><ArrowUpFromLine className="w-4 h-4" /></button>
-                        <button onClick={() => liftOrExtract('extract')} className="edit-icon-btn" disabled={pgmIn === null && pgmOut === null} title="Extrahieren: In/Out-Bereich entfernen und Lücke schließen (')" data-automation-id="pp.program.extract"><FoldHorizontal className="w-4 h-4" /></button>
-                        {srcSource && <button onClick={() => do3PE('insert')} className="edit-icon-btn" title="Einfügen: Quellbereich an der Abspielposition einfügen (,)" data-automation-id="pp.program.insert"><ArrowRightToLine className="w-4 h-4" /></button>}
-                        {srcSource && <button onClick={() => do3PE('overwrite')} className="edit-icon-btn" title="Überschreiben: Quellbereich an der Abspielposition überschreiben (.)" data-automation-id="pp.program.overwrite"><ArrowDownToLine className="w-4 h-4" /></button>}
+                        <button onClick={() => liftOrExtract('lift')} className="edit-icon-btn" disabled={pgmIn === null && pgmOut === null} title="Lift: remove the In/Out range on the target tracks, the gap stays (;)" data-automation-id="pp.program.lift"><ArrowUpFromLine className="w-4 h-4" /></button>
+                        <button onClick={() => liftOrExtract('extract')} className="edit-icon-btn" disabled={pgmIn === null && pgmOut === null} title="Extract: remove the In/Out range and close the gap (')" data-automation-id="pp.program.extract"><FoldHorizontal className="w-4 h-4" /></button>
+                        {srcSource && <button onClick={() => do3PE('insert')} className="edit-icon-btn" title="Insert: insert the source range at the playhead (,)" data-automation-id="pp.program.insert"><ArrowRightToLine className="w-4 h-4" /></button>}
+                        {srcSource && <button onClick={() => do3PE('overwrite')} className="edit-icon-btn" title="Overwrite: overwrite the source range at the playhead (.)" data-automation-id="pp.program.overwrite"><ArrowDownToLine className="w-4 h-4" /></button>}
                     </div>
                 )}
             />
@@ -2310,17 +2310,17 @@ const EditWorkspace: React.FC<EditWorkspaceProps> = (props) => {
 
     const proBarTrailing = (
         <>
-            <select value={preview.presetId} onChange={handlePresetChange} className="edit-select" title="Seitenverhältnis der Sequenz" data-automation-id="pp.sequence.aspect">
-                {PREVIEW_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label === 'Custom' ? 'Eigenes…' : p.label}</option>)}
+            <select value={preview.presetId} onChange={handlePresetChange} className="edit-select" title="Sequence aspect ratio" data-automation-id="pp.sequence.aspect">
+                {PREVIEW_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label === 'Custom' ? 'Custom…' : p.label}</option>)}
             </select>
             {preview.presetId === 'custom' && (
                 <>
-                    <input type="number" min="1" value={preview.width} onChange={e => handleDimChange('width', Number(e.target.value))} className="edit-input w-[4.4rem]" title="Breite" data-automation-id="pp.sequence.width" />
+                    <input type="number" min="1" value={preview.width} onChange={e => handleDimChange('width', Number(e.target.value))} className="edit-input w-[4.4rem]" title="Width" data-automation-id="pp.sequence.width" />
                     <span className="edit-toolbar__hint">×</span>
-                    <input type="number" min="1" value={preview.height} onChange={e => handleDimChange('height', Number(e.target.value))} className="edit-input w-[4.4rem]" title="Höhe" data-automation-id="pp.sequence.height" />
+                    <input type="number" min="1" value={preview.height} onChange={e => handleDimChange('height', Number(e.target.value))} className="edit-input w-[4.4rem]" title="Height" data-automation-id="pp.sequence.height" />
                 </>
             )}
-            <button onClick={() => setShowShortcuts(true)} className="ppx-icon" title="Tastaturkürzel (?)" data-automation-id="pp.shortcuts">
+            <button onClick={() => setShowShortcuts(true)} className="ppx-icon" title="Keyboard shortcuts (?)" data-automation-id="pp.shortcuts">
                 <KeyboardIcon className="w-4 h-4" />
             </button>
         </>

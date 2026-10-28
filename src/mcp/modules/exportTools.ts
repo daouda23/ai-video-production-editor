@@ -26,7 +26,7 @@ const timelineDuration = (ctx: StudioToolContext) => ctx.getState().timelineClip
 const timelineName = (ctx: StudioToolContext) => {
     const projectPath = ctx.getState().projectPath;
     const base = projectPath ? projectPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '';
-    return base || 'Sequenz';
+    return base || 'Sequence';
 };
 const jobCtx = (ctx: StudioToolContext) => ({
     timelineDuration: timelineDuration(ctx),
@@ -229,7 +229,7 @@ export const EXPORT_TOOL_MODULE: StudioToolModule = {
         },
         {
             name: 'export_view_set',
-            description: 'Switch the Export page layout: "premiere" (Ziele | Einstellungen | Vorschau) or "davinci" (Render-Settings | Viewer | Render-Queue).',
+            description: 'Switch the Export page layout: "premiere" (Destinations | Settings | Preview) or "davinci" (Render Settings | Viewer | Render Queue).',
             writes: true,
             parameters: { type: 'object', properties: { view: { type: 'string', enum: ['premiere', 'davinci'] }, open: { type: 'boolean', description: 'Also open the Export page.' } }, required: ['view'] },
             handler: (args, ctx) => {

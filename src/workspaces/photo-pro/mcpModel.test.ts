@@ -6,9 +6,9 @@ import { createDoc, makeAdjustmentLayer, makeRasterLayer, makeTextLayer } from '
 import { defaultAdjustment } from './adjustments.ts';
 
 const doc = () => createDoc('a.png', 100, 50, [
-  makeRasterLayer('L1', 'Hintergrund', 'px-1', 100, 50),
-  makeTextLayer('T1', 5, 5, { text: 'Hallo' }),
-  makeAdjustmentLayer('A1', 'Belichtung 1', defaultAdjustment('exposure')),
+  makeRasterLayer('L1', 'Background', 'px-1', 100, 50),
+  makeTextLayer('T1', 5, 5, { text: 'Hello' }),
+  makeAdjustmentLayer('A1', 'Exposure 1', defaultAdjustment('exposure')),
 ]);
 
 test('opacity and blend mode parsing', () => {
@@ -17,7 +17,7 @@ test('opacity and blend mode parsing', () => {
   assert.equal(parseOpacity(-3), 0);
   assert.equal(parseBlendMode('multiply'), 'multiply');
   assert.equal(parseBlendMode('soft_light'), 'soft-light');
-  assert.equal(parseBlendMode('Negativ multiplizieren'), 'screen');
+  assert.equal(parseBlendMode('Screen'), 'screen');
   assert.throws(() => parseBlendMode('nope'), /Unknown blend mode/);
 });
 
@@ -33,7 +33,7 @@ test('adjustment values merge with defaults and are validated', () => {
 test('layer patches respect kind and lock', () => {
   const d = doc();
   assert.deepEqual(layerPatchFromArgs(d.layers[0], { opacity: 50, blendMode: 'overlay', x: 3.6, visible: false }), { opacity: 0.5, blendMode: 'overlay', visible: false, x: 4 });
-  assert.deepEqual(layerPatchFromArgs(d.layers[1], { text: 'Neu', fontSize: 40, align: 'center' }), { text: 'Neu', fontSize: 40, align: 'center' });
+  assert.deepEqual(layerPatchFromArgs(d.layers[1], { text: 'New', fontSize: 40, align: 'center' }), { text: 'New', fontSize: 40, align: 'center' });
   assert.throws(() => layerPatchFromArgs(d.layers[0], { text: 'x' }), /not a text layer/);
   const adj = layerPatchFromArgs(d.layers[2], { adjustment: { gamma: 1.4 } }) as any;
   assert.equal(adj.adjustment.gamma, 1.4);

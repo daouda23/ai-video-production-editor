@@ -86,22 +86,22 @@ type NeuralPreset = {
 };
 
 const NEURAL_PRESETS: NeuralPreset[] = [
-  { id: 'harmonize', label: 'Harmonisieren', description: 'Farbe und Stimmung an ein Referenzbild angleichen.', requiresReference: true },
+  { id: 'harmonize', label: 'Harmonize', description: 'Match color and mood to a reference image.', requiresReference: true },
   {
     id: 'portrait_balance',
-    label: 'Porträt-Balance',
-    description: 'Natürliche Hauttöne, weicher Kontrast, saubere Mitteltöne.',
+    label: 'Portrait balance',
+    description: 'Natural skin tones, soft contrast, clean midtones.',
     aiPrompt: 'Create a portrait-balanced grade: natural skin tones, gentle contrast, subtle warmth, clean highlights, avoid oversaturation.',
   },
   {
     id: 'cinematic_pop',
     label: 'Cinematic Pop',
-    description: 'Moderner Kinokontrast mit kontrollierter Sättigung.',
+    description: 'Modern cinema contrast with controlled saturation.',
     aiPrompt: 'Create a cinematic blockbuster grade with punchy contrast, slightly cool shadows, warm skin highlights, and controlled saturation.',
   },
-  { id: 'dehaze', label: 'Dunst entfernen', description: 'Mehr lokaler Kontrast und Klarheit.', fallback: { brightness: 103, contrast: 122, saturate: 108, hue: 0, blur: 0 } },
-  { id: 'soft_skin', label: 'Weiche Haut', description: 'Dezente Glättung für Porträts ohne starke Unschärfe.', fallback: { brightness: 102, contrast: 95, saturate: 96, hue: 2, blur: 2 } },
-  { id: 'custom_prompt', label: 'Eigener KI-Look', description: 'Eigenen Grading-Prompt schreiben.', aiPrompt: '' },
+  { id: 'dehaze', label: 'Remove haze', description: 'More local contrast and clarity.', fallback: { brightness: 103, contrast: 122, saturate: 108, hue: 0, blur: 0 } },
+  { id: 'soft_skin', label: 'Soft skin', description: 'Subtle smoothing for portraits without heavy blur.', fallback: { brightness: 102, contrast: 95, saturate: 96, hue: 2, blur: 2 } },
+  { id: 'custom_prompt', label: 'Custom AI look', description: 'Write your own grading prompt.', aiPrompt: '' },
 ];
 
 type InpaintModel = 'nano-banana-pro' | 'nano-banana-2-fal' | 'flux-2-pro' | 'z-turbo-inpaint';
@@ -144,7 +144,7 @@ const readDock = (): DockState => {
   }
 };
 
-const MOD = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Strg+';
+const MOD = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+';
 const sc = (keys: string) => keys.replace('Mod+', MOD).replace('Shift+', '⇧').replace('Alt+', '⌥');
 
 type PaintStroke = {
@@ -331,7 +331,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       const trimmable = sessions.some((s) => s.history.index > 1);
       if (trimmable) {
         setSessions((prev) => prev.map((s) => (s.history.index > 1 ? { ...s, history: dropOldest(s.history, Math.ceil(s.history.index / 4)) } : s)));
-        setStatus('Protokoll gekürzt (Speicherbudget).');
+        setStatus('Log shortened (memory budget).');
       }
     }
   }, [sessions, store]);
@@ -796,7 +796,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   // ---------- Documents ----------
   const openSession = useCallback((d: PhotoDoc) => {
     const id = uid('doc');
-    setSessions((prev) => [...prev, { id, history: createHistory(d, 'Öffnen') }]);
+    setSessions((prev) => [...prev, { id, history: createHistory(d, 'Open') }]);
     setActiveId(id);
     setLiveDoc(null);
     setCrop(null);
@@ -804,13 +804,13 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
 
   const openImage = useCallback(async (url: string, name: string): Promise<boolean> => {
     try {
-      setBusy('Bild wird geöffnet …');
+      setBusy('Opening image …');
       const img = await loadImage(url);
       const { key, canvas } = store.create(img.naturalWidth || img.width, img.naturalHeight || img.height);
       ctx2d(canvas).drawImage(img, 0, 0);
-      const layer = makeRasterLayer(uid('L'), 'Hintergrund', key, canvas.width, canvas.height);
+      const layer = makeRasterLayer(uid('L'), 'Background', key, canvas.width, canvas.height);
       openSession(createDoc(name, canvas.width, canvas.height, [layer]));
-      say(`${name} geöffnet (${canvas.width} × ${canvas.height} px).`);
+      say(`${name} opened (${canvas.width} × ${canvas.height} px).`);
       return true;
     } catch (error) {
       say(error instanceof Error ? error.message : String(error));
@@ -835,8 +835,8 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       c.imageSmoothingQuality = 'high';
       c.drawImage(img, 0, 0, w, h);
       const layer = makeRasterLayer(uid('L'), name.replace(/\.[a-z0-9]+$/i, ''), key, w, h, Math.round((d.width - w) / 2), Math.round((d.height - h) / 2));
-      dispatch({ type: 'add', layer }, 'Platzieren');
-      say(`${name} als Ebene platziert.`);
+      dispatch({ type: 'add', layer }, 'Place');
+      say(`${name} placed as a layer.`);
       return true;
     } catch (error) {
       say(error instanceof Error ? error.message : String(error));
@@ -853,7 +853,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       c.fillStyle = background;
       c.fillRect(0, 0, w, h);
     }
-    openSession(createDoc(name, w, h, [makeRasterLayer(uid('L'), background === 'transparent' ? 'Ebene 1' : 'Hintergrund', key, w, h)]));
+    openSession(createDoc(name, w, h, [makeRasterLayer(uid('L'), background === 'transparent' ? 'Layer 1' : 'Background', key, w, h)]));
   }, [openSession, store]);
 
   const closeSession = useCallback((id: string) => {
@@ -868,7 +868,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
 
   useEffect(() => {
     if (!seedImageUrl) return;
-    void openImage(seedImageUrl, 'Seed-Bild.png');
+    void openImage(seedImageUrl, 'Seed-image.png');
     onConsumeSeed?.();
   }, [seedImageUrl, openImage, onConsumeSeed]);
 
@@ -889,9 +889,9 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   const requireRaster = (verb: string): RasterLayer | null => {
     const d = docRef.current;
     const layer = d ? getActiveLayer(d) : null;
-    if (!layer) { say('Keine Ebene ausgewählt.'); return null; }
-    if (layer.kind !== 'raster') { say(`${verb}: Die aktive Ebene ist keine Pixelebene${layer.kind === 'text' ? ' – zuerst rastern' : ''}.`); return null; }
-    if (layer.locked) { say(`${verb}: Die Ebene ist fixiert.`); return null; }
+    if (!layer) { say('No layer selected.'); return null; }
+    if (layer.kind !== 'raster') { say(`${verb}: The active layer is not a pixel layer${layer.kind === 'text' ? ' – rasterize first' : ''}.`); return null; }
+    if (layer.locked) { say(`${verb}: The layer is locked.`); return null; }
     return layer;
   };
 
@@ -899,19 +899,19 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     const d = docRef.current;
     if (!d) return;
     const { key } = store.create(d.width, d.height);
-    dispatch({ type: 'add', layer: makeRasterLayer(uid('L'), nextLayerName(d), key, d.width, d.height) }, 'Neue Ebene');
+    dispatch({ type: 'add', layer: makeRasterLayer(uid('L'), nextLayerName(d), key, d.width, d.height) }, 'New layer');
   }, [dispatch, store]);
 
   const duplicateLayer = useCallback(() => {
     const d = docRef.current;
     if (!d?.activeLayerId) return;
-    dispatch({ type: 'duplicate', id: d.activeLayerId, newId: uid('L') }, 'Ebene duplizieren');
+    dispatch({ type: 'duplicate', id: d.activeLayerId, newId: uid('L') }, 'Duplicate layer');
   }, [dispatch]);
 
   const deleteLayer = useCallback(() => {
     const d = docRef.current;
     if (!d?.activeLayerId) return;
-    dispatch({ type: 'remove', id: d.activeLayerId }, 'Ebene löschen');
+    dispatch({ type: 'remove', id: d.activeLayerId }, 'Delete layer');
   }, [dispatch]);
 
   const patchLayer = useCallback((id: string, patch: Partial<Layer>, label: string, coalesceKey?: string) => {
@@ -928,43 +928,43 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
 
   const mergeDown = useCallback(async () => {
     const d = docRef.current;
-    if (!d || !canMergeDown(d, d.activeLayerId)) { say('Auf eine Ebene reduzieren ist hier nicht möglich.'); return; }
+    if (!d || !canMergeDown(d, d.activeLayerId)) { say('Cannot merge down here.'); return; }
     const index = d.layers.findIndex((l) => l.id === d.activeLayerId);
     const below = d.layers[index - 1];
     const top = d.layers[index];
     const merged = await rasterizeLayers(d, [below, top], below.name);
-    dispatch({ type: 'replace', ids: [below.id, top.id], layer: merged }, 'Auf eine Ebene reduzieren');
+    dispatch({ type: 'replace', ids: [below.id, top.id], layer: merged }, 'Flatten image');
   }, [dispatch, rasterizeLayers, say]);
 
   const mergeVisible = useCallback(async () => {
     const d = docRef.current;
     if (!d) return;
     const visible = d.layers.filter((l) => l.visible);
-    if (visible.length < 2) { say('Mindestens zwei sichtbare Ebenen nötig.'); return; }
+    if (visible.length < 2) { say('At least two visible layers are needed.'); return; }
     const merged = await rasterizeLayers(d, visible, visible[0].name);
-    dispatch({ type: 'replace', ids: visible.map((l) => l.id), layer: merged }, 'Sichtbare auf eine Ebene reduzieren');
+    dispatch({ type: 'replace', ids: visible.map((l) => l.id), layer: merged }, 'Merge visible');
   }, [dispatch, rasterizeLayers, say]);
 
   const flattenImage = useCallback(async () => {
     const d = docRef.current;
     if (!d || !d.layers.length) return;
-    const merged = await rasterizeLayers(d, d.layers, 'Hintergrund', '#ffffff');
-    dispatch({ type: 'replace', ids: d.layers.map((l) => l.id), layer: merged }, 'Auf Hintergrundebene reduzieren');
+    const merged = await rasterizeLayers(d, d.layers, 'Background', '#ffffff');
+    dispatch({ type: 'replace', ids: d.layers.map((l) => l.id), layer: merged }, 'Flatten to background layer');
   }, [dispatch, rasterizeLayers]);
 
   const rasterizeActive = useCallback(async () => {
     const d = docRef.current;
     const layer = d ? getActiveLayer(d) : null;
     if (!d || !layer || layer.kind === 'raster') return;
-    if (layer.kind === 'adjustment') { say('Einstellungsebenen können mit „Auf eine Ebene reduzieren“ angewendet werden.'); return; }
+    if (layer.kind === 'adjustment') { say('Adjustment layers can be applied with “Flatten image”.'); return; }
     const flat = await rasterizeLayers(d, [{ ...layer, opacity: 1, blendMode: 'normal' }], layer.name);
-    dispatch({ type: 'replace', ids: [layer.id], layer: { ...flat, opacity: layer.opacity, blendMode: layer.blendMode } }, 'Ebene rastern');
+    dispatch({ type: 'replace', ids: [layer.id], layer: { ...flat, opacity: layer.opacity, blendMode: layer.blendMode } }, 'Rasterize layer');
   }, [dispatch, rasterizeLayers, say]);
 
   const addAdjustment = useCallback((type: AdjustmentType) => {
     const d = docRef.current;
     if (!d) return;
-    dispatch({ type: 'add', layer: makeAdjustmentLayer(uid('A'), nextLayerName(d, ADJUSTMENT_LABELS[type]), defaultAdjustment(type)) }, `Neue Einstellungsebene: ${ADJUSTMENT_LABELS[type]}`);
+    dispatch({ type: 'add', layer: makeAdjustmentLayer(uid('A'), nextLayerName(d, ADJUSTMENT_LABELS[type]), defaultAdjustment(type)) }, `New adjustment layer: ${ADJUSTMENT_LABELS[type]}`);
     setDock((cur) => ({ ...cur, showProps: true, propsTab: 'properties' }));
     setAdjMenu(null);
   }, [dispatch]);
@@ -983,7 +983,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, store]);
 
-  const fillSelection = useCallback((color: string) => editPixels('Fläche füllen', (src, layer, mask) => {
+  const fillSelection = useCallback((color: string) => editPixels('Fill area', (src, layer, mask) => {
     const out = cloneCanvas(src);
     const c = ctx2d(out);
     if (mask) {
@@ -1001,7 +1001,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     return out;
   }), [editPixels]);
 
-  const clearSelection = useCallback(() => editPixels('Löschen', (src, layer, mask) => {
+  const clearSelection = useCallback(() => editPixels('Delete', (src, layer, mask) => {
     if (!mask) return null;
     const out = cloneCanvas(src);
     const c = ctx2d(out);
@@ -1011,7 +1011,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   }), [editPixels]);
 
   const copySelection = useCallback((cut: boolean) => {
-    const layer = requireRaster(cut ? 'Ausschneiden' : 'Kopieren');
+    const layer = requireRaster(cut ? 'Cut' : 'Copy');
     const d = docRef.current;
     if (!layer || !d) return;
     const source = store.get(layer.pixelKey);
@@ -1032,10 +1032,10 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearSelection, say, store]);
 
-  const paste = useCallback((label = 'Einfügen') => {
+  const paste = useCallback((label = 'Insert') => {
     const clip = clipboardRef.current;
     const d = docRef.current;
-    if (!clip || !d) { say('Die Zwischenablage ist leer.'); return; }
+    if (!clip || !d) { say('The clipboard is empty.'); return; }
     const key = store.put(cloneCanvas(clip.canvas));
     dispatch({ type: 'add', layer: makeRasterLayer(uid('L'), nextLayerName(d), key, clip.canvas.width, clip.canvas.height, clip.x, clip.y) }, label);
   }, [dispatch, say, store]);
@@ -1045,12 +1045,12 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     if (!d) return;
     if (!d.selection) { duplicateLayer(); return; }
     copySelection(false);
-    paste('Ebene durch Kopie');
+    paste('Layer via copy');
   }, [copySelection, duplicateLayer, paste]);
 
-  const flipLayer = useCallback((horizontal: boolean) => editPixels(horizontal ? 'Horizontal spiegeln' : 'Vertikal spiegeln', (src) => flipCanvas(src, horizontal)), [editPixels]);
+  const flipLayer = useCallback((horizontal: boolean) => editPixels(horizontal ? 'Flip horizontal' : 'Flip vertical', (src) => flipCanvas(src, horizontal)), [editPixels]);
 
-  const gaussianBlur = useCallback((radius: number) => editPixels('Gaußscher Weichzeichner', (src, layer, mask) => blurCanvas(src, radius, mask, { x: -layer.x, y: -layer.y })), [editPixels]);
+  const gaussianBlur = useCallback((radius: number) => editPixels('Gaussian blur', (src, layer, mask) => blurCanvas(src, radius, mask, { x: -layer.x, y: -layer.y })), [editPixels]);
 
   // ---------- Selection ----------
   const commitSelection = useCallback((mask: HTMLCanvasElement | null, bounds: Rect | null, label: string) => {
@@ -1078,16 +1078,16 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
 
   const selectAll = useCallback(() => {
     const d = docRef.current;
-    if (d) commitSelection(fullMask(d.width, d.height), { x: 0, y: 0, width: d.width, height: d.height }, 'Alles auswählen');
+    if (d) commitSelection(fullMask(d.width, d.height), { x: 0, y: 0, width: d.width, height: d.height }, 'Select all');
   }, [commitSelection]);
 
   const deselect = useCallback(() => {
-    if (docRef.current?.selection) dispatch({ type: 'selection', selection: null }, 'Auswahl aufheben');
+    if (docRef.current?.selection) dispatch({ type: 'selection', selection: null }, 'Deselect');
   }, [dispatch]);
 
   const reselect = useCallback(() => {
     const d = docRef.current;
-    if (d?.lastSelection && !d.selection) dispatch({ type: 'selection', selection: d.lastSelection }, 'Erneut auswählen');
+    if (d?.lastSelection && !d.selection) dispatch({ type: 'selection', selection: d.lastSelection }, 'Reselect');
   }, [dispatch]);
 
   const inverseSelection = useCallback(() => {
@@ -1095,7 +1095,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     const mask = store.get(d?.selection?.pixelKey);
     if (!d || !mask) return;
     const inv = invertMask(mask);
-    commitSelection(inv, scanMaskBounds(inv), 'Auswahl umkehren');
+    commitSelection(inv, scanMaskBounds(inv), 'Invert selection');
   }, [commitSelection, store]);
 
   const featherSelection = useCallback((radius: number) => {
@@ -1103,7 +1103,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     const mask = store.get(d?.selection?.pixelKey);
     if (!d || !mask) return;
     const out = featherMask(mask, radius);
-    commitSelection(out, clampRect({ x: d.selection!.bounds.x - radius * 2, y: d.selection!.bounds.y - radius * 2, width: d.selection!.bounds.width + radius * 4, height: d.selection!.bounds.height + radius * 4 }, d.width, d.height), 'Weiche Auswahlkante');
+    commitSelection(out, clampRect({ x: d.selection!.bounds.x - radius * 2, y: d.selection!.bounds.y - radius * 2, width: d.selection!.bounds.width + radius * 4, height: d.selection!.bounds.height + radius * 4 }, d.width, d.height), 'Feather selection');
   }, [commitSelection, store]);
 
   const flattenedPayload = useCallback(async (d: PhotoDoc, maxSide?: number) => {
@@ -1121,10 +1121,10 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     const d = docRef.current;
     if (!d) return false;
     const combine = modeOverride ?? selectionMode;
-    setBusy('Motiv wird ausgewählt …');
+    setBusy('Selecting subject …');
     try {
       const { payload } = await flattenedPayload(d, 2048);
-      if (!payload) throw new Error('Bild konnte nicht gelesen werden.');
+      if (!payload) throw new Error('Image could not be read.');
       const item = await removeBackgroundWithRembg({ base64: payload.base64, mimeType: payload.mimeType });
       const img = await loadImage(item.url);
       const subject = maskFromAlpha(img, d.width, d.height);
@@ -1137,12 +1137,12 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
         c.drawImage(subject, 0, 0);
       }
       const bounds = scanMaskBounds(mask);
-      if (!bounds) { say('Kein Motiv erkannt.'); return false; }
-      commitSelection(mask, bounds, 'Motiv auswählen');
-      say('Motiv ausgewählt.');
+      if (!bounds) { say('No subject detected.'); return false; }
+      commitSelection(mask, bounds, 'Select subject');
+      say('Subject selected.');
       return true;
     } catch (error) {
-      say(`Motiv auswählen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`);
+      say(`Select subject failed: ${error instanceof Error ? error.message : String(error)}`);
       return false;
     } finally {
       setBusy(null);
@@ -1150,11 +1150,11 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   }, [commitSelection, flattenedPayload, say, selectionMode, store]);
 
   // ---------- Generative fill / heal / expand ----------
-  const runInpaint = useCallback(async (promptOverride: string | undefined, opts: { label: string; layerName: string; docOverride?: PhotoDoc; model?: InpaintModel } = { label: 'Generative Füllung', layerName: 'Generative Füllung' }): Promise<boolean> => {
+  const runInpaint = useCallback(async (promptOverride: string | undefined, opts: { label: string; layerName: string; docOverride?: PhotoDoc; model?: InpaintModel } = { label: 'Generative fill', layerName: 'Generative fill' }): Promise<boolean> => {
     const d = opts.docOverride ?? docRef.current;
     if (!d) return false;
     const mask = store.get(d.selection?.pixelKey);
-    if (!d.selection || !mask) { say('Zuerst eine Auswahl erstellen (oder im Maskierungsmodus malen).'); return false; }
+    if (!d.selection || !mask) { say('Make a selection first (or paint in Quick Mask mode).'); return false; }
     const model = opts.model ?? inpaintModel;
     const res: Resolution = opts.model ? (opts.model === 'flux-2-pro' ? 'match_input_image' : '2K') : resolution;
     setBusy(`${opts.label} …`);
@@ -1190,7 +1190,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       c.globalCompositeOperation = 'destination-in';
       c.drawImage(featherMask(mask, 1.5), 0, 0);
       dispatch({ type: 'add', layer: makeRasterLayer(uid('L'), opts.layerName, key, d.width, d.height) }, opts.label);
-      say(`${opts.label} fertig – als neue Ebene eingefügt.`);
+      say(`${opts.label} done – inserted as a new layer.`);
       return true;
     } catch (e) {
       say(`${opts.label} fehlgeschlagen: ${e instanceof Error ? e.message : String(e)}`);
@@ -1200,29 +1200,29 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     }
   }, [dispatch, ensureSmartFilters, exportEnv, inpaintModel, inpaintPrompt, resolution, say, store]);
 
-  const handleHeal = useCallback(() => runInpaint('Reconstruct the masked area seamlessly.', { label: 'Bereichsreparatur', layerName: 'Reparatur' }), [runInpaint]);
+  const handleHeal = useCallback(() => runInpaint('Reconstruct the masked area seamlessly.', { label: 'Spot healing', layerName: 'Repair' }), [runInpaint]);
 
   /** Grows the canvas by `pad` on every side and selects the new border (ready for generative fill). */
   const expandCanvas = useCallback((pad: number): PhotoDoc | null => {
     const d = docRef.current;
-    if (!d) { say('Zuerst ein Bild öffnen.'); return null; }
+    if (!d) { say('Open an image first.'); return null; }
     const p = Math.max(0, Math.round(pad));
-    if (p <= 0) { say('Der Rand muss größer als 0 sein.'); return null; }
+    if (p <= 0) { say('The border must be greater than 0.'); return null; }
     const expanded = docReducer(d, { type: 'expand', left: p, top: p, right: p, bottom: p });
     const mask = fullMask(expanded.width, expanded.height);
     ctx2d(mask).clearRect(p, p, d.width, d.height);
     const key = store.put(mask, 'sel');
     const next = docReducer(expanded, { type: 'selection', selection: { pixelKey: key, bounds: { x: 0, y: 0, width: expanded.width, height: expanded.height } } });
-    applyDoc(() => next, 'Arbeitsfläche erweitern');
+    applyDoc(() => next, 'Canvas size');
     setViews((prev) => { const copy = { ...prev }; if (activeIdRef.current) delete copy[activeIdRef.current]; return copy; });
-    say('Arbeitsfläche erweitert – der neue Rand ist ausgewählt.');
+    say('Canvas extended – the new border is selected.');
     return next;
   }, [applyDoc, say, store]);
 
   const expandAndFill = useCallback(async () => {
     if (busy) return;
     const next = expandCanvas(expandPadding);
-    if (next) await runInpaint(expandPrompt || 'Extend the scene naturally.', { label: 'Generatives Erweitern', layerName: 'Erweiterung', docOverride: next });
+    if (next) await runInpaint(expandPrompt || 'Extend the scene naturally.', { label: 'Generative expand', layerName: 'Extension', docOverride: next });
   }, [busy, expandCanvas, expandPadding, expandPrompt, runInpaint]);
 
   // ---------- Neural looks ----------
@@ -1230,13 +1230,13 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     const base64 = await fileToBase64(file);
     const url = URL.createObjectURL(file);
     setNeuralReference({ file, url, base64, mimeType: file.type || 'image/png' });
-    say('Referenz für „Harmonisieren“ geladen.');
+    say('Reference for “Harmonize” loaded.');
   };
 
   const applyNeuralPreset = async (preset: NeuralPreset) => {
     const d = docRef.current;
-    if (!d) { say('Zuerst ein Bild öffnen.'); return; }
-    if (preset.requiresReference && !neuralReference) { say('Für „Harmonisieren“ ein Referenzbild laden.'); return; }
+    if (!d) { say('Open an image first.'); return; }
+    if (preset.requiresReference && !neuralReference) { say('Load a reference image for “Harmonize”.'); return; }
     setBusy(`${preset.label} …`);
     try {
       let look = null as ReturnType<typeof lookFromAiFilters> | null;
@@ -1244,7 +1244,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
         look = lookFromAiFilters(preset.fallback);
       } else {
         const { payload } = await flattenedPayload(d, 2048);
-        if (!payload) throw new Error('Bild konnte nicht gelesen werden.');
+        if (!payload) throw new Error('Image could not be read.');
         if (preset.id === 'harmonize' && neuralReference) {
           const result = await matchReferenceGrade(payload.base64, payload.mimeType, neuralReference.base64, neuralReference.mimeType);
           look = lookFromAiFilters(result.filters);
@@ -1254,10 +1254,10 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
           look = lookFromAiFilters(result.filters);
         }
       }
-      if (!look) { say('Es wurden keine Korrekturen erzeugt.'); return; }
+      if (!look) { say('No corrections were generated.'); return; }
       const layer = { ...makeAdjustmentLayer(uid('A'), `Neural: ${preset.label}`, look), opacity: Math.max(0, Math.min(100, neuralIntensity)) / 100 };
       dispatch({ type: 'add', layer }, `Neural-Filter: ${preset.label}`);
-      say(`${preset.label} als Einstellungsebene angelegt (Deckkraft = Intensität).`);
+      say(`${preset.label} created as an adjustment layer (opacity = intensity).`);
     } catch (error) {
       say(`Neural-Filter fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
@@ -1268,7 +1268,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   // ---------- Smart filter bake ----------
   /** Bakes the active layer's FX stack into its pixels (like "Apply" for adjustments). */
   const applyFx = async (layerOverride?: RasterLayer): Promise<boolean> => {
-    const layer = layerOverride ?? requireRaster('Effekte übernehmen');
+    const layer = layerOverride ?? requireRaster('Apply effects');
     if (!layer || !hasActiveFx(layer.fx)) return false;
     const source = store.get(layer.pixelKey);
     if (!source) return false;
@@ -1276,8 +1276,8 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     if (!result) return false;
     const sized = result.width === source.width && result.height === source.height ? result : scaleCanvas(result, source.width, source.height);
     const key = store.put(sized);
-    dispatch({ type: 'update', id: layer.id, patch: { pixelKey: key, fx: [] } }, 'Smartfilter anwenden');
-    say('Effekte ins Bild übernommen.');
+    dispatch({ type: 'update', id: layer.id, patch: { pixelKey: key, fx: [] } }, 'Apply smart filters');
+    say('Effects applied to image.');
     return true;
   };
 
@@ -1288,7 +1288,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     if (!c || !d) return;
     const r = { x: Math.round(c.x), y: Math.round(c.y), width: Math.max(1, Math.round(c.width)), height: Math.max(1, Math.round(c.height)) };
     if (r.x === 0 && r.y === 0 && r.width === d.width && r.height === d.height) { setCrop(null); setTool('move'); return; }
-    dispatch({ type: 'crop', rect: r }, 'Freistellen');
+    dispatch({ type: 'crop', rect: r }, 'Cut out');
     setCrop(null);
     setViews((prev) => { const copy = { ...prev }; if (activeIdRef.current) delete copy[activeIdRef.current]; return copy; });
     setTool('move');
@@ -1304,7 +1304,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     if (!d?.selection) return;
     const r = clampRect(roundOutRect(d.selection.bounds), d.width, d.height);
     if (!r) return;
-    dispatch({ type: 'crop', rect: r }, 'Freistellen');
+    dispatch({ type: 'crop', rect: r }, 'Cut out');
     setViews((prev) => { const copy = { ...prev }; if (activeIdRef.current) delete copy[activeIdRef.current]; return copy; });
   }, [dispatch]);
 
@@ -1326,7 +1326,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       if (layer.kind === 'text') return { ...layer, x: layer.x * sx, y: layer.y * sy, fontSize: Math.max(1, layer.fontSize * Math.min(sx, sy)) };
       return layer;
     });
-    applyDoc((cur) => ({ ...cur, width: w, height: h, layers, selection: null, lastSelection: null }), 'Bildgröße');
+    applyDoc((cur) => ({ ...cur, width: w, height: h, layers, selection: null, lastSelection: null }), 'Image size');
     setViews((prev) => { const copy = { ...prev }; if (activeIdRef.current) delete copy[activeIdRef.current]; return copy; });
   }, [applyDoc, store]);
 
@@ -1345,7 +1345,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     try {
       url = output.toDataURL('image/png');
     } catch {
-      say('Export fehlgeschlagen: Das Bild enthält Pixel einer fremden Quelle (CORS).');
+      say('Export failed: the image contains pixels from another origin (CORS).');
       return null;
     }
     const item: MediaItem = {
@@ -1379,7 +1379,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   const startTextEdit = useCallback((layer: TextLayer | null, at?: Point) => {
     if (layer) {
       setTextEdit({ layerId: layer.id, isNew: false, draft: layer.text, x: layer.x, y: layer.y, style: { fontFamily: layer.fontFamily, fontSize: layer.fontSize, color: layer.color, bold: layer.bold, italic: layer.italic, align: layer.align } });
-      dispatch({ type: 'select', id: layer.id }, 'Ebene auswählen');
+      dispatch({ type: 'select', id: layer.id }, 'Select layer');
       return;
     }
     if (!at) return;
@@ -1394,11 +1394,11 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     const name = text.split('\n')[0].slice(0, 40) || 'Text';
     if (edit.isNew) {
       if (!text.trim()) return;
-      dispatch({ type: 'add', layer: makeTextLayer(edit.layerId, edit.x, edit.y, { ...edit.style, text, name }) }, 'Textebene erstellen');
+      dispatch({ type: 'add', layer: makeTextLayer(edit.layerId, edit.x, edit.y, { ...edit.style, text, name }) }, 'Create text layer');
       return;
     }
-    if (!text.trim()) { dispatch({ type: 'remove', id: edit.layerId }, 'Ebene löschen'); return; }
-    dispatch({ type: 'update', id: edit.layerId, patch: { text, name, ...edit.style } }, 'Text bearbeiten');
+    if (!text.trim()) { dispatch({ type: 'remove', id: edit.layerId }, 'Delete layer'); return; }
+    dispatch({ type: 'update', id: edit.layerId, patch: { text, name, ...edit.style } }, 'Edit text');
   }, [dispatch]);
 
   const onTextStyle = useCallback((patch: Partial<TextStyle>, field: string) => {
@@ -1406,7 +1406,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     if (textEditRef.current) { setTextEdit((e) => (e ? { ...e, style: { ...e.style, ...patch } } : e)); return; }
     const d = docRef.current;
     const layer = d ? getActiveLayer(d) : null;
-    if (layer?.kind === 'text' && !layer.locked) dispatch({ type: 'update', id: layer.id, patch }, 'Zeichen ändern', { coalesceKey: `char:${layer.id}:${field}` });
+    if (layer?.kind === 'text' && !layer.locked) dispatch({ type: 'update', id: layer.id, patch }, 'Change character', { coalesceKey: `char:${layer.id}:${field}` });
   }, [dispatch]);
 
   useEffect(() => { if (tool !== 'text' && textEditRef.current) finishTextEdit(); }, [tool, finishTextEdit]);
@@ -1489,7 +1489,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     const maskTarget = quickMaskRef.current || t === 'spot-heal';
     let st: PaintStroke;
     if (maskTarget) {
-      if (!['brush', 'eraser', 'spot-heal'].includes(t)) { say('Im Maskierungsmodus malen Pinsel und Radiergummi die Auswahl.'); return false; }
+      if (!['brush', 'eraser', 'spot-heal'].includes(t)) { say('In Quick Mask mode, brush and eraser paint the selection.'); return false; }
       const prevKey = d.selection?.pixelKey;
       const base = store.get(prevKey);
       const { key, canvas } = base ? store.copy(prevKey!, 'sel') : store.create(d.width, d.height, 'sel');
@@ -1503,8 +1503,8 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       if (!layer) return false;
       let cloneOffset: Point | null = null;
       if (t === 'clone-stamp') {
-        if (e.altKey) { cloneSourceRef.current = p; say('Kopierquelle festgelegt.'); schedule({ overlay: true }); return false; }
-        if (!cloneSourceRef.current) { say('Alt+Klick legt die Kopierquelle fest.'); return false; }
+        if (e.altKey) { cloneSourceRef.current = p; say('Clone source set.'); schedule({ overlay: true }); return false; }
+        if (!cloneSourceRef.current) { say('Alt+click sets the clone source.'); return false; }
         cloneOffset = { x: p.x - cloneSourceRef.current.x, y: p.y - cloneSourceRef.current.y };
       }
       const base = store.get(layer.pixelKey);
@@ -1547,14 +1547,14 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       dispatch({ type: 'update', id: st.layerId, patch: { pixelKey: st.key } }, TOOL_INFO[st.tool].label.replace(/-Werkzeug$|-Pinsel \(KI\)$/, ''));
     } else {
       const bounds = st.mode === 'erase' ? scanMaskBounds(st.working) : clampRect(st.bounds ?? { x: 0, y: 0, width: 0, height: 0 }, st.working.width, st.working.height);
-      if (!bounds) dispatch({ type: 'selection', selection: null }, 'Maskierungsmodus');
-      else dispatch({ type: 'selection', selection: { pixelKey: st.key, bounds } }, st.tool === 'spot-heal' ? 'Bereichsreparatur-Pinsel' : 'Maskierungsmodus');
+      if (!bounds) dispatch({ type: 'selection', selection: null }, 'Quick Mask mode');
+      else dispatch({ type: 'selection', selection: { pixelKey: st.key, bounds } }, st.tool === 'spot-heal' ? 'Spot healing brush' : 'Quick Mask mode');
     }
     window.setTimeout(() => pinnedRef.current.delete(st.key), 0);
   };
 
   const applyGradient = (from: Point, to: Point) => {
-    editPixels('Verlauf', (src, layer, mask) => {
+    editPixels('History', (src, layer, mask) => {
       const tmp = makeCanvas(src.width, src.height);
       const t = ctx2d(tmp);
       drawLinearGradient(t, { x: from.x - layer.x, y: from.y - layer.y }, { x: to.x - layer.x, y: to.y - layer.y }, fg, bg, tmp.width, tmp.height);
@@ -1649,7 +1649,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
         const px = ctx2d(comp).getImageData(Math.floor(p.x * scale), Math.floor(p.y * scale), 1, 1).data;
         const hex = rgbToHex(px[0], px[1], px[2]);
         if (e.altKey) setBg(hex); else setFg(hex);
-        say(`Farbe aufgenommen: ${hex}`);
+        say(`Color picked: ${hex}`);
         return;
       }
       case 'marquee-rect':
@@ -1674,10 +1674,10 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
         let layer = getActiveLayer(d);
         if (autoSelect || e.metaKey || e.ctrlKey) {
           const hit = hitLayer(d, p);
-          if (hit) { layer = hit; if (hit.id !== d.activeLayerId) dispatch({ type: 'select', id: hit.id }, 'Ebene auswählen'); }
+          if (hit) { layer = hit; if (hit.id !== d.activeLayerId) dispatch({ type: 'select', id: hit.id }, 'Select layer'); }
         }
         if (!layer || layer.kind === 'adjustment') return;
-        if (layer.locked) { say('Die Ebene ist fixiert.'); return; }
+        if (layer.locked) { say('The layer is locked.'); return; }
         const base = docReducer(d, { type: 'select', id: layer.id });
         interRef.current = { kind: 'move', start: p, layerId: layer.id, origin: { x: layer.x, y: layer.y }, base };
         break;
@@ -1689,13 +1689,13 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
         break;
       }
       case 'gradient':
-        if (!requireRaster('Verlauf')) return;
+        if (!requireRaster('History')) return;
         interRef.current = { kind: 'gradient', start: p, end: p };
         break;
       case 'text': {
         const hit = hitLayer(d, p);
         if (hit?.kind === 'text') {
-          if (hit.locked) { say('Die Ebene ist fixiert.'); return; }
+          if (hit.locked) { say('The layer is locked.'); return; }
           startTextEdit(hit);
         } else {
           startTextEdit(null, p);
@@ -1775,7 +1775,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
         }
         const rect = rectFromDrag(inter.start, inter.end, { square: inter.shift && !(inter.mode === 'add'), fromCenter: inter.alt && inter.mode !== 'subtract' });
         const shape: MaskShape = { kind: tool === 'marquee-ellipse' ? 'ellipse' : 'rect', rect };
-        applyShape(shape, inter.mode, tool === 'marquee-ellipse' ? 'Elliptische Auswahl' : 'Rechteckige Auswahl');
+        applyShape(shape, inter.mode, tool === 'marquee-ellipse' ? 'Elliptical selection' : 'Rectangular selection');
         break;
       }
       case 'lasso':
@@ -1787,7 +1787,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
         if (live && d && live !== d) {
           const layer = live.layers.find((l) => l.id === inter.layerId);
           if (layer && layer.kind !== 'adjustment' && (layer.x !== inter.origin.x || layer.y !== inter.origin.y)) {
-            applyDoc(() => live, 'Verschieben');
+            applyDoc(() => live, 'Move');
           } else setLiveDoc(null);
         }
         break;
@@ -1829,20 +1829,20 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   // ---------- Dialog launchers ----------
   const openNewDialog = () => setDialog({
     id: 'new',
-    title: 'Neues Dokument',
+    title: 'New document',
     fields: [
       { kind: 'text', id: 'name', label: 'Name', value: 'Unbenannt-1' },
-      { kind: 'number', id: 'width', label: 'Breite', value: 1920, min: 1, max: 16000, unit: 'px' },
-      { kind: 'number', id: 'height', label: 'Höhe', value: 1080, min: 1, max: 16000, unit: 'px' },
-      { kind: 'select', id: 'background', label: 'Hintergrundinhalt', value: '#ffffff', options: [{ value: '#ffffff', label: 'Weiß' }, { value: '#000000', label: 'Schwarz' }, { value: 'transparent', label: 'Transparent' }] },
+      { kind: 'number', id: 'width', label: 'Width', value: 1920, min: 1, max: 16000, unit: 'px' },
+      { kind: 'number', id: 'height', label: 'Height', value: 1080, min: 1, max: 16000, unit: 'px' },
+      { kind: 'select', id: 'background', label: 'Background contents', value: '#ffffff', options: [{ value: '#ffffff', label: 'White' }, { value: '#000000', label: 'Schwarz' }, { value: 'transparent', label: 'Transparent' }] },
     ],
     presets: [
       { label: 'HD 1920 × 1080', values: { width: 1920, height: 1080 } },
       { label: 'UHD 3840 × 2160', values: { width: 3840, height: 2160 } },
-      { label: 'Hochformat 1080 × 1920', values: { width: 1080, height: 1920 } },
+      { label: 'Portrait 1080 × 1920', values: { width: 1080, height: 1920 } },
       { label: 'Quadrat 2048', values: { width: 2048, height: 2048 } },
     ],
-    okLabel: 'Erstellen',
+    okLabel: 'Create',
     onOk: (vals) => newDocument(Number(vals.width), Number(vals.height), String(vals.background), String(vals.name || 'Unbenannt-1')),
   });
 
@@ -1851,10 +1851,10 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     if (!d) return;
     setDialog({
       id: 'image-size',
-      title: 'Bildgröße',
+      title: 'Image size',
       fields: [
-        { kind: 'number', id: 'width', label: 'Breite', value: d.width, min: 1, max: 16000, unit: 'px' },
-        { kind: 'number', id: 'height', label: 'Höhe', value: d.height, min: 1, max: 16000, unit: 'px' },
+        { kind: 'number', id: 'width', label: 'Width', value: d.width, min: 1, max: 16000, unit: 'px' },
+        { kind: 'number', id: 'height', label: 'Height', value: d.height, min: 1, max: 16000, unit: 'px' },
       ],
       linked: ['width', 'height'],
       onOk: (vals) => resizeImage(Number(vals.width), Number(vals.height)),
@@ -1863,19 +1863,19 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
 
   const openCanvasSizeDialog = () => setDialog({
     id: 'canvas-size',
-    title: 'Arbeitsfläche erweitern',
-    fields: [{ kind: 'number', id: 'pad', label: 'Rand je Seite', value: expandPadding, min: 1, max: 4000, unit: 'px' }],
+    title: 'Canvas size',
+    fields: [{ kind: 'number', id: 'pad', label: 'Border per side', value: expandPadding, min: 1, max: 4000, unit: 'px' }],
     onOk: (vals) => { setExpandPadding(Number(vals.pad)); expandCanvas(Number(vals.pad)); },
   });
 
   const openBlurDialog = () => {
-    if (!requireRaster('Gaußscher Weichzeichner')) return;
-    setDialog({ id: 'gaussian-blur', title: 'Gaußscher Weichzeichner', fields: [{ kind: 'number', id: 'radius', label: 'Radius', value: 4, min: 0.1, max: 250, step: 0.1, unit: 'Pixel' }], onOk: (vals) => gaussianBlur(Number(vals.radius)) });
+    if (!requireRaster('Gaussian blur')) return;
+    setDialog({ id: 'gaussian-blur', title: 'Gaussian blur', fields: [{ kind: 'number', id: 'radius', label: 'Radius', value: 4, min: 0.1, max: 250, step: 0.1, unit: 'Pixel' }], onOk: (vals) => gaussianBlur(Number(vals.radius)) });
   };
 
   const openFeatherDialog = () => {
     if (!docRef.current?.selection) return;
-    setDialog({ id: 'feather', title: 'Auswahlkante verbessern: Weiche Kante', fields: [{ kind: 'number', id: 'radius', label: 'Radius', value: 8, min: 0.5, max: 250, step: 0.5, unit: 'Pixel' }], onOk: (vals) => featherSelection(Number(vals.radius)) });
+    setDialog({ id: 'feather', title: 'Refine edge: feather', fields: [{ kind: 'number', id: 'radius', label: 'Radius', value: 8, min: 0.5, max: 250, step: 0.5, unit: 'Pixel' }], onOk: (vals) => featherSelection(Number(vals.radius)) });
   };
 
   const openFly = (fly: FlyPanel) => setDock((cur) => ({ ...cur, fly: cur.fly === fly ? null : fly }));
@@ -1883,8 +1883,8 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   const openFxPanel = (layerId?: string) => {
     const d = docRef.current;
     const layer = d ? (layerId ? d.layers.find((l) => l.id === layerId) : getActiveLayer(d)) : null;
-    if (layerId && layerId !== d?.activeLayerId) dispatch({ type: 'select', id: layerId }, 'Ebene auswählen');
-    if (layer && layer.kind !== 'raster') say('Lens & Film FX wirken als Smartfilter auf Pixelebenen.');
+    if (layerId && layerId !== d?.activeLayerId) dispatch({ type: 'select', id: layerId }, 'Select layer');
+    if (layer && layer.kind !== 'raster') say('Lens & Film FX work as smart filters on pixel layers.');
     setDock((cur) => ({ ...cur, fly: 'fx' }));
   };
 
@@ -1921,8 +1921,8 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       if (lower === 'c') { copySelection(false); return true; }
       if (lower === 'x') { copySelection(true); return true; }
       if (lower === 'v') { paste(); return true; }
-      if (key === ']' && d.activeLayerId) { dispatch({ type: 'step', id: d.activeLayerId, delta: 1 }, 'Anordnen'); return true; }
-      if (key === '[' && d.activeLayerId) { dispatch({ type: 'step', id: d.activeLayerId, delta: -1 }, 'Anordnen'); return true; }
+      if (key === ']' && d.activeLayerId) { dispatch({ type: 'step', id: d.activeLayerId, delta: 1 }, 'Arrange'); return true; }
+      if (key === '[' && d.activeLayerId) { dispatch({ type: 'step', id: d.activeLayerId, delta: -1 }, 'Arrange'); return true; }
       if (lower === "'" ) { setShowGrid((g) => !g); return true; }
       return false;
     }
@@ -1955,7 +1955,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     if (/^[0-9]$/.test(key)) {
       const value = key === '0' ? 1 : Number(key) / 10;
       if (isPaintTool(tool) || tool === 'gradient') setBrush({ opacity: value });
-      else if (d?.activeLayerId) patchLayer(d.activeLayerId, { opacity: value }, 'Deckkraft ändern');
+      else if (d?.activeLayerId) patchLayer(d.activeLayerId, { opacity: value }, 'Change opacity');
       return true;
     }
     if (key.startsWith('Arrow') && d && tool === 'move') {
@@ -1964,7 +1964,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
         const step = e.shiftKey ? 10 : 1;
         const dx = key === 'ArrowLeft' ? -step : key === 'ArrowRight' ? step : 0;
         const dy = key === 'ArrowUp' ? -step : key === 'ArrowDown' ? step : 0;
-        dispatch({ type: 'update', id: layer.id, patch: { x: layer.x + dx, y: layer.y + dy } }, 'Verschieben', { coalesceKey: `nudge:${layer.id}` });
+        dispatch({ type: 'update', id: layer.id, patch: { x: layer.x + dx, y: layer.y + dy } }, 'Move', { coalesceKey: `nudge:${layer.id}` });
       }
       return true;
     }
@@ -2015,7 +2015,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   });
   const requireDoc = () => {
     const d = docRef.current;
-    if (!d) throw new Error('Kein Dokument geöffnet (photo_open oder photo_new_document).');
+    if (!d) throw new Error('No document open (photo_open or photo_new_document).');
     return d;
   };
   const fail = (fallback: string): never => { throw new Error(statusRef.current || fallback); };
@@ -2026,7 +2026,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   const selectFor = async (layerId: unknown) => {
     const d = requireDoc();
     const layer = resolveLayer(d, layerId);
-    if (layer.id !== d.activeLayerId) { dispatch({ type: 'select', id: layer.id }, 'Ebene auswählen'); await settle(); }
+    if (layer.id !== d.activeLayerId) { dispatch({ type: 'select', id: layer.id }, 'Select layer'); await settle(); }
     return layer;
   };
 
@@ -2048,7 +2048,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     },
     [PHOTO_LIVE.open]: async (args) => {
       const ok = args.asLayer && docRef.current ? await placeImage(String(args.url), String(args.name)) : await openImage(String(args.url), String(args.name));
-      if (!ok) fail('Bild konnte nicht geöffnet werden.');
+      if (!ok) fail('Image could not be opened.');
       await settle();
       return layersResult();
     },
@@ -2081,21 +2081,21 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       }
       if (args.opacity !== undefined) layer = { ...layer, opacity: Number(args.opacity) };
       if (args.blendMode) layer = { ...layer, blendMode: args.blendMode };
-      dispatch({ type: 'add', layer }, args.kind === 'text' ? 'Textebene erstellen' : args.kind === 'adjustment' ? 'Neue Einstellungsebene' : 'Neue Ebene');
+      dispatch({ type: 'add', layer }, args.kind === 'text' ? 'Create text layer' : args.kind === 'adjustment' ? 'New adjustment layer' : 'New layer');
       await settle();
       return { layerId: layer.id, ...layersResult() };
     },
     [PHOTO_LIVE.layerRemove]: async (args) => {
       const layer = resolveLayer(requireDoc(), args.layerId);
-      if (layer.locked) throw new Error(`Ebene ${layer.id} ist fixiert.`);
-      dispatch({ type: 'remove', id: layer.id }, 'Ebene löschen');
+      if (layer.locked) throw new Error(`Layer ${layer.id} is locked.`);
+      dispatch({ type: 'remove', id: layer.id }, 'Delete layer');
       await settle();
       return { removed: layer.id, ...layersResult() };
     },
     [PHOTO_LIVE.layerReorder]: async (args) => {
       const layer = resolveLayer(requireDoc(), args.layerId);
-      if (args.index !== undefined) dispatch({ type: 'reorder', id: layer.id, toIndex: Math.round(Number(args.index)) }, 'Ebene verschieben');
-      else dispatch({ type: 'step', id: layer.id, delta: Math.round(Number(args.delta)) }, 'Anordnen');
+      if (args.index !== undefined) dispatch({ type: 'reorder', id: layer.id, toIndex: Math.round(Number(args.index)) }, 'Move layer');
+      else dispatch({ type: 'step', id: layer.id, delta: Math.round(Number(args.delta)) }, 'Arrange');
       await settle();
       return layersResult();
     },
@@ -2103,8 +2103,8 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       const d = requireDoc();
       const layer = resolveLayer(d, args.layerId);
       const patch = layerPatchFromArgs(layer, args);
-      if (Object.keys(patch).length) dispatch({ type: 'update', id: layer.id, patch }, 'Ebeneneigenschaften');
-      if (args.select) dispatch({ type: 'select', id: layer.id }, 'Ebene auswählen');
+      if (Object.keys(patch).length) dispatch({ type: 'update', id: layer.id, patch }, 'Layer properties');
+      if (args.select) dispatch({ type: 'select', id: layer.id }, 'Select layer');
       await settle();
       const next = resolveLayer(requireDoc(), layer.id);
       return { layer: describeLayer(next, requireDoc().layers.indexOf(next)) };
@@ -2115,29 +2115,29 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       let layer: Layer = makeAdjustmentLayer(uid('A'), String(args.name || nextLayerName(d, ADJUSTMENT_LABELS[type])), args.adjustment);
       if (args.opacity !== undefined) layer = { ...layer, opacity: Number(args.opacity) };
       if (args.blendMode) layer = { ...layer, blendMode: args.blendMode };
-      dispatch({ type: 'add', layer }, `Neue Einstellungsebene: ${ADJUSTMENT_LABELS[type]}`);
+      dispatch({ type: 'add', layer }, `New adjustment layer: ${ADJUSTMENT_LABELS[type]}`);
       await settle();
       return { layerId: layer.id, ...layersResult() };
     },
     [PHOTO_LIVE.smartFilterAdd]: async (args) => {
       const layer = resolveLayer(requireDoc(), args.layerId);
-      if (layer.kind !== 'raster') throw new Error(`Ebene ${layer.id} ist keine Pixelebene (Smartfilter nur auf Pixelebenen).`);
-      if (layer.locked) throw new Error(`Ebene ${layer.id} ist fixiert.`);
-      dispatch({ type: 'update', id: layer.id, patch: { fx: [...layer.fx, args.instance] } }, `Smartfilter: ${String(args.effectName ?? args.instance.effectId)}`);
+      if (layer.kind !== 'raster') throw new Error(`Layer ${layer.id} is not a pixel layer (smart filters work on pixel layers only).`);
+      if (layer.locked) throw new Error(`Layer ${layer.id} is locked.`);
+      dispatch({ type: 'update', id: layer.id, patch: { fx: [...layer.fx, args.instance] } }, `Smart filter: ${String(args.effectName ?? args.instance.effectId)}`);
       await settle();
       return { layerId: layer.id, instanceId: args.instance.id };
     },
     [PHOTO_LIVE.smartFilterRemove]: async (args) => {
       const layer = resolveLayer(requireDoc(), args.layerId);
-      if (layer.kind !== 'raster' || !layer.fx.some((fx) => fx.id === args.instanceId)) throw new Error(`Smartfilter ${String(args.instanceId)} nicht auf Ebene ${layer.id}.`);
-      dispatch({ type: 'update', id: layer.id, patch: { fx: layer.fx.filter((fx) => fx.id !== args.instanceId) } }, 'Smartfilter entfernen');
+      if (layer.kind !== 'raster' || !layer.fx.some((fx) => fx.id === args.instanceId)) throw new Error(`Smart filter ${String(args.instanceId)} not on layer ${layer.id}.`);
+      dispatch({ type: 'update', id: layer.id, patch: { fx: layer.fx.filter((fx) => fx.id !== args.instanceId) } }, 'Remove smart filter');
       await settle();
       return { layerId: layer.id, removed: args.instanceId };
     },
     [PHOTO_LIVE.smartFilterApply]: async (args) => {
       const layer = resolveLayer(requireDoc(), args.layerId);
-      if (layer.kind !== 'raster' || !hasActiveFx(layer.fx)) throw new Error('Die Ebene hat keine aktiven Smartfilter.');
-      if (!(await applyFx(layer))) fail('Smartfilter konnten nicht angewendet werden.');
+      if (layer.kind !== 'raster' || !hasActiveFx(layer.fx)) throw new Error('The layer has no active smart filters.');
+      if (!(await applyFx(layer))) fail('Smart filters could not be applied.');
       await settle();
       return { layerId: layer.id, ...layersResult() };
     },
@@ -2146,21 +2146,21 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       const combine = (['new', 'add', 'subtract', 'intersect'].includes(args.combine) ? args.combine : 'new') as SelectionMode;
       switch (args.mode) {
         case 'all': selectAll(); break;
-        case 'none': dispatch({ type: 'selection', selection: null }, 'Auswahl aufheben'); break;
-        case 'invert': if (!d.selection) throw new Error('Keine Auswahl zum Umkehren.'); inverseSelection(); break;
-        case 'reselect': if (!d.lastSelection) throw new Error('Keine vorherige Auswahl.'); reselect(); break;
+        case 'none': dispatch({ type: 'selection', selection: null }, 'Deselect'); break;
+        case 'invert': if (!d.selection) throw new Error('No selection to invert.'); inverseSelection(); break;
+        case 'reselect': if (!d.lastSelection) throw new Error('No previous selection.'); reselect(); break;
         case 'rect':
         case 'ellipse': {
           const r = { x: Number(args.rect.x), y: Number(args.rect.y), width: Number(args.rect.width), height: Number(args.rect.height) };
           if (![r.x, r.y, r.width, r.height].every(Number.isFinite) || r.width <= 0 || r.height <= 0) throw new Error('rect braucht x, y, width > 0, height > 0.');
-          applyShape({ kind: args.mode, rect: r }, combine, args.mode === 'rect' ? 'Rechteckige Auswahl' : 'Elliptische Auswahl', Math.max(0, Number(args.feather ?? 0)));
+          applyShape({ kind: args.mode, rect: r }, combine, args.mode === 'rect' ? 'Rectangular selection' : 'Elliptical selection', Math.max(0, Number(args.feather ?? 0)));
           break;
         }
         case 'subject':
-          if (!(await selectSubject(combine))) fail('Motiv auswählen fehlgeschlagen.');
+          if (!(await selectSubject(combine))) fail('Select subject failed.');
           break;
         default:
-          throw new Error(`Unbekannter Auswahlmodus ${String(args.mode)}.`);
+          throw new Error(`Unknown selection mode ${String(args.mode)}.`);
       }
       await settle();
       return { selection: describeDoc(requireDoc()).selection };
@@ -2171,26 +2171,26 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
       let ok: boolean;
       if (Number(args.expandPadding) > 0) {
         const next = expandCanvas(Number(args.expandPadding));
-        if (!next) fail('Arbeitsfläche konnte nicht erweitert werden.');
-        ok = await runInpaint(args.prompt || 'Extend the scene naturally.', { label: 'Generatives Erweitern', layerName: 'Erweiterung', docOverride: next!, model });
+        if (!next) fail('Canvas could not be extended.');
+        ok = await runInpaint(args.prompt || 'Extend the scene naturally.', { label: 'Generative expand', layerName: 'Extension', docOverride: next!, model });
       } else if (args.heal) {
-        ok = await runInpaint('Reconstruct the masked area seamlessly.', { label: 'Bereichsreparatur', layerName: 'Reparatur', model });
+        ok = await runInpaint('Reconstruct the masked area seamlessly.', { label: 'Spot healing', layerName: 'Repair', model });
       } else {
-        ok = await runInpaint(typeof args.prompt === 'string' && args.prompt ? args.prompt : undefined, { label: 'Generative Füllung', layerName: 'Generative Füllung', model });
+        ok = await runInpaint(typeof args.prompt === 'string' && args.prompt ? args.prompt : undefined, { label: 'Generative fill', layerName: 'Generative fill', model });
       }
-      if (!ok) fail('Generative Füllung fehlgeschlagen.');
+      if (!ok) fail('Generative fill failed.');
       await settle();
       return layersResult();
     },
     [PHOTO_LIVE.crop]: async (args) => {
       const d = requireDoc();
       if (args.toSelection) {
-        if (!d.selection) throw new Error('Keine Auswahl.');
+        if (!d.selection) throw new Error('No selection.');
         cropToSelection();
       } else {
         const r = { x: Math.round(Number(args.rect.x)), y: Math.round(Number(args.rect.y)), width: Math.round(Number(args.rect.width)), height: Math.round(Number(args.rect.height)) };
         if (!(r.width > 0 && r.height > 0)) throw new Error('rect braucht width > 0 und height > 0.');
-        dispatch({ type: 'crop', rect: r }, 'Freistellen');
+        dispatch({ type: 'crop', rect: r }, 'Cut out');
         setViews((prev) => { const copy = { ...prev }; if (activeIdRef.current) delete copy[activeIdRef.current]; return copy; });
       }
       await settle();
@@ -2199,7 +2199,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     [PHOTO_LIVE.mergeDown]: async (args) => {
       await selectFor(args.layerId);
       const d = requireDoc();
-      if (!canMergeDown(d, d.activeLayerId)) throw new Error('Auf eine Ebene reduzieren ist hier nicht möglich (unterste oder fixierte Ebene).');
+      if (!canMergeDown(d, d.activeLayerId)) throw new Error('Cannot merge down here (bottom or locked layer).');
       await mergeDown();
       await settle();
       return layersResult();
@@ -2233,7 +2233,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
     [PHOTO_LIVE.exportToMedia]: async (args) => {
       requireDoc();
       const item = await exportToMedia(typeof args.name === 'string' && args.name ? args.name : undefined);
-      if (!item) fail('Export fehlgeschlagen.');
+      if (!item) fail('Export failed.');
       return { mediaId: item!.id, name: item!.name };
     },
   };
@@ -2266,110 +2266,110 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   const menus: MenuDef[] = [
     {
       id: 'file',
-      label: 'Datei',
+      label: 'File',
       items: [
-        item('new', 'Neu …', openNewDialog, { shortcut: 'Mod+N' }),
-        item('open', 'Öffnen …', () => pickFile('open'), { shortcut: 'Mod+O' }),
-        item('place', 'Eingebettet platzieren …', () => pickFile('place'), { disabled: !hasDoc }),
+        item('new', 'New …', openNewDialog, { shortcut: 'Mod+N' }),
+        item('open', 'Open …', () => pickFile('open'), { shortcut: 'Mod+O' }),
+        item('place', 'Place embedded …', () => pickFile('place'), { disabled: !hasDoc }),
         sep,
-        item('close', 'Schließen', () => activeId && closeSession(activeId), { shortcut: 'Mod+W', disabled: !hasDoc }),
+        item('close', 'Close', () => activeId && closeSession(activeId), { shortcut: 'Mod+W', disabled: !hasDoc }),
         sep,
-        item('save-media', 'In Media Bin speichern', () => void exportToMedia(), { shortcut: 'Mod+S', disabled: !hasDoc }),
-        item('export', 'Exportieren', undefined, { disabled: !hasDoc, submenu: [item('png', 'Schnell-Export als PNG', () => void downloadPng(), { disabled: !hasDoc })] }),
+        item('save-media', 'Save to Media Bin', () => void exportToMedia(), { shortcut: 'Mod+S', disabled: !hasDoc }),
+        item('export', 'Export', undefined, { disabled: !hasDoc, submenu: [item('png', 'Quick export as PNG', () => void downloadPng(), { disabled: !hasDoc })] }),
         sep,
         item('print', 'Drucken …', undefined, { disabled: true }),
       ],
     },
     {
       id: 'edit',
-      label: 'Bearbeiten',
+      label: 'Edit',
       items: [
-        item('undo', history && canUndo(history) ? `Rückgängig: ${history.entries[history.index].label}` : 'Rückgängig', handleUndo, { shortcut: 'Mod+Z', disabled: !history || !canUndo(history) }),
-        item('redo', history && canRedo(history) ? `Wiederholen: ${history.entries[history.index + 1].label}` : 'Wiederholen', handleRedo, { shortcut: 'Shift+Mod+Z', disabled: !history || !canRedo(history) }),
+        item('undo', history && canUndo(history) ? `Undo: ${history.entries[history.index].label}` : 'Undo', handleUndo, { shortcut: 'Mod+Z', disabled: !history || !canUndo(history) }),
+        item('redo', history && canRedo(history) ? `Redo: ${history.entries[history.index + 1].label}` : 'Redo', handleRedo, { shortcut: 'Shift+Mod+Z', disabled: !history || !canRedo(history) }),
         sep,
-        item('cut', 'Ausschneiden', () => copySelection(true), { shortcut: 'Mod+X', disabled: !isRaster }),
-        item('copy', 'Kopieren', () => copySelection(false), { shortcut: 'Mod+C', disabled: !isRaster }),
-        item('paste', 'Einfügen', () => paste(), { shortcut: 'Mod+V', disabled: !hasDoc }),
-        item('clear', 'Löschen', clearSelection, { shortcut: '⌫', disabled: !isRaster || !hasSel }),
+        item('cut', 'Cut', () => copySelection(true), { shortcut: 'Mod+X', disabled: !isRaster }),
+        item('copy', 'Copy', () => copySelection(false), { shortcut: 'Mod+C', disabled: !isRaster }),
+        item('paste', 'Insert', () => paste(), { shortcut: 'Mod+V', disabled: !hasDoc }),
+        item('clear', 'Delete', clearSelection, { shortcut: '⌫', disabled: !isRaster || !hasSel }),
         sep,
-        item('generative-fill', 'Generative Füllung …', () => openFly('generative'), { disabled: !hasDoc }),
-        item('fill', 'Fläche füllen (Vordergrundfarbe)', () => fillSelection(fg), { shortcut: 'Shift+F5', disabled: !isRaster }),
+        item('generative-fill', 'Generative fill …', () => openFly('generative'), { disabled: !hasDoc }),
+        item('fill', 'Fill area (foreground color)', () => fillSelection(fg), { shortcut: 'Shift+F5', disabled: !isRaster }),
         sep,
-        item('transform', 'Transformieren', undefined, {
+        item('transform', 'Transform', undefined, {
           disabled: !isRaster,
           submenu: [
-            item('flip-h', 'Horizontal spiegeln', () => flipLayer(true), { disabled: !isRaster }),
-            item('flip-v', 'Vertikal spiegeln', () => flipLayer(false), { disabled: !isRaster }),
-            item('free', 'Frei transformieren', undefined, { disabled: true }),
+            item('flip-h', 'Flip horizontal', () => flipLayer(true), { disabled: !isRaster }),
+            item('flip-v', 'Flip vertical', () => flipLayer(false), { disabled: !isRaster }),
+            item('free', 'Free transform', undefined, { disabled: true }),
           ],
         }),
         sep,
-        item('prefs', 'Voreinstellungen …', undefined, { disabled: true }),
+        item('prefs', 'Presets …', undefined, { disabled: true }),
       ],
     },
     {
       id: 'image',
-      label: 'Bild',
+      label: 'Image',
       items: [
-        item('adjustments', 'Korrekturen', undefined, { disabled: !hasDoc, submenu: adjustmentSubmenu }),
+        item('adjustments', 'Corrections', undefined, { disabled: !hasDoc, submenu: adjustmentSubmenu }),
         sep,
-        item('image-size', 'Bildgröße …', openImageSizeDialog, { disabled: !hasDoc }),
-        item('canvas-size', 'Arbeitsfläche erweitern …', openCanvasSizeDialog, { disabled: !hasDoc }),
-        item('rotate', 'Bilddrehung', undefined, { disabled: true }),
-        item('crop', 'Freistellen', cropToSelection, { disabled: !hasSel }),
+        item('image-size', 'Image size …', openImageSizeDialog, { disabled: !hasDoc }),
+        item('canvas-size', 'Canvas size …', openCanvasSizeDialog, { disabled: !hasDoc }),
+        item('rotate', 'Image rotation', undefined, { disabled: true }),
+        item('crop', 'Cut out', cropToSelection, { disabled: !hasSel }),
         sep,
-        item('crop-tool', 'Freistellungswerkzeug', () => setTool('crop'), { shortcut: 'C', disabled: !hasDoc }),
+        item('crop-tool', 'Crop tool', () => setTool('crop'), { shortcut: 'C', disabled: !hasDoc }),
       ],
     },
     {
       id: 'layer',
-      label: 'Ebene',
+      label: 'Layer',
       items: [
-        item('new', 'Neu', undefined, {
+        item('new', 'New', undefined, {
           disabled: !hasDoc,
           submenu: [
-            item('layer', 'Ebene …', newLayer, { shortcut: 'Shift+Mod+N', disabled: !hasDoc }),
-            item('via-copy', 'Ebene durch Kopie', layerViaCopy, { shortcut: 'Mod+J', disabled: !activeLayer }),
+            item('layer', 'Layer …', newLayer, { shortcut: 'Shift+Mod+N', disabled: !hasDoc }),
+            item('via-copy', 'Layer via copy', layerViaCopy, { shortcut: 'Mod+J', disabled: !activeLayer }),
           ],
         }),
-        item('duplicate', 'Ebene duplizieren …', duplicateLayer, { disabled: !activeLayer }),
-        item('delete', 'Löschen', deleteLayer, { disabled: !activeLayer || activeLayer.locked }),
+        item('duplicate', 'Duplicate layer …', duplicateLayer, { disabled: !activeLayer }),
+        item('delete', 'Delete', deleteLayer, { disabled: !activeLayer || activeLayer.locked }),
         sep,
-        item('adjustment', 'Neue Einstellungsebene', undefined, { disabled: !hasDoc, submenu: adjustmentSubmenu }),
+        item('adjustment', 'New adjustment layer', undefined, { disabled: !hasDoc, submenu: adjustmentSubmenu }),
         sep,
         item('smart-filter', 'Smartfilter (Lens & Film FX) …', () => openFxPanel(), { disabled: activeLayer?.kind !== 'raster' }),
-        item('rasterize', 'Rastern', () => void rasterizeActive(), { disabled: activeLayer?.kind !== 'text' }),
+        item('rasterize', 'Rasterize', () => void rasterizeActive(), { disabled: activeLayer?.kind !== 'text' }),
         sep,
-        item('arrange', 'Anordnen', undefined, {
+        item('arrange', 'Arrange', undefined, {
           disabled: !activeLayer,
           submenu: [
-            item('front', 'In den Vordergrund', () => doc && activeLayer && dispatch({ type: 'reorder', id: activeLayer.id, toIndex: doc.layers.length - 1 }, 'Anordnen'), { shortcut: 'Shift+Mod+]' }),
-            item('forward', 'Schrittweise vorwärts', () => activeLayer && dispatch({ type: 'step', id: activeLayer.id, delta: 1 }, 'Anordnen'), { shortcut: 'Mod+]' }),
-            item('backward', 'Schrittweise rückwärts', () => activeLayer && dispatch({ type: 'step', id: activeLayer.id, delta: -1 }, 'Anordnen'), { shortcut: 'Mod+[' }),
-            item('back', 'In den Hintergrund', () => activeLayer && dispatch({ type: 'reorder', id: activeLayer.id, toIndex: 0 }, 'Anordnen'), { shortcut: 'Shift+Mod+[' }),
+            item('front', 'Bring to front', () => doc && activeLayer && dispatch({ type: 'reorder', id: activeLayer.id, toIndex: doc.layers.length - 1 }, 'Arrange'), { shortcut: 'Shift+Mod+]' }),
+            item('forward', 'Step forward', () => activeLayer && dispatch({ type: 'step', id: activeLayer.id, delta: 1 }, 'Arrange'), { shortcut: 'Mod+]' }),
+            item('backward', 'Step backward', () => activeLayer && dispatch({ type: 'step', id: activeLayer.id, delta: -1 }, 'Arrange'), { shortcut: 'Mod+[' }),
+            item('back', 'Send to back', () => activeLayer && dispatch({ type: 'reorder', id: activeLayer.id, toIndex: 0 }, 'Arrange'), { shortcut: 'Shift+Mod+[' }),
           ],
         }),
         sep,
-        item('merge-down', 'Auf eine Ebene reduzieren', () => void mergeDown(), { shortcut: 'Mod+E', disabled: !doc || !canMergeDown(doc, doc.activeLayerId) }),
-        item('merge-visible', 'Sichtbare auf eine Ebene reduzieren', () => void mergeVisible(), { shortcut: 'Shift+Mod+E', disabled: !doc || doc.layers.filter((l) => l.visible).length < 2 }),
-        item('flatten', 'Auf Hintergrundebene reduzieren', () => void flattenImage(), { disabled: !hasDoc }),
+        item('merge-down', 'Flatten image', () => void mergeDown(), { shortcut: 'Mod+E', disabled: !doc || !canMergeDown(doc, doc.activeLayerId) }),
+        item('merge-visible', 'Merge visible', () => void mergeVisible(), { shortcut: 'Shift+Mod+E', disabled: !doc || doc.layers.filter((l) => l.visible).length < 2 }),
+        item('flatten', 'Flatten to background layer', () => void flattenImage(), { disabled: !hasDoc }),
       ],
     },
     {
       id: 'select',
-      label: 'Auswahl',
+      label: 'Selection',
       items: [
-        item('all', 'Alles auswählen', selectAll, { shortcut: 'Mod+A', disabled: !hasDoc }),
-        item('deselect', 'Auswahl aufheben', deselect, { shortcut: 'Mod+D', disabled: !hasSel }),
-        item('reselect', 'Erneut wählen', reselect, { shortcut: 'Shift+Mod+D', disabled: !doc?.lastSelection || hasSel }),
-        item('inverse', 'Auswahl umkehren', inverseSelection, { shortcut: 'Shift+Mod+I', disabled: !hasSel }),
+        item('all', 'Select all', selectAll, { shortcut: 'Mod+A', disabled: !hasDoc }),
+        item('deselect', 'Deselect', deselect, { shortcut: 'Mod+D', disabled: !hasSel }),
+        item('reselect', 'Choose again', reselect, { shortcut: 'Shift+Mod+D', disabled: !doc?.lastSelection || hasSel }),
+        item('inverse', 'Invert selection', inverseSelection, { shortcut: 'Shift+Mod+I', disabled: !hasSel }),
         sep,
-        item('subject', 'Motiv (KI)', () => void selectSubject(), { disabled: !hasDoc || Boolean(busy) }),
+        item('subject', 'Subject (AI)', () => void selectSubject(), { disabled: !hasDoc || Boolean(busy) }),
         sep,
-        item('feather', 'Weiche Kante …', openFeatherDialog, { disabled: !hasSel }),
-        item('modify', 'Auswahl verändern', undefined, { disabled: true }),
+        item('feather', 'Feather …', openFeatherDialog, { disabled: !hasSel }),
+        item('modify', 'Modify selection', undefined, { disabled: true }),
         sep,
-        item('quick-mask', 'Im Maskierungsmodus bearbeiten', () => setQuickMask((q) => !q), { shortcut: 'Q', checked: quickMask, disabled: !hasDoc }),
+        item('quick-mask', 'Edit in Quick Mask mode', () => setQuickMask((q) => !q), { shortcut: 'Q', checked: quickMask, disabled: !hasDoc }),
       ],
     },
     {
@@ -2379,41 +2379,41 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
         item('lens-fx', 'Lens & Film FX (Smartfilter) …', () => openFxPanel(), { disabled: activeLayer?.kind !== 'raster' }),
         item('neural', 'Neural Filters …', () => openFly('neural'), { disabled: !hasDoc }),
         sep,
-        item('blur', 'Weichzeichnungsfilter', undefined, { disabled: !isRaster, submenu: [item('gaussian', 'Gaußscher Weichzeichner …', openBlurDialog, { disabled: !isRaster })] }),
-        item('sharpen', 'Scharfzeichnungsfilter', undefined, { disabled: true }),
-        item('apply-fx', 'Smartfilter anwenden (ins Bild übernehmen)', () => void applyFx(), { disabled: !(activeLayer?.kind === 'raster' && hasActiveFx(activeLayer.fx)) }),
+        item('blur', 'Blur filter', undefined, { disabled: !isRaster, submenu: [item('gaussian', 'Gaussian blur …', openBlurDialog, { disabled: !isRaster })] }),
+        item('sharpen', 'Sharpen filter', undefined, { disabled: true }),
+        item('apply-fx', 'Apply smart filters (bake into image)', () => void applyFx(), { disabled: !(activeLayer?.kind === 'raster' && hasActiveFx(activeLayer.fx)) }),
       ],
     },
     {
       id: 'view',
-      label: 'Ansicht',
+      label: 'View',
       items: [
-        item('zoom-in', 'Einzoomen', () => zoomStep(1), { shortcut: 'Mod++', disabled: !hasDoc }),
-        item('zoom-out', 'Auszoomen', () => zoomStep(-1), { shortcut: 'Mod+-', disabled: !hasDoc }),
-        item('fit', 'Ganzes Bild', fitToScreen, { shortcut: 'Mod+0', disabled: !hasDoc }),
+        item('zoom-in', 'Zoom in', () => zoomStep(1), { shortcut: 'Mod++', disabled: !hasDoc }),
+        item('zoom-out', 'Zoom out', () => zoomStep(-1), { shortcut: 'Mod+-', disabled: !hasDoc }),
+        item('fit', 'Whole image', fitToScreen, { shortcut: 'Mod+0', disabled: !hasDoc }),
         item('actual', '100 %', zoomActual, { shortcut: 'Mod+1', disabled: !hasDoc }),
         sep,
-        item('pixel-grid', 'Pixelraster', () => setShowGrid((g) => !g), { checked: showGrid }),
-        item('rulers', 'Lineale', undefined, { disabled: true }),
-        item('guides', 'Hilfslinien', undefined, { disabled: true }),
+        item('pixel-grid', 'Pixel grid', () => setShowGrid((g) => !g), { checked: showGrid }),
+        item('rulers', 'Rulers', undefined, { disabled: true }),
+        item('guides', 'Guides', undefined, { disabled: true }),
       ],
     },
     {
       id: 'window',
-      label: 'Fenster',
+      label: 'Window',
       items: [
-        item('color', 'Farbe', () => setDock((c) => ({ ...c, showColor: !(c.showColor && c.colorTab === 'color') || c.colorTab !== 'color', colorTab: 'color' })), { checked: dock.showColor && dock.colorTab === 'color' }),
-        item('swatches', 'Farbfelder', () => setDock((c) => ({ ...c, showColor: !(c.showColor && c.colorTab === 'swatches') || c.colorTab !== 'swatches', colorTab: 'swatches' })), { checked: dock.showColor && dock.colorTab === 'swatches' }),
-        item('properties', 'Eigenschaften', () => setDock((c) => ({ ...c, showProps: !(c.showProps && c.propsTab === 'properties') || c.propsTab !== 'properties', propsTab: 'properties' })), { checked: dock.showProps && dock.propsTab === 'properties' }),
-        item('adjustments', 'Korrekturen', () => setDock((c) => ({ ...c, showProps: !(c.showProps && c.propsTab === 'adjustments') || c.propsTab !== 'adjustments', propsTab: 'adjustments' })), { checked: dock.showProps && dock.propsTab === 'adjustments' }),
-        item('layers', 'Ebenen', () => setDock((c) => ({ ...c, showLayers: !c.showLayers })), { checked: dock.showLayers }),
+        item('color', 'Color', () => setDock((c) => ({ ...c, showColor: !(c.showColor && c.colorTab === 'color') || c.colorTab !== 'color', colorTab: 'color' })), { checked: dock.showColor && dock.colorTab === 'color' }),
+        item('swatches', 'Swatches', () => setDock((c) => ({ ...c, showColor: !(c.showColor && c.colorTab === 'swatches') || c.colorTab !== 'swatches', colorTab: 'swatches' })), { checked: dock.showColor && dock.colorTab === 'swatches' }),
+        item('properties', 'Properties', () => setDock((c) => ({ ...c, showProps: !(c.showProps && c.propsTab === 'properties') || c.propsTab !== 'properties', propsTab: 'properties' })), { checked: dock.showProps && dock.propsTab === 'properties' }),
+        item('adjustments', 'Corrections', () => setDock((c) => ({ ...c, showProps: !(c.showProps && c.propsTab === 'adjustments') || c.propsTab !== 'adjustments', propsTab: 'adjustments' })), { checked: dock.showProps && dock.propsTab === 'adjustments' }),
+        item('layers', 'Layers', () => setDock((c) => ({ ...c, showLayers: !c.showLayers })), { checked: dock.showLayers }),
         sep,
-        item('history', 'Protokoll', () => openFly('history'), { checked: dock.fly === 'history' }),
+        item('history', 'Log', () => openFly('history'), { checked: dock.fly === 'history' }),
         item('fx', 'Lens & Film FX', () => openFly('fx'), { checked: dock.fly === 'fx' }),
-        item('generative', 'Generativ (KI)', () => openFly('generative'), { checked: dock.fly === 'generative' }),
+        item('generative', 'Generative (AI)', () => openFly('generative'), { checked: dock.fly === 'generative' }),
         item('neural', 'Neural Filters', () => openFly('neural'), { checked: dock.fly === 'neural' }),
         sep,
-        item('reset', 'Arbeitsbereich zurücksetzen', () => setDock(DEFAULT_DOCK)),
+        item('reset', 'Reset workspace', () => setDock(DEFAULT_DOCK)),
       ],
     },
   ];
@@ -2426,7 +2426,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
   })();
 
   const rasterActive = activeLayer?.kind === 'raster' ? activeLayer : null;
-  const docTitle = doc && view ? `${doc.name} bei ${formatZoom(view.zoom)} (${activeLayer?.name ?? '–'}, RGB/8)${history && history.index > 0 ? '*' : ''}` : '';
+  const docTitle = doc && view ? `${doc.name} at ${formatZoom(view.zoom)} (${activeLayer?.name ?? '–'}, RGB/8)${history && history.index > 0 ? '*' : ''}` : '';
   const rasterCount = doc ? doc.layers.filter((l) => l.kind === 'raster').length : 0;
   const [zoomText, setZoomText] = useState('');
   useEffect(() => { setZoomText(view ? formatZoom(view.zoom) : ''); }, [view?.zoom]);
@@ -2450,7 +2450,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
 
   const showTaskbar = hasDoc && !busy && !textEdit && tool !== 'crop';
 
-  const flyTitle: Record<Exclude<FlyPanel, null>, string> = { history: 'Protokoll', fx: 'Lens & Film FX', generative: 'Generativ (KI)', neural: 'Neural Filters' };
+  const flyTitle: Record<Exclude<FlyPanel, null>, string> = { history: 'Log', fx: 'Lens & Film FX', generative: 'Generative (AI)', neural: 'Neural Filters' };
 
   // ---------- Render ----------
   return (
@@ -2509,15 +2509,15 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
           onToggleQuickMask={() => setQuickMask((q) => !q)}
         />
         <div className="psx-docarea">
-          <div className="psx-tabs" role="tablist" aria-label="Dokumente">
+          <div className="psx-tabs" role="tablist" aria-label="Documents">
             {sessions.map((s) => {
               const d = currentState(s.history);
               const v = views[s.id];
               const selected = s.id === activeId;
               return (
                 <div key={s.id} className="psx-tab" role="tab" aria-selected={selected} data-automation-id={`photo.doc-tab.${s.id}`} onMouseDown={() => { if (!selected) { finishTextEdit(); setActiveId(s.id); setLiveDoc(null); } }}>
-                  <span className="psx-tab__name" title={selected ? docTitle : d.name}>{selected ? docTitle : `${d.name}${v ? ` bei ${formatZoom(v.zoom)}` : ''}`}</span>
-                  <button type="button" className="psx-tab__close" title="Schließen" onMouseDown={(e) => e.stopPropagation()} onClick={() => closeSession(s.id)} data-automation-id={`photo.doc-tab.${s.id}.close`}><X size={11} /></button>
+                  <span className="psx-tab__name" title={selected ? docTitle : d.name}>{selected ? docTitle : `${d.name}${v ? ` at ${formatZoom(v.zoom)}` : ''}`}</span>
+                  <button type="button" className="psx-tab__close" title="Close" onMouseDown={(e) => e.stopPropagation()} onClick={() => closeSession(s.id)} data-automation-id={`photo.doc-tab.${s.id}.close`}><X size={11} /></button>
                 </div>
               );
             })}
@@ -2559,12 +2559,12 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
             )}
             {!hasDoc && (
               <div className="psx-start" data-automation-id="photo.start">
-                <div className="psx-start__title">Foto bearbeiten</div>
+                <div className="psx-start__title">Edit photo</div>
                 <div className="psx-start__row">
-                  <button type="button" className="psx-start__card" onClick={() => pickFile('open')} data-automation-id="photo.start.open"><FolderOpen size={22} /> Öffnen …</button>
-                  <button type="button" className="psx-start__card" onClick={openNewDialog} data-automation-id="photo.start.new"><FilePlus size={22} /> Neue Datei …</button>
+                  <button type="button" className="psx-start__card" onClick={() => pickFile('open')} data-automation-id="photo.start.open"><FolderOpen size={22} />Open …</button>
+                  <button type="button" className="psx-start__card" onClick={openNewDialog} data-automation-id="photo.start.new"><FilePlus size={22} />New file …</button>
                 </div>
-                <p className="psx-hint">Bild hierher ziehen oder aus der Media Bin an „Photo“ senden.</p>
+                <p className="psx-hint">Drag an image here or send one from the Media Bin to “Photo”.</p>
               </div>
             )}
             {busy && <div className="psx-busy" data-automation-id="photo.busy"><span className="psx-spinner" /> {busy}</div>}
@@ -2573,27 +2573,27 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
                 {hasSel ? (
                   <>
                     {tool === 'spot-heal' ? (
-                      <button type="button" className="psx-btn psx-btn--primary" onClick={() => void handleHeal()} data-automation-id="photo.taskbar.heal">Reparieren (KI)</button>
+                      <button type="button" className="psx-btn psx-btn--primary" onClick={() => void handleHeal()} data-automation-id="photo.taskbar.heal">Repair (AI)</button>
                     ) : (
                       <>
                         <input
                           className="psx-input"
-                          placeholder="Generative Füllung: beschreiben (optional) …"
+                          placeholder="Generative fill: describe (optional) …"
                           value={taskPrompt}
                           onChange={(e) => setTaskPrompt(e.target.value)}
                           onKeyDown={(e) => { if (e.key === 'Enter') void runInpaint(taskPrompt || undefined); }}
                           data-automation-id="photo.taskbar.prompt"
                         />
-                        <button type="button" className="psx-btn psx-btn--primary" onClick={() => void runInpaint(taskPrompt || undefined)} data-automation-id="photo.taskbar.generate"><Sparkles size={12} /> Generieren</button>
+                        <button type="button" className="psx-btn psx-btn--primary" onClick={() => void runInpaint(taskPrompt || undefined)} data-automation-id="photo.taskbar.generate"><Sparkles size={12} />Generate</button>
                       </>
                     )}
-                    <button type="button" className="psx-btn" onClick={inverseSelection} data-automation-id="photo.taskbar.inverse">Umkehren</button>
-                    <button type="button" className="psx-btn" onClick={deselect} data-automation-id="photo.taskbar.deselect">Auswahl aufheben</button>
+                    <button type="button" className="psx-btn" onClick={inverseSelection} data-automation-id="photo.taskbar.inverse">Reverse</button>
+                    <button type="button" className="psx-btn" onClick={deselect} data-automation-id="photo.taskbar.deselect">Deselect</button>
                   </>
                 ) : (
                   <>
-                    <button type="button" className="psx-btn" onClick={() => void selectSubject()} data-automation-id="photo.taskbar.subject"><WandSparkles size={12} /> Motiv auswählen</button>
-                    <button type="button" className="psx-btn" onClick={() => setDock((c) => ({ ...c, showProps: true, propsTab: 'adjustments' }))} data-automation-id="photo.taskbar.adjust"><SlidersHorizontal size={12} /> Korrektur</button>
+                    <button type="button" className="psx-btn" onClick={() => void selectSubject()} data-automation-id="photo.taskbar.subject"><WandSparkles size={12} />Select subject</button>
+                    <button type="button" className="psx-btn" onClick={() => setDock((c) => ({ ...c, showProps: true, propsTab: 'adjustments' }))} data-automation-id="photo.taskbar.adjust"><SlidersHorizontal size={12} />Correction</button>
                     <button type="button" className="psx-btn" onClick={() => openFxPanel()} disabled={activeLayer?.kind !== 'raster'} data-automation-id="photo.taskbar.fx"><Sparkles size={12} /> Lens FX</button>
                   </>
                 )}
@@ -2611,12 +2611,12 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
                   onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
                   data-automation-id="photo.status.zoom"
                 />
-                <span>Dok: {formatDocSize(doc.width, doc.height)}/{formatDocSize(doc.width, doc.height, rasterCount)}</span>
+                <span>Doc: {formatDocSize(doc.width, doc.height)}/{formatDocSize(doc.width, doc.height, rasterCount)}</span>
                 <span>{doc.width} × {doc.height} px</span>
                 <span>{TOOL_INFO[tool].label}</span>
               </>
-            ) : <span>Kein Dokument</span>}
-            <span className="psx-status__msg" title={status}>{fxError ? `FX-Fehler: ${fxError}` : status || TOOL_INFO[tool].hint}</span>
+            ) : <span>No document</span>}
+            <span className="psx-status__msg" title={status}>{fxError ? `FX error: ${fxError}` : status || TOOL_INFO[tool].hint}</span>
           </div>
         </div>
         <div className="psx-dock">
@@ -2625,7 +2625,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
               <div className="psx-panel__tabs">
                 <span className="psx-panel__tab" aria-selected="true" style={{ display: 'flex', alignItems: 'center' }}>{flyTitle[dock.fly]}</span>
                 <span className="psx-panel__tabs-spacer" />
-                <button type="button" className="psx-icon-btn" title="Schließen" onClick={() => setDock((c) => ({ ...c, fly: null }))}><X size={12} /></button>
+                <button type="button" className="psx-icon-btn" title="Close" onClick={() => setDock((c) => ({ ...c, fly: null }))}><X size={12} /></button>
               </div>
               {dock.fly === 'history' && (
                 <HistoryPanel history={history as History<unknown> | null} docName={doc?.name ?? ''} onJump={(i) => setHistory((h) => jumpTo(h, i))} onUndo={handleUndo} onRedo={handleRedo} />
@@ -2634,30 +2634,29 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
                 <div className="psx-panel__body" data-automation-id="photo.fx-panel">
                   {rasterActive ? (
                     <>
-                      <p className="psx-hint" style={{ marginBottom: 6 }}>Smartfilter für „{rasterActive.name}“ – nicht-destruktiv, live auf der GPU.</p>
+                      <p className="psx-hint" style={{ marginBottom: 6 }}>Smart filters for “{rasterActive.name}” – non-destructive, live on the GPU.</p>
                       <FxStackPanel
                         stack={rasterActive.fx}
-                        onChange={(fx) => patchLayer(rasterActive.id, { fx }, 'Smartfilter ändern', `fx:${rasterActive.id}`)}
-                        emptyHint="Objektiv- und Film-Charakter (Buckswood Post Plugins Optics Lab u. a.). Wird beim Speichern in die Media Bin mitgerendert."
+                        onChange={(fx) => patchLayer(rasterActive.id, { fx }, 'Change smart filter', `fx:${rasterActive.id}`)}
+                        emptyHint="Lens and film character (Buckswood Post Plugins Optics Lab and others). Rendered in when saving to the Media Bin."
                       />
-                      {fxError && <p className="psx-error" style={{ marginTop: 6 }}>FX-Fehler: {fxError}</p>}
+                      {fxError && <p className="psx-error" style={{ marginTop: 6 }}>FX error: {fxError}</p>}
                       {hasActiveFx(rasterActive.fx) && (
-                        <button type="button" onClick={() => void applyFx()} className="psx-btn psx-btn--block" style={{ marginTop: 10 }} data-automation-id="photo.fx-apply">
-                          Effekte ins Bild übernehmen
+                        <button type="button" onClick={() => void applyFx()} className="psx-btn psx-btn--block" style={{ marginTop: 10 }} data-automation-id="photo.fx-apply">Apply effects to image
                         </button>
                       )}
                     </>
                   ) : (
-                    <p className="psx-hint">Wählen Sie eine Pixelebene. Textebenen zuerst rastern; Einstellungsebenen haben keine Smartfilter.</p>
+                    <p className="psx-hint">Choose a pixel layer. Rasterize text layers first; adjustment layers have no smart filters.</p>
                   )}
                 </div>
               )}
               {dock.fly === 'generative' && (
                 <div className="psx-panel__body" data-automation-id="photo.generative-panel">
-                  <div className="psx-section-title" id="photo-inpaint">Generative Füllung (Auswahl)</div>
-                  <textarea className="psx-textarea" rows={3} value={inpaintPrompt} onChange={(e) => setInpaintPrompt(e.target.value)} placeholder="Beschreiben, was entstehen soll …" data-automation-id="photo.gen.prompt" />
+                  <div className="psx-section-title" id="photo-inpaint">Generative fill (selection)</div>
+                  <textarea className="psx-textarea" rows={3} value={inpaintPrompt} onChange={(e) => setInpaintPrompt(e.target.value)} placeholder="Describe what to create …" data-automation-id="photo.gen.prompt" />
                   <div className="psx-row" style={{ marginTop: 6 }}>
-                    <label>Modell</label>
+                    <label>Model</label>
                     <select className="psx-select" style={{ flex: 1 }} value={inpaintModel} onChange={(e) => setInpaintModel(e.target.value as InpaintModel)} data-automation-id="photo.gen.model">
                       <option value="nano-banana-pro">Nano Banana Pro</option>
                       <option value="nano-banana-2-fal">Nano Banana 2 Edit (FAL)</option>
@@ -2666,36 +2665,36 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
                     </select>
                   </div>
                   <div className="psx-row">
-                    <label>Auflösung</label>
-                    {inpaintModel === 'z-turbo-inpaint' ? <span>Automatisch</span> : (
+                    <label>Resolution</label>
+                    {inpaintModel === 'z-turbo-inpaint' ? <span>Automatic</span> : (
                       <select className="psx-select" style={{ flex: 1 }} value={resolution} onChange={(e) => setResolution(e.target.value as Resolution)} data-automation-id="photo.gen.resolution">
                         {inpaintModel === 'nano-banana-pro' || inpaintModel === 'nano-banana-2-fal'
                           ? ['1K', '2K', '4K'].map((r) => <option key={r} value={r}>{r}</option>)
-                          : [['match_input_image', 'Wie Eingabe'], ['0.5 MP', '0,5 MP'], ['1 MP', '1 MP'], ['2 MP', '2 MP'], ['4 MP', '4 MP']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                          : [['match_input_image', 'Same as input'], ['0.5 MP', '0,5 MP'], ['1 MP', '1 MP'], ['2 MP', '2 MP'], ['4 MP', '4 MP']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                       </select>
                     )}
                   </div>
                   <div style={{ display: 'grid', gap: 6 }}>
-                    <button type="button" className="psx-btn psx-btn--primary psx-btn--block" disabled={Boolean(busy) || !hasSel} onClick={() => void runInpaint(undefined)} data-automation-id="photo.gen.inpaint">Generative Füllung</button>
-                    <button type="button" className="psx-btn psx-btn--block" disabled={Boolean(busy) || !hasSel} onClick={() => void handleHeal()} data-automation-id="photo.gen.heal">Auswahl reparieren</button>
+                    <button type="button" className="psx-btn psx-btn--primary psx-btn--block" disabled={Boolean(busy) || !hasSel} onClick={() => void runInpaint(undefined)} data-automation-id="photo.gen.inpaint">Generative fill</button>
+                    <button type="button" className="psx-btn psx-btn--block" disabled={Boolean(busy) || !hasSel} onClick={() => void handleHeal()} data-automation-id="photo.gen.heal">Repair selection</button>
                   </div>
-                  <p className="psx-hint" style={{ marginTop: 6 }}>Auswahl mit Auswahlwerkzeugen, „Motiv auswählen“ oder im Maskierungsmodus (Q) malen. Das Ergebnis landet als neue Ebene, auf die Auswahl beschnitten.</p>
-                  <div className="psx-section-title" id="photo-expand" style={{ marginTop: 14 }}>Generatives Erweitern</div>
+                  <p className="psx-hint" style={{ marginTop: 6 }}>Make a selection with the selection tools, “Select subject” or by painting in Quick Mask mode (Q). The result lands as a new layer, clipped to the selection.</p>
+                  <div className="psx-section-title" id="photo-expand" style={{ marginTop: 14 }}>Generative expand</div>
                   <div className="psx-row">
                     <label>Rand (px)</label>
                     <input className="psx-input" type="number" min={1} value={expandPadding} onChange={(e) => setExpandPadding(Number(e.target.value))} data-automation-id="photo.gen.padding" />
                   </div>
-                  <textarea className="psx-textarea" rows={2} value={expandPrompt} onChange={(e) => setExpandPrompt(e.target.value)} placeholder="Wie soll die Szene weitergehen …" data-automation-id="photo.gen.expand-prompt" />
+                  <textarea className="psx-textarea" rows={2} value={expandPrompt} onChange={(e) => setExpandPrompt(e.target.value)} placeholder="How should the scene continue …" data-automation-id="photo.gen.expand-prompt" />
                   <div style={{ display: 'grid', gap: 6, marginTop: 6 }}>
-                    <button type="button" className="psx-btn psx-btn--block" disabled={Boolean(busy) || !hasDoc} onClick={() => expandCanvas(expandPadding)} data-automation-id="photo.gen.expand">Arbeitsfläche erweitern</button>
-                    <button type="button" className="psx-btn psx-btn--primary psx-btn--block" disabled={Boolean(busy) || !hasDoc} onClick={() => void expandAndFill()} data-automation-id="photo.gen.expand-fill">Erweitern + Füllen</button>
+                    <button type="button" className="psx-btn psx-btn--block" disabled={Boolean(busy) || !hasDoc} onClick={() => expandCanvas(expandPadding)} data-automation-id="photo.gen.expand">Canvas size</button>
+                    <button type="button" className="psx-btn psx-btn--primary psx-btn--block" disabled={Boolean(busy) || !hasDoc} onClick={() => void expandAndFill()} data-automation-id="photo.gen.expand-fill">Expand + fill</button>
                   </div>
                 </div>
               )}
               {dock.fly === 'neural' && (
                 <div className="psx-panel__body" data-automation-id="photo.neural-panel">
                   <div className="psx-field">
-                    <span className="psx-field__label">Intensität (Deckkraft)</span>
+                    <span className="psx-field__label">Intensity (opacity)</span>
                     <span>{neuralIntensity} %</span>
                     <input className="psx-range" type="range" min={0} max={100} value={neuralIntensity} onChange={(e) => setNeuralIntensity(Number(e.target.value))} data-automation-id="photo.neural.intensity" />
                   </div>
@@ -2714,41 +2713,41 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
                   <div style={{ display: 'grid', gap: 4 }}>
                     {NEURAL_PRESETS.filter((preset) => preset.id !== 'custom_prompt').map((preset) => (
                       <button key={preset.id} type="button" className="psx-btn psx-btn--block" style={{ height: 'auto', padding: '5px 8px', justifyContent: 'flex-start', flexDirection: 'column', alignItems: 'flex-start' }} disabled={Boolean(busy)} onClick={() => void applyNeuralPreset(preset)} data-automation-id={`photo.neural.${preset.id}`}>
-                        <span style={{ fontWeight: 600 }}>{preset.label}{preset.requiresReference ? ' · Referenz' : ''}</span>
+                        <span style={{ fontWeight: 600 }}>{preset.label}{preset.requiresReference ? ' · Reference' : ''}</span>
                         <span className="psx-hint">{preset.description}</span>
                       </button>
                     ))}
                   </div>
-                  <div className="psx-section-title" style={{ marginTop: 10 }}>Referenz für „Harmonisieren“</div>
+                  <div className="psx-section-title" style={{ marginTop: 10 }}>Reference for “Harmonize”</div>
                   <div className="psx-row">
-                    <button type="button" className="psx-btn" onClick={() => neuralRefInputRef.current?.click()} data-automation-id="photo.neural.reference">{neuralReference ? 'Ändern' : 'Laden'}</button>
+                    <button type="button" className="psx-btn" onClick={() => neuralRefInputRef.current?.click()} data-automation-id="photo.neural.reference">{neuralReference ? 'Change' : 'Load'}</button>
                     {neuralReference && (
                       <>
-                        <img src={neuralReference.url} alt="Referenz" style={{ width: 36, height: 36, objectFit: 'cover', border: '1px solid #444' }} />
+                        <img src={neuralReference.url} alt="Reference" style={{ width: 36, height: 36, objectFit: 'cover', border: '1px solid #444' }} />
                         <span className="psx-hint" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{neuralReference.file.name}</span>
-                        <button type="button" className="psx-icon-btn" title="Entfernen" onClick={() => setNeuralReference(null)}><X size={12} /></button>
+                        <button type="button" className="psx-icon-btn" title="Remove" onClick={() => setNeuralReference(null)}><X size={12} /></button>
                       </>
                     )}
                   </div>
-                  <div className="psx-section-title" style={{ marginTop: 10 }}>Eigener KI-Look</div>
-                  <textarea className="psx-textarea" rows={2} value={neuralPrompt} onChange={(e) => setNeuralPrompt(e.target.value)} placeholder="z. B. Tageslicht angleichen, Grünstich entfernen, Hautdetails erhalten." data-automation-id="photo.neural.prompt" />
-                  <button type="button" className="psx-btn psx-btn--primary psx-btn--block" style={{ marginTop: 6 }} disabled={Boolean(busy) || !neuralPrompt.trim()} onClick={() => void applyNeuralPreset(NEURAL_PRESETS.find((p) => p.id === 'custom_prompt')!)} data-automation-id="photo.neural.custom">Eigenen Look anwenden</button>
-                  <p className="psx-hint" style={{ marginTop: 6 }}>Looks werden als Einstellungsebene „Neural“ angelegt und bleiben editierbar.</p>
+                  <div className="psx-section-title" style={{ marginTop: 10 }}>Custom AI look</div>
+                  <textarea className="psx-textarea" rows={2} value={neuralPrompt} onChange={(e) => setNeuralPrompt(e.target.value)} placeholder="e.g. match daylight, remove a green cast, keep skin detail." data-automation-id="photo.neural.prompt" />
+                  <button type="button" className="psx-btn psx-btn--primary psx-btn--block" style={{ marginTop: 6 }} disabled={Boolean(busy) || !neuralPrompt.trim()} onClick={() => void applyNeuralPreset(NEURAL_PRESETS.find((p) => p.id === 'custom_prompt')!)} data-automation-id="photo.neural.custom">Apply custom look</button>
+                  <p className="psx-hint" style={{ marginTop: 6 }}>Looks are created as a “Neural” adjustment layer and stay editable.</p>
                 </div>
               )}
             </div>
           )}
-          <div className="psx-dock__strip" role="toolbar" aria-label="Bedienfelder">
-            <button type="button" aria-pressed={dock.fly === 'history'} title="Protokoll" onClick={() => openFly('history')} data-automation-id="photo.dock.history"><HistoryIcon size={16} /></button>
+          <div className="psx-dock__strip" role="toolbar" aria-label="Panels">
+            <button type="button" aria-pressed={dock.fly === 'history'} title="Log" onClick={() => openFly('history')} data-automation-id="photo.dock.history"><HistoryIcon size={16} /></button>
             <button type="button" aria-pressed={dock.fly === 'fx'} title="Lens & Film FX (Smartfilter)" onClick={() => openFly('fx')} data-automation-id="photo.dock.fx"><Sparkles size={16} /></button>
-            <button type="button" aria-pressed={dock.fly === 'generative'} title="Generativ (KI)" onClick={() => openFly('generative')} data-automation-id="photo.dock.generative"><WandSparkles size={16} /></button>
+            <button type="button" aria-pressed={dock.fly === 'generative'} title="Generative (AI)" onClick={() => openFly('generative')} data-automation-id="photo.dock.generative"><WandSparkles size={16} /></button>
             <button type="button" aria-pressed={dock.fly === 'neural'} title="Neural Filters" onClick={() => openFly('neural')} data-automation-id="photo.dock.neural"><Palette size={16} /></button>
           </div>
           <div className="psx-dock__col">
             {dock.showColor && (
               <div className="psx-panel">
                 <div className="psx-panel__tabs" role="tablist">
-                  {([['color', 'Farbe'], ['swatches', 'Farbfelder']] as const).map(([id, label]) => (
+                  {([['color', 'Color'], ['swatches', 'Swatches']] as const).map(([id, label]) => (
                     <button key={id} type="button" role="tab" className="psx-panel__tab" aria-selected={dock.colorTab === id} onClick={() => setDock((c) => ({ ...c, colorTab: id }))} data-automation-id={`photo.panel-tab.${id}`}>{label}</button>
                   ))}
                 </div>
@@ -2762,7 +2761,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
             {dock.showProps && (
               <div className="psx-panel" style={{ maxHeight: '45%' }}>
                 <div className="psx-panel__tabs" role="tablist">
-                  {([['properties', 'Eigenschaften'], ['adjustments', 'Korrekturen']] as const).map(([id, label]) => (
+                  {([['properties', 'Properties'], ['adjustments', 'Corrections']] as const).map(([id, label]) => (
                     <button key={id} type="button" role="tab" className="psx-panel__tab" aria-selected={dock.propsTab === id} onClick={() => setDock((c) => ({ ...c, propsTab: id }))} data-automation-id={`photo.panel-tab.${id}`}>{label}</button>
                   ))}
                 </div>
@@ -2786,15 +2785,15 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
             {dock.showLayers && (
               <div className="psx-panel psx-panel--grow">
                 <div className="psx-panel__tabs" role="tablist">
-                  <button type="button" role="tab" className="psx-panel__tab" aria-selected="true">Ebenen</button>
+                  <button type="button" role="tab" className="psx-panel__tab" aria-selected="true">Layers</button>
                 </div>
                 {shownDoc ? (
                   <LayersPanel
                     doc={shownDoc}
                     store={store}
-                    onSelect={(id) => dispatch({ type: 'select', id }, 'Ebene auswählen')}
+                    onSelect={(id) => dispatch({ type: 'select', id }, 'Select layer')}
                     onPatch={patchLayer}
-                    onReorder={(id, toIndex) => dispatch({ type: 'reorder', id, toIndex }, 'Ebene verschieben')}
+                    onReorder={(id, toIndex) => dispatch({ type: 'reorder', id, toIndex }, 'Move layer')}
                     onNewLayer={newLayer}
                     onDuplicate={duplicateLayer}
                     onDelete={deleteLayer}
@@ -2802,7 +2801,7 @@ const PhotoWorkspace: React.FC<PhotoWorkspaceProps> = ({ onAddGeneratedMedia, se
                     onAdjustmentMenu={(anchor) => { const r = anchor.getBoundingClientRect(); setAdjMenu({ x: r.left - 180, y: r.top - 150 }); }}
                     onOpenFx={(id) => openFxPanel(id)}
                   />
-                ) : <p className="psx-hint" style={{ padding: 10 }}>Kein Dokument geöffnet.</p>}
+                ) : <p className="psx-hint" style={{ padding: 10 }}>No document open.</p>}
               </div>
             )}
           </div>

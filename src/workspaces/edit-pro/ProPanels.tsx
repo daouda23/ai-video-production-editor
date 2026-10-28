@@ -162,7 +162,7 @@ export const ScrubNumber: React.FC<{
                 if (event.key === 'ArrowRight' || event.key === 'ArrowUp') { event.preventDefault(); event.stopPropagation(); onChange(clampValue(value + step * (event.shiftKey ? 10 : 1))); }
                 if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') { event.preventDefault(); event.stopPropagation(); onChange(clampValue(value - step * (event.shiftKey ? 10 : 1))); }
             }}
-            title="Ziehen zum Ändern (Shift: grob, Alt: fein) · Klick: Wert eingeben · Doppelklick: zurücksetzen"
+            title="Drag to change (Shift: coarse, Alt: fine) · Click: type a value · Double-click: reset"
         >
             {display}
         </span>
@@ -213,7 +213,7 @@ const Section: React.FC<{ id: string; title: string; children: React.ReactNode; 
                     {badge}
                 </button>
                 {onReset && (
-                    <button type="button" className="ppx-icon" onClick={onReset} title={`${title} zurücksetzen`} data-automation-id={`pp.fxc.section.${id}.reset`}>
+                    <button type="button" className="ppx-icon" onClick={onReset} title={`${title} reset`} data-automation-id={`pp.fxc.section.${id}.reset`}>
                         <RotateCcw size={11} />
                     </button>
                 )}
@@ -266,14 +266,14 @@ const KeyedRow: React.FC<{
 
 const BLEND_MODES: Array<{ id: NonNullable<TimelineClip['blendMode']>; label: string }> = [
     { id: 'normal', label: 'Normal' },
-    { id: 'darken', label: 'Abdunkeln' },
-    { id: 'multiply', label: 'Multiplizieren' },
-    { id: 'lighten', label: 'Aufhellen' },
-    { id: 'screen', label: 'Negativ multiplizieren' },
-    { id: 'color-dodge', label: 'Farbig abwedeln' },
-    { id: 'overlay', label: 'Ineinanderkopieren' },
-    { id: 'soft-light', label: 'Weiches Licht' },
-    { id: 'difference', label: 'Differenz' },
+    { id: 'darken', label: 'Darken' },
+    { id: 'multiply', label: 'Multiply' },
+    { id: 'lighten', label: 'Lighten' },
+    { id: 'screen', label: 'Screen' },
+    { id: 'color-dodge', label: 'Color dodge' },
+    { id: 'overlay', label: 'Overlay' },
+    { id: 'soft-light', label: 'Soft light' },
+    { id: 'difference', label: 'Difference' },
 ];
 
 const MOTION_KEYS = [clipTrackKey('x'), clipTrackKey('y'), clipTrackKey('scale'), clipTrackKey('rotation')];
@@ -325,8 +325,8 @@ export const EffectControlsPanel: React.FC<{
     if (!clip) {
         return (
             <div className="ppx-empty" data-automation-id="pp.fxc.empty">
-                <strong>Kein Clip ausgewählt</strong>
-                <span>Wähle einen Clip in der Timeline, um Bewegung, Deckkraft und Effekte einzustellen. Effekte aus dem Effekte-Panel lassen sich hierher ziehen.</span>
+                <strong>No clip selected</strong>
+                <span>Choose a clip in the timeline to set motion, opacity and effects. Effects from the Effects panel can be dragged here.</span>
             </div>
         );
     }
@@ -377,8 +377,8 @@ export const EffectControlsPanel: React.FC<{
             }}
         >
             <div className="ppx-fxc__head kfx-head" data-automation-id="pp.fxc.header">
-                <span className="kfx-head__tab" title={`Quellclip: ${sourceName}`} data-automation-id="pp.fxc.header.source">Quelle · {sourceName}</span>
-                <span className="kfx-head__tab kfx-head__tab--active" title={`${trackLabel ? `${trackLabel} · ` : ''}${name}`} data-automation-id="pp.fxc.header.sequence">Sequenz · {name}</span>
+                <span className="kfx-head__tab" title={`Source clip: ${sourceName}`} data-automation-id="pp.fxc.header.source">Source · {sourceName}</span>
+                <span className="kfx-head__tab kfx-head__tab--active" title={`${trackLabel ? `${trackLabel} · ` : ''}${name}`} data-automation-id="pp.fxc.header.sequence">Sequence · {name}</span>
                 <span className="ppx-fxc__range">{formatTimecode(clip.start)} – {formatTimecode(clip.end)}</span>
                 {keyframingAvailable && (
                     <button
@@ -386,7 +386,7 @@ export const EffectControlsPanel: React.FC<{
                         className={`ppx-icon ${laneOn ? 'ppx-icon--on' : ''}`}
                         onClick={() => setLaneOn(!laneOn)}
                         aria-pressed={laneOn}
-                        title={laneOn ? 'Keyframe-Zeitleiste ausblenden' : 'Keyframe-Zeitleiste einblenden'}
+                        title={laneOn ? 'Hide keyframe timeline' : 'Show keyframe timeline'}
                         data-automation-id="pp.fxc.lane.toggle"
                     >
                         {laneOn ? <PanelRightClose size={12} /> : <PanelRightOpen size={12} />}
@@ -398,30 +398,30 @@ export const EffectControlsPanel: React.FC<{
                     {showLane && (
                         <div className="kfx-colhead" style={{ height: LANE_RULER_HEIGHT }}>
                             <strong>{isAudio ? 'Audio' : 'Video'}</strong>
-                            <span data-automation-id="pp.fxc.keycount">{keyCount ? `${keyCount} Keyframe${keyCount === 1 ? '' : 's'}` : 'Keine Keyframes'}</span>
+                            <span data-automation-id="pp.fxc.keycount">{keyCount ? `${keyCount} Keyframe${keyCount === 1 ? '' : 's'}` : 'No keyframes'}</span>
                         </div>
                     )}
                     {!isAudio && (
                         <>
-                            <Section id="motion" open={sectionStates['motion'] ?? SECTION_DEFAULTS['motion']} onToggle={(open) => setSection('motion', open)} title="Bewegung" summaryKeys={binding ? MOTION_KEYS : undefined} onReset={() => onUpdateClip(resetKeys(clip, MOTION_KEYS))}>
+                            <Section id="motion" open={sectionStates['motion'] ?? SECTION_DEFAULTS['motion']} onToggle={(open) => setSection('motion', open)} title="Motion" summaryKeys={binding ? MOTION_KEYS : undefined} onReset={() => onUpdateClip(resetKeys(clip, MOTION_KEYS))}>
                                 <KeyedRow {...rowProps} trackKey={clipTrackKey('x')} label="Position X" automationId="pp.fxc.position-x" render={(value, onChange) => (
                                     <><ScrubNumber label="Position X" automationId="pp.fxc.position-x" value={value} min={-100} max={200} step={0.1} decimals={1} defaultValue={50} onChange={onChange} /><span className="ppx-unit">%</span></>
                                 )} />
                                 <KeyedRow {...rowProps} trackKey={clipTrackKey('y')} label="Position Y" automationId="pp.fxc.position-y" render={(value, onChange) => (
                                     <><ScrubNumber label="Position Y" automationId="pp.fxc.position-y" value={value} min={-100} max={200} step={0.1} decimals={1} defaultValue={50} onChange={onChange} /><span className="ppx-unit">%</span></>
                                 )} />
-                                <KeyedRow {...rowProps} trackKey={clipTrackKey('scale')} label="Skalierung" automationId="pp.fxc.scale" render={(value, onChange) => (
-                                    <ScrubNumber label="Skalierung" automationId="pp.fxc.scale" value={value} min={0.1} max={3} step={0.005} scale={100} unit=" %" decimals={1} defaultValue={1} onChange={onChange} />
+                                <KeyedRow {...rowProps} trackKey={clipTrackKey('scale')} label="Scale" automationId="pp.fxc.scale" render={(value, onChange) => (
+                                    <ScrubNumber label="Scale" automationId="pp.fxc.scale" value={value} min={0.1} max={3} step={0.005} scale={100} unit=" %" decimals={1} defaultValue={1} onChange={onChange} />
                                 )} />
-                                <KeyedRow {...rowProps} trackKey={clipTrackKey('rotation')} label="Drehung" automationId="pp.fxc.rotation" render={(value, onChange) => (
-                                    <ScrubNumber label="Drehung" automationId="pp.fxc.rotation" value={value} min={-3600} max={3600} step={0.5} unit=" °" decimals={1} defaultValue={0} onChange={onChange} />
+                                <KeyedRow {...rowProps} trackKey={clipTrackKey('rotation')} label="Rotation" automationId="pp.fxc.rotation" render={(value, onChange) => (
+                                    <ScrubNumber label="Rotation" automationId="pp.fxc.rotation" value={value} min={-3600} max={3600} step={0.5} unit=" °" decimals={1} defaultValue={0} onChange={onChange} />
                                 )} />
                             </Section>
-                            <Section id="opacity" open={sectionStates['opacity'] ?? SECTION_DEFAULTS['opacity']} onToggle={(open) => setSection('opacity', open)} title="Deckkraft" summaryKeys={binding ? [OPACITY_KEY] : undefined} onReset={() => onUpdateClip({ ...resetKeys(clip, [OPACITY_KEY]), blendMode: 'normal' })}>
-                                <KeyedRow {...rowProps} trackKey={OPACITY_KEY} label="Deckkraft" automationId="pp.fxc.opacity" render={(value, onChange) => (
-                                    <ScrubNumber label="Deckkraft" automationId="pp.fxc.opacity" value={value} min={0} max={1} step={0.005} scale={100} unit=" %" decimals={1} defaultValue={1} onChange={onChange} />
+                            <Section id="opacity" open={sectionStates['opacity'] ?? SECTION_DEFAULTS['opacity']} onToggle={(open) => setSection('opacity', open)} title="Opacity" summaryKeys={binding ? [OPACITY_KEY] : undefined} onReset={() => onUpdateClip({ ...resetKeys(clip, [OPACITY_KEY]), blendMode: 'normal' })}>
+                                <KeyedRow {...rowProps} trackKey={OPACITY_KEY} label="Opacity" automationId="pp.fxc.opacity" render={(value, onChange) => (
+                                    <ScrubNumber label="Opacity" automationId="pp.fxc.opacity" value={value} min={0} max={1} step={0.005} scale={100} unit=" %" decimals={1} defaultValue={1} onChange={onChange} />
                                 )} />
-                                <KeyedRow {...rowProps} label="Mischmodus" automationId="pp.fxc.blend-mode" render={() => null}>
+                                <KeyedRow {...rowProps} label="Blend mode" automationId="pp.fxc.blend-mode" render={() => null}>
                                     <select
                                         className="ppx-select"
                                         value={clip.blendMode ?? 'normal'}
@@ -434,10 +434,10 @@ export const EffectControlsPanel: React.FC<{
                             </Section>
                         </>
                     )}
-                    <Section id="volume" open={sectionStates.volume ?? isAudio} onToggle={(open) => setSection('volume', open)} title="Lautstärke" summaryKeys={binding ? [VOLUME_KEY] : undefined} onReset={() => onUpdateClip(resetKeys(clip, [VOLUME_KEY]))}>
-                        <KeyedRow {...rowProps} trackKey={VOLUME_KEY} label="Pegel" automationId="pp.fxc.volume" render={(value, onChange) => (
+                    <Section id="volume" open={sectionStates.volume ?? isAudio} onToggle={(open) => setSection('volume', open)} title="Volume" summaryKeys={binding ? [VOLUME_KEY] : undefined} onReset={() => onUpdateClip(resetKeys(clip, [VOLUME_KEY]))}>
+                        <KeyedRow {...rowProps} trackKey={VOLUME_KEY} label="Level" automationId="pp.fxc.volume" render={(value, onChange) => (
                             <>
-                                <ScrubNumber label="Clip-Lautstärke" automationId="pp.fxc.volume" value={value} min={0} max={2} step={0.005} scale={100} unit=" %" decimals={0} defaultValue={1} onChange={onChange} />
+                                <ScrubNumber label="Clip volume" automationId="pp.fxc.volume" value={value} min={0} max={2} step={0.005} scale={100} unit=" %" decimals={0} defaultValue={1} onChange={onChange} />
                                 <span className="ppx-unit">{volumeToDb(value)} dB</span>
                             </>
                         )} />
@@ -447,7 +447,7 @@ export const EffectControlsPanel: React.FC<{
                             <FxStackPanel
                                 stack={clip.fxStack}
                                 onChange={(fxStack: FxStack) => onUpdateClip({ ...clip, fxStack })}
-                                emptyHint="Noch keine GPU-Effekte. Effekt hinzufügen oder aus dem Effekte-Panel hierher ziehen."
+                                emptyHint="No GPU effects yet. Add an effect or drag one here from the Effects panel."
                                 keyframing={binding}
                             />
                         </Section>
@@ -456,14 +456,14 @@ export const EffectControlsPanel: React.FC<{
                         <Section id="css-fx" open={sectionStates['css-fx'] ?? SECTION_DEFAULTS['css-fx']} onToggle={(open) => setSection('css-fx', open)} title="Video-Effekte (Looks)">
                             {cssLayers.map((layer) => (
                                 <PropRow key={layer.id} label={String(layer.effect)}>
-                                    <span className="ppx-unit">Intensität {Math.round((layer.intensity ?? 1) * 100)} %</span>
+                                    <span className="ppx-unit">Intensity {Math.round((layer.intensity ?? 1) * 100)} %</span>
                                 </PropRow>
                             ))}
-                            <p className="ppx-hint">Looks bearbeiten und entfernen im Tab „Eigenschaften“.</p>
+                            <p className="ppx-hint">Edit and remove looks in the “Properties” tab.</p>
                         </Section>
                     )}
                     {binding && Math.abs(clip.transform?.rotation ?? 0) + (getTrackPoints(clip, clipTrackKey('rotation')).length ? 1 : 0) > 1e-6 && (
-                        <p className="ppx-hint" data-automation-id="pp.fxc.rotation-hint">Drehung wirkt in der Vorschau; der HQ-Export wendet sie noch nicht an.</p>
+                        <p className="ppx-hint" data-automation-id="pp.fxc.rotation-hint">Rotation works in the preview; the HQ export does not apply it yet.</p>
                     )}
                 </div>
                 {showLane && (
@@ -533,7 +533,7 @@ export const EffectsBrowserPanel: React.FC<{
         },
         {
             id: 'video-effects',
-            label: 'Videoeffekte',
+            label: 'Video effects',
             items: EFFECTS.filter((effect) => effect.type === 'css').map((effect) => ({
                 id: effect.id,
                 label: effect.name,
@@ -559,18 +559,18 @@ export const EffectsBrowserPanel: React.FC<{
         },
         {
             id: 'video-transitions',
-            label: 'Videoübergänge',
+            label: 'Video transitions',
             items: TRANSITIONS.map((transition) => ({
                 id: transition.id,
                 label: transition.name,
-                hint: `Am Ende des ausgewählten Clips · ${transition.duration.toFixed(1)} s`,
+                hint: `At the end of the selected clip · ${transition.duration.toFixed(1)} s`,
                 needsClip: true,
                 onActivate: () => props.onApplyTransition(transition.id),
             })),
         },
         {
             id: 'titles',
-            label: 'Titel',
+            label: 'Title',
             items: TITLE_PRESETS.map((preset) => ({
                 id: preset.id,
                 label: preset.label,
@@ -581,7 +581,7 @@ export const EffectsBrowserPanel: React.FC<{
         },
         {
             id: 'tools',
-            label: 'Werkzeuge',
+            label: 'Tools',
             items: EFFECTS.filter((effect) => effect.type === 'native').map((effect) => ({
                 id: effect.id,
                 label: effect.name,
@@ -589,7 +589,7 @@ export const EffectsBrowserPanel: React.FC<{
                 needsClip: effect.id === EffectType.CHROMA_KEY,
                 onActivate: () => {
                     if (effect.id === EffectType.NATIVE_SOLID_COLOR) {
-                        const color = window.prompt('Farbe (z. B. #RRGGBB):', '#2563eb');
+                        const color = window.prompt('Color (e.g. #RRGGBB):', '#2563eb');
                         if (color) props.onApplyNativeEffect(effect, color);
                     } else {
                         props.onApplyNativeEffect(effect, '');
@@ -623,12 +623,12 @@ export const EffectsBrowserPanel: React.FC<{
                 <input
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Effekte suchen"
-                    aria-label="Effekte suchen"
+                    placeholder="Search effects"
+                    aria-label="Search effects"
                     data-automation-id="pp.effects.search"
                 />
             </div>
-            {!hasClip && <p className="ppx-hint ppx-hint--bar">Clip in der Timeline auswählen, um Effekte anzuwenden – oder Effekt auf einen Clip ziehen.</p>}
+            {!hasClip && <p className="ppx-hint ppx-hint--bar">Select a clip in the timeline to apply effects – or drag an effect onto a clip.</p>}
             <div className="ppx-tree" role="tree">
                 {visible.map((folder) => {
                     const expanded = needle ? true : Boolean(open[folder.id]);
@@ -660,7 +660,7 @@ export const EffectsBrowserPanel: React.FC<{
                                         }}
                                         onClick={() => { if (!disabled) item.onActivate(); }}
                                         aria-disabled={disabled}
-                                        title={`${item.hint ?? item.label}${disabled ? ' · zuerst einen Clip auswählen' : ''}`}
+                                        title={`${item.hint ?? item.label}${disabled ? ' · select a clip first' : ''}`}
                                         data-automation-id={`pp.effects.item.${folder.id}.${slug(item.id)}`}
                                     >
                                         <span className="ppx-tree__icon" aria-hidden>{folder.id === 'post-plugins-fx' ? 'GPU' : folder.id === 'video-transitions' ? '⇄' : folder.id === 'titles' ? 'T' : 'fx'}</span>
@@ -672,7 +672,7 @@ export const EffectsBrowserPanel: React.FC<{
                         </div>
                     );
                 })}
-                {visible.length === 0 && <p className="ppx-hint">Keine Treffer für „{query}“.</p>}
+                {visible.length === 0 && <p className="ppx-hint">No results for “{query}”.</p>}
             </div>
         </div>
     );
@@ -710,7 +710,7 @@ export const ToolsPanel: React.FC<{ tool: EditorToolId; onSelect: (tool: EditorT
         return () => window.clearTimeout(id);
     }, [notice]);
     return (
-        <div className="ppx-tools" role="toolbar" aria-orientation="vertical" aria-label="Werkzeuge" data-automation-id="pp.tools">
+        <div className="ppx-tools" role="toolbar" aria-orientation="vertical" aria-label="Tools" data-automation-id="pp.tools">
             {EDITOR_TOOLS.map((entry) => {
                 const Icon = TOOL_ICONS[entry.id];
                 const planned = entry.status === 'planned';
@@ -719,7 +719,7 @@ export const ToolsPanel: React.FC<{ tool: EditorToolId; onSelect: (tool: EditorT
                         key={entry.id}
                         type="button"
                         className={`ppx-tool ${tool === entry.id ? 'ppx-tool--active' : ''} ${planned ? 'ppx-tool--planned' : ''}`}
-                        onClick={() => (planned ? setNotice(`${entry.label}: noch nicht verfügbar`) : onSelect(entry.id))}
+                        onClick={() => (planned ? setNotice(`${entry.label}: not available yet`) : onSelect(entry.id))}
                         aria-pressed={tool === entry.id}
                         aria-disabled={planned}
                         title={`${entry.label} (${entry.key}) – ${entry.hint}`}
@@ -770,7 +770,7 @@ export const AudioMetersPanel: React.FC<{ levels: TrackLevel[] }> = ({ levels })
     const master = mixLevels(levels.filter((entry) => entry.audible).map((entry) => entry.level));
     const hasData = levels.some((entry) => entry.level !== null && entry.clipId);
     return (
-        <div className="ppx-meter" data-automation-id="pp.meters" title="Pegel geschätzt aus der Wellenform-Hüllkurve an der Abspielposition (keine kalibrierte dBFS-Messung)">
+        <div className="ppx-meter" data-automation-id="pp.meters" title="Level estimated from the waveform envelope at the playhead (not a calibrated dBFS measurement)">
             <div className="ppx-meter__scale" aria-hidden>
                 {METER_TICKS.map((tick) => <span key={tick} style={{ bottom: `${dbToMeterFraction(tick) * 100}%` }}>{tick === 0 ? '0' : tick}</span>)}
             </div>
@@ -778,7 +778,7 @@ export const AudioMetersPanel: React.FC<{ levels: TrackLevel[] }> = ({ levels })
                 <MeterBar level={master} automationId="pp.meters.left" />
                 <MeterBar level={master} automationId="pp.meters.right" />
             </div>
-            <div className="ppx-meter__foot">{hasData ? 'L R' : 'ohne Daten'}</div>
+            <div className="ppx-meter__foot">{hasData ? 'L R' : 'no data'}</div>
         </div>
     );
 };
@@ -823,7 +823,7 @@ const Fader: React.FC<{ value: number; disabled?: boolean; onChange: (value: num
                 if (event.key === 'ArrowUp') { event.preventDefault(); event.stopPropagation(); onChange(faderToGain(Math.min(1, pos + 0.02))); }
                 if (event.key === 'ArrowDown') { event.preventDefault(); event.stopPropagation(); onChange(faderToGain(Math.max(0, pos - 0.02))); }
             }}
-            title="Ziehen: Clip-Lautstärke · Doppelklick: 0 dB"
+            title="Drag: clip volume · Double-click: 0 dB"
         >
             <div className="ppx-fader__track" />
             <div className="ppx-fader__unity" style={{ bottom: '75%' }} />
@@ -855,35 +855,35 @@ export const AudioMixerPanel: React.FC<{
                     const volume = clip?.volume ?? 1;
                     return (
                         <div key={track.id} className={`ppx-strip ${track.type === 'video' ? 'ppx-strip--video' : ''}`} data-automation-id={`pp.mixer.${label}`}>
-                            <div className="ppx-strip__name" title={media?.name ?? 'Kein Clip an der Abspielposition'}>{label}</div>
+                            <div className="ppx-strip__name" title={media?.name ?? 'No clip at the playhead'}>{label}</div>
                             <div className="ppx-strip__buttons">
-                                <button type="button" className={`ppx-chip ${track.isMuted ? 'ppx-chip--mute' : ''}`} aria-pressed={track.isMuted} onClick={() => onUpdateTrack(track.id, { isMuted: !track.isMuted })} title="Spur stummschalten" data-automation-id={`pp.mixer.${label}.mute`}>M</button>
-                                <button type="button" className={`ppx-chip ${track.isSolo ? 'ppx-chip--solo' : ''}`} aria-pressed={Boolean(track.isSolo)} onClick={() => onUpdateTrack(track.id, { isSolo: !track.isSolo })} title="Spur solo" data-automation-id={`pp.mixer.${label}.solo`}>S</button>
+                                <button type="button" className={`ppx-chip ${track.isMuted ? 'ppx-chip--mute' : ''}`} aria-pressed={track.isMuted} onClick={() => onUpdateTrack(track.id, { isMuted: !track.isMuted })} title="Mute track" data-automation-id={`pp.mixer.${label}.mute`}>M</button>
+                                <button type="button" className={`ppx-chip ${track.isSolo ? 'ppx-chip--solo' : ''}`} aria-pressed={Boolean(track.isSolo)} onClick={() => onUpdateTrack(track.id, { isSolo: !track.isSolo })} title="Solo track" data-automation-id={`pp.mixer.${label}.solo`}>S</button>
                             </div>
                             <div className="ppx-strip__body">
                                 <Fader
                                     value={volume}
                                     disabled={!clip}
-                                    label={`Clip-Lautstärke ${label}`}
+                                    label={`Clip volume ${label}`}
                                     automationId={`pp.mixer.${label}.fader`}
                                     onChange={(next) => clip && onUpdateClip({ ...clip, volume: Math.round(next * 1000) / 1000 })}
                                 />
                                 <MeterBar level={level?.level ?? null} automationId={`pp.mixer.${label}.meter`} />
                             </div>
                             <div className="ppx-strip__db">{clip ? `${volumeToDb(volume)} dB` : '—'}</div>
-                            <div className="ppx-strip__clip" title={media?.name}>{media?.name ?? 'kein Clip'}</div>
+                            <div className="ppx-strip__clip" title={media?.name}>{media?.name ?? 'no clip'}</div>
                         </div>
                     );
                 })}
                 <div className="ppx-strip ppx-strip--master" data-automation-id="pp.mixer.master">
-                    <div className="ppx-strip__name">Summe</div>
+                    <div className="ppx-strip__name">Sum</div>
                     <div className="ppx-strip__buttons" />
                     <div className="ppx-strip__body"><MeterBar level={master} /><MeterBar level={master} /></div>
                     <div className="ppx-strip__db">{linearToDb(master) <= -60 ? '-∞' : (Math.round(linearToDb(master) * 10) / 10 || 0).toFixed(1)} dB</div>
-                    <div className="ppx-strip__clip">geschätzt</div>
+                    <div className="ppx-strip__clip">estimated</div>
                 </div>
             </div>
-            <p className="ppx-hint ppx-hint--bar">Fader regeln die Lautstärke des Clips unter der Abspielposition. Pegel werden aus der Wellenform geschätzt; Video-Clips ohne Wellenform zeigen keinen Pegel.</p>
+            <p className="ppx-hint ppx-hint--bar">Faders set the volume of the clip under the playhead. Levels are estimated from the waveform; video clips without a waveform show no level.</p>
         </div>
     );
 };
@@ -926,12 +926,12 @@ export const MarkersPanel: React.FC<{
                 <span className="ppx-list__tc">{programOut === null ? '––:––:––:––' : formatTimecode(programOut)}</span><span>Out</span>
             </button>
             {(programIn !== null || programOut !== null) && (
-                <button type="button" className="ppx-link" onClick={onClearProgramMarks} data-automation-id="pp.markers.clear">In/Out löschen</button>
+                <button type="button" className="ppx-link" onClick={onClearProgramMarks} data-automation-id="pp.markers.clear">Clear In/Out</button>
             )}
             <div className="ppx-list__group">Quell-Marken</div>
             <div className="ppx-list__row ppx-list__row--static"><span className="ppx-list__tc">{sourceIn === null ? '––' : formatTimecode(sourceIn)}</span><span>In</span></div>
             <div className="ppx-list__row ppx-list__row--static"><span className="ppx-list__tc">{sourceOut === null ? '––' : formatTimecode(sourceOut)}</span><span>Out</span></div>
-            <div className="ppx-list__group">Schnittpunkte ({editPoints.length})</div>
+            <div className="ppx-list__group">Edit points ({editPoints.length})</div>
             {editPoints.map(([time, entries]) => (
                 <button
                     key={time}
@@ -945,7 +945,7 @@ export const MarkersPanel: React.FC<{
                     <span className="truncate">{entries.join(' · ')}</span>
                 </button>
             ))}
-            <p className="ppx-hint">Benannte Sequenzmarker (M) sind im Projektformat noch nicht vorgesehen; hier stehen In/Out-Marken und Schnittpunkte.</p>
+            <p className="ppx-hint">Named sequence markers (M) are not supported by the project format yet; this shows In/Out marks and edit points.</p>
         </div>
     );
 };
@@ -993,12 +993,12 @@ export const HistoryPanel: React.FC<{ entries: HistoryEntry[]; onClear: () => vo
     return (
         <div className="ppx-history" data-automation-id="pp.history">
             <div className="ppx-history__bar">
-                <button type="button" className="ppx-btn" onClick={() => dispatchUndoRedo(false)} title="Rückgängig (Cmd/Ctrl+Z)" data-automation-id="pp.history.undo"><Undo2 size={12} /> Rückgängig</button>
-                <button type="button" className="ppx-btn" onClick={() => dispatchUndoRedo(true)} title="Wiederholen (Cmd/Ctrl+Shift+Z)" data-automation-id="pp.history.redo"><Redo2 size={12} /> Wiederholen</button>
-                <button type="button" className="ppx-link" onClick={onClear} data-automation-id="pp.history.clear">Liste leeren</button>
+                <button type="button" className="ppx-btn" onClick={() => dispatchUndoRedo(false)} title="Undo (Cmd/Ctrl+Z)" data-automation-id="pp.history.undo"><Undo2 size={12} />Undo</button>
+                <button type="button" className="ppx-btn" onClick={() => dispatchUndoRedo(true)} title="Wiederholen (Cmd/Ctrl+Shift+Z)" data-automation-id="pp.history.redo"><Redo2 size={12} />Redo</button>
+                <button type="button" className="ppx-link" onClick={onClear} data-automation-id="pp.history.clear">Clear list</button>
             </div>
             <div className="ppx-list" ref={listRef}>
-                <div className="ppx-list__row ppx-list__row--static"><span className="ppx-list__tc">—</span><span>Sitzungsbeginn</span></div>
+                <div className="ppx-list__row ppx-list__row--static"><span className="ppx-list__tc">—</span><span>Session start</span></div>
                 {entries.map((entry) => (
                     <div key={entry.id} className="ppx-list__row ppx-list__row--static" data-automation-id={`pp.history.entry.${entry.id}`}>
                         <span className="ppx-list__tc">{new Date(entry.at).toLocaleTimeString('de-DE')}</span>
@@ -1006,7 +1006,7 @@ export const HistoryPanel: React.FC<{ entries: HistoryEntry[]; onClear: () => vo
                     </div>
                 ))}
             </div>
-            <p className="ppx-hint">Protokoll dieser Sitzung (nur Anzeige, Sprünge zu einem Schritt sind nicht möglich). Rückgängig/Wiederholen nutzt den App-Verlauf.</p>
+            <p className="ppx-hint">Log of this session (display only, jumping to a step is not possible). Undo/redo uses the app history.</p>
         </div>
     );
 };
@@ -1027,31 +1027,31 @@ export const InfoPanel: React.FC<{
     const rows: Array<[string, string]> = [];
     if (clip) {
         rows.push(['Clip', clip.textConfig?.content || media?.name || clip.id]);
-        rows.push(['Typ', media?.type === 'image' ? (clip.textConfig ? 'Titel' : 'Bild') : media?.type === 'video' ? 'Video' : media?.type === 'audio' ? 'Audio' : '–']);
-        rows.push(['Spur', labels[clip.trackId] ?? '–']);
-        rows.push(['Anfang', formatTimecode(clip.start)]);
-        rows.push(['Ende', formatTimecode(clip.end)]);
-        rows.push(['Dauer', formatTimecode(clip.end - clip.start)]);
+        rows.push(['Type', media?.type === 'image' ? (clip.textConfig ? 'Title' : 'Image') : media?.type === 'video' ? 'Video' : media?.type === 'audio' ? 'Audio' : '–']);
+        rows.push(['Track', labels[clip.trackId] ?? '–']);
+        rows.push(['Start', formatTimecode(clip.start)]);
+        rows.push(['End', formatTimecode(clip.end)]);
+        rows.push(['Duration', formatTimecode(clip.end - clip.start)]);
         rows.push(['Quelle In/Out', `${formatTimecode(clip.sourceIn ?? 0)} – ${formatTimecode(clip.sourceOut ?? (clip.sourceIn ?? 0) + clip.duration)}`]);
-        rows.push(['Geschwindigkeit', `${Math.round((clip.speed || 1) * 100)} %`]);
+        rows.push(['Speed', `${Math.round((clip.speed || 1) * 100)} %`]);
         rows.push(['GPU-Effekte', String(clip.fxStack?.length ?? 0)]);
     }
     return (
         <div className="ppx-info" data-automation-id="pp.info">
-            <div className="ppx-list__group">Auswahl</div>
-            {clip ? rows.map(([key, value]) => <PropRow key={key} label={key}><span className="ppx-info__value">{value}</span></PropRow>) : <p className="ppx-hint">Kein Clip ausgewählt.</p>}
-            <div className="ppx-list__group">Quelle</div>
+            <div className="ppx-list__group">Selection</div>
+            {clip ? rows.map(([key, value]) => <PropRow key={key} label={key}><span className="ppx-info__value">{value}</span></PropRow>) : <p className="ppx-hint">No clip selected.</p>}
+            <div className="ppx-list__group">Source</div>
             {sourceMedia ? (
                 <>
                     <PropRow label="Medium"><span className="ppx-info__value">{sourceMedia.name}</span></PropRow>
-                    <PropRow label="Dauer"><span className="ppx-info__value">{sourceMedia.duration ? formatTimecode(sourceMedia.duration) : '–'}</span></PropRow>
+                    <PropRow label="Duration"><span className="ppx-info__value">{sourceMedia.duration ? formatTimecode(sourceMedia.duration) : '–'}</span></PropRow>
                 </>
-            ) : <p className="ppx-hint">Kein Medium im Quellmonitor.</p>}
-            <div className="ppx-list__group">Sequenz</div>
-            <PropRow label="Abspielposition"><span className="ppx-info__value">{formatTimecode(playhead)}</span></PropRow>
-            <PropRow label="Dauer"><span className="ppx-info__value">{formatTimecode(duration)}</span></PropRow>
+            ) : <p className="ppx-hint">No media in the source monitor.</p>}
+            <div className="ppx-list__group">Sequence</div>
+            <PropRow label="Playhead"><span className="ppx-info__value">{formatTimecode(playhead)}</span></PropRow>
+            <PropRow label="Duration"><span className="ppx-info__value">{formatTimecode(duration)}</span></PropRow>
             <PropRow label="Format"><span className="ppx-info__value">{sequenceSize.width} × {sequenceSize.height}</span></PropRow>
-            <PropRow label="Spuren"><span className="ppx-info__value">{tracks.filter((track) => track.type === 'video').length} Video · {tracks.filter((track) => track.type === 'audio').length} Audio</span></PropRow>
+            <PropRow label="Tracks"><span className="ppx-info__value">{tracks.filter((track) => track.type === 'video').length} Video · {tracks.filter((track) => track.type === 'audio').length} Audio</span></PropRow>
             <PropRow label="Clips"><span className="ppx-info__value">{clips.length}</span></PropRow>
         </div>
     );
@@ -1060,9 +1060,9 @@ export const InfoPanel: React.FC<{
 /* ─── Project panel header (view toggle) ─── */
 
 export const ProjectViewToggle: React.FC<{ view: 'icon' | 'list'; onChange: (view: 'icon' | 'list') => void }> = ({ view, onChange }) => (
-    <span className="ppx-seg" role="group" aria-label="Ansicht">
-        <button type="button" className={`ppx-icon ${view === 'list' ? 'ppx-icon--on' : ''}`} onClick={() => onChange('list')} title="Listenansicht" aria-pressed={view === 'list'} data-automation-id="pp.project.view.list"><List size={12} /></button>
-        <button type="button" className={`ppx-icon ${view === 'icon' ? 'ppx-icon--on' : ''}`} onClick={() => onChange('icon')} title="Symbolansicht" aria-pressed={view === 'icon'} data-automation-id="pp.project.view.icon"><LayoutGrid size={12} /></button>
+    <span className="ppx-seg" role="group" aria-label="View">
+        <button type="button" className={`ppx-icon ${view === 'list' ? 'ppx-icon--on' : ''}`} onClick={() => onChange('list')} title="List view" aria-pressed={view === 'list'} data-automation-id="pp.project.view.list"><List size={12} /></button>
+        <button type="button" className={`ppx-icon ${view === 'icon' ? 'ppx-icon--on' : ''}`} onClick={() => onChange('icon')} title="Icon view" aria-pressed={view === 'icon'} data-automation-id="pp.project.view.icon"><LayoutGrid size={12} /></button>
     </span>
 );
 
@@ -1086,7 +1086,7 @@ export const WorkspaceBar: React.FC<{
     const docked = state.workspace === 'classic' ? [] : listPanels(state.layouts[state.workspace]);
     return (
         <div className="ppx-wsbar" data-automation-id="pp.workspace-bar">
-            <nav className="ppx-wsbar__tabs" aria-label="Arbeitsbereiche">
+            <nav className="ppx-wsbar__tabs" aria-label="Workspaces">
                 {PRO_WORKSPACES.map((workspace) => (
                     <button
                         key={workspace.id}
@@ -1106,8 +1106,7 @@ export const WorkspaceBar: React.FC<{
             {state.workspace !== 'classic' && (
                 <>
                     <div className="ppx-menu" ref={menuRef}>
-                        <button type="button" className="ppx-btn" onClick={() => setMenuOpen((prev) => !prev)} aria-expanded={menuOpen} data-automation-id="pp.window-menu">
-                            Fenster <ChevronDown size={11} />
+                        <button type="button" className="ppx-btn" onClick={() => setMenuOpen((prev) => !prev)} aria-expanded={menuOpen} data-automation-id="pp.window-menu">Window <ChevronDown size={11} />
                         </button>
                         {menuOpen && (
                             <div className="ppx-menu__list" role="menu">
@@ -1134,8 +1133,8 @@ export const WorkspaceBar: React.FC<{
                             </div>
                         )}
                     </div>
-                    <button type="button" className="ppx-btn" onClick={() => dispatch({ type: 'resetWorkspace' })} title="Gespeichertes Layout dieses Arbeitsbereichs zurücksetzen" data-automation-id="pp.workspace.reset">
-                        <RotateCcw size={11} /> Zurücksetzen
+                    <button type="button" className="ppx-btn" onClick={() => dispatch({ type: 'resetWorkspace' })} title="Reset the saved layout of this workspace" data-automation-id="pp.workspace.reset">
+                        <RotateCcw size={11} />Reset
                     </button>
                 </>
             )}

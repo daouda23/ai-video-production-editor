@@ -57,6 +57,6 @@ test('numeric input, snapping and header text', () => {
   assert.equal(parseNumeric('-1.5'), -1.5);
   assert.equal(snapValue('rotate', 43), 45);
   assert.equal(Number(snapValue('grab', 1.26).toFixed(3)), 1.3);
-  assert.equal(describeModal('grab', 1.25, { axis: 'x', plane: false }, ''), 'Verschieben: 1,250 m entlang X');
-  assert.equal(describeModal('rotate', 90, { axis: 'z', plane: false }, '90'), 'Drehen: 90,0° um Z [90]');
+  assert.equal(describeModal('grab', 1.25, { axis: 'x', plane: false }, ''), 'Move: 1.250 m along X');
+  assert.equal(describeModal('rotate', 90, { axis: 'z', plane: false }, '90'), 'Rotate: 90.0° around Z [90]');
 });

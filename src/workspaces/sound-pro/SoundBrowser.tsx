@@ -39,8 +39,8 @@ type BrowserTab = 'generate' | 'library' | 'master';
 type GenerateTool = 'voice' | 'music' | 'sfx' | 'stems';
 
 const GENERATE_TOOLS: Array<{ id: GenerateTool; label: string }> = [
-  { id: 'voice', label: 'Stimme' },
-  { id: 'music', label: 'Musik' },
+  { id: 'voice', label: 'Voice' },
+  { id: 'music', label: 'Music' },
   { id: 'sfx', label: 'SFX' },
   { id: 'stems', label: 'Stems' },
 ];
@@ -224,22 +224,22 @@ const SoundBrowser: React.FC<SoundBrowserProps> = (props) => {
             <option value="elevenlabs">ElevenLabs</option>
             <option value="minimax">Minimax Speech 02 HD</option>
           </select>
-          <textarea value={voiceText} onChange={(event) => setVoiceText(event.target.value)} placeholder="Was soll die Stimme sagen?" rows={5} className="app-textarea" />
+          <textarea value={voiceText} onChange={(event) => setVoiceText(event.target.value)} placeholder="What should the voice say?" rows={5} className="app-textarea" />
           {voiceProvider === 'elevenlabs' ? (
             <details className="fl-form__advanced">
-              <summary>Stimmeinstellungen</summary>
+              <summary>Voice settings</summary>
               <label>Voice ID<input value={voiceId} onChange={(event) => setVoiceId(event.target.value)} className="app-input" /></label>
               <label>Model<input value={voiceModelId} onChange={(event) => setVoiceModelId(event.target.value)} className="app-input" /></label>
               <label>Output<input value={voiceOutputFormat} onChange={(event) => setVoiceOutputFormat(event.target.value)} className="app-input" /></label>
             </details>
           ) : (
             <details className="fl-form__advanced">
-              <summary>Stimmeinstellungen</summary>
+              <summary>Voice settings</summary>
               <label>Voice (optional)<input value={minimaxVoice} onChange={(event) => setMinimaxVoice(event.target.value)} className="app-input" /></label>
               <label>Speed · {minimaxSpeed.toFixed(2)}×<input type="range" min={0.5} max={1.5} step={0.05} value={minimaxSpeed} onChange={(event) => setMinimaxSpeed(Number(event.target.value))} /></label>
             </details>
           )}
-          <button className="app-button app-primary w-full" data-automation-id="sound-generate-voice" onClick={handleGenerateVoice} disabled={isRunning}>{isRunning ? 'Erzeuge…' : 'Stimme erzeugen'}</button>
+          <button className="app-button app-primary w-full" data-automation-id="sound-generate-voice" onClick={handleGenerateVoice} disabled={isRunning}>{isRunning ? 'Generating…' : 'Generate voice'}</button>
         </div>
       )}
 
@@ -249,21 +249,21 @@ const SoundBrowser: React.FC<SoundBrowserProps> = (props) => {
             <option value="lyria2">Google Lyria 2 · short cue</option>
             <option value="sonauto-v3">Sonauto v3 · full song</option>
           </select>
-          <textarea value={musicPrompt} onChange={(event) => setMusicPrompt(event.target.value)} placeholder="Stil, Tempo, Stimmung, Instrumente…" rows={4} className="app-textarea" />
+          <textarea value={musicPrompt} onChange={(event) => setMusicPrompt(event.target.value)} placeholder="Style, tempo, mood, instruments…" rows={4} className="app-textarea" />
           {musicProvider === 'lyria2' ? (
-            <label className="fl-form__inline">Dauer<input type="number" min={4} max={120} value={musicDuration} onChange={(event) => setMusicDuration(Number(event.target.value) || 20)} className="app-input" /><span>s</span></label>
+            <label className="fl-form__inline">Duration<input type="number" min={4} max={120} value={musicDuration} onChange={(event) => setMusicDuration(Number(event.target.value) || 20)} className="app-input" /><span>s</span></label>
           ) : (
             <label className="fl-form__check"><input type="checkbox" checked={sonautoInstrumental} onChange={(event) => setSonautoInstrumental(event.target.checked)} />Instrumental</label>
           )}
-          <button className="app-button app-primary w-full" data-automation-id="sound-generate-music" onClick={() => handleGenerateMusic('music')} disabled={isRunning}>{isRunning ? 'Erzeuge…' : 'Musik erzeugen'}</button>
+          <button className="app-button app-primary w-full" data-automation-id="sound-generate-music" onClick={() => handleGenerateMusic('music')} disabled={isRunning}>{isRunning ? 'Generating…' : 'Generate music'}</button>
         </div>
       )}
 
       {generateTool === 'sfx' && (
         <div className="fl-form">
-          <textarea value={sfxPrompt} onChange={(event) => setSfxPrompt(event.target.value)} placeholder="Whoosh, Einschlag, Regen auf Blechdach…" rows={4} className="app-textarea" />
-          <label className="fl-form__inline">Dauer<input type="number" min={2} max={60} value={sfxDuration} onChange={(event) => setSfxDuration(Number(event.target.value) || 6)} className="app-input" /><span>s</span></label>
-          <button className="app-button app-primary w-full" data-automation-id="sound-generate-sfx" onClick={() => handleGenerateMusic('sfx')} disabled={isRunning}>{isRunning ? 'Erzeuge…' : 'SFX erzeugen'}</button>
+          <textarea value={sfxPrompt} onChange={(event) => setSfxPrompt(event.target.value)} placeholder="Whoosh, impact, rain on a tin roof…" rows={4} className="app-textarea" />
+          <label className="fl-form__inline">Duration<input type="number" min={2} max={60} value={sfxDuration} onChange={(event) => setSfxDuration(Number(event.target.value) || 6)} className="app-input" /><span>s</span></label>
+          <button className="app-button app-primary w-full" data-automation-id="sound-generate-sfx" onClick={() => handleGenerateMusic('sfx')} disabled={isRunning}>{isRunning ? 'Generating…' : 'Generate SFX'}</button>
         </div>
       )}
 
@@ -278,13 +278,12 @@ const SoundBrowser: React.FC<SoundBrowserProps> = (props) => {
             <input type="file" accept="audio/*" onChange={(event) => { setDemucsFile(event.target.files?.[0] || null); if (event.target.files?.[0]) setDemucsUrl(''); }} />
           </label>
           <input value={demucsUrl} onChange={(event) => { setDemucsUrl(event.target.value); if (event.target.value) setDemucsFile(null); }} placeholder="…or paste an audio URL" className="app-input" />
-          <button className="app-button app-primary w-full" data-automation-id="sound-generate-stems" onClick={handleDemucs} disabled={isRunning}>{isRunning ? 'Trenne…' : 'Stems trennen'}</button>
+          <button className="app-button app-primary w-full" data-automation-id="sound-generate-stems" onClick={handleDemucs} disabled={isRunning}>{isRunning ? 'Separating…' : 'Separate stems'}</button>
         </div>
       )}
 
       <label className="fl-form__check fl-gen__place">
-        <input type="checkbox" checked={placeOnTimeline} onChange={(event) => setPlaceOnTimeline(event.target.checked)} disabled={!onAddToTimeline} />
-        Ergebnis an der Abspielposition in die Timeline legen
+        <input type="checkbox" checked={placeOnTimeline} onChange={(event) => setPlaceOnTimeline(event.target.checked)} disabled={!onAddToTimeline} />Place the result in the timeline at the playhead
       </label>
     </div>
   );
@@ -293,10 +292,10 @@ const SoundBrowser: React.FC<SoundBrowserProps> = (props) => {
     <div className="fl-library">
       <label className="fx-search">
         <SearchIcon className="fx-search__icon" />
-        <input type="search" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} placeholder="Audio suchen" aria-label="Search audio" />
+        <input type="search" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} placeholder="Search audio" aria-label="Search audio" />
       </label>
       {libraryError && <div className="fl-form__hint" style={{ color: 'var(--app-warm)' }}>{libraryError}</div>}
-      <div className="fl-library__section">Projekt</div>
+      <div className="fl-library__section">Project</div>
       <div className="fl-library__list">
         {projectAudio.map((item) => (
           <div key={item.id} className="fl-library__item">
@@ -314,7 +313,7 @@ const SoundBrowser: React.FC<SoundBrowserProps> = (props) => {
         ))}
         {projectAudio.length === 0 && <div className="fl-form__hint">No audio in this project yet — generate some or import it on the Media page.</div>}
       </div>
-      <div className="fl-library__section">Bibliothek</div>
+      <div className="fl-library__section">Library</div>
       <div className="fl-library__list">
         {filteredLibraryAudio.map((asset) => (
           <button key={asset.id} type="button" className="fl-library__asset" onClick={() => { if (asset.url) { setDemucsUrl(asset.url); setDemucsFile(null); } }} title="Use as stem source">
@@ -335,8 +334,8 @@ const SoundBrowser: React.FC<SoundBrowserProps> = (props) => {
     <div className="fl-browser">
       <div className="fl-browser__tabs edit-seg" role="tablist" aria-label="Sound browser">
         {([
-          { id: 'generate', label: 'Erzeugen', icon: SparklesIcon },
-          { id: 'library', label: 'Bibliothek', icon: AudioIcon },
+          { id: 'generate', label: 'Generate', icon: SparklesIcon },
+          { id: 'library', label: 'Library', icon: AudioIcon },
           { id: 'master', label: 'Mastering', icon: MusicNoteIcon },
         ] as Array<{ id: BrowserTab; label: string; icon: React.FC<{ className?: string }> }>).map((tab) => (
           <button key={tab.id} type="button" data-automation-id={`sound-browser-tab-${tab.id}`} role="tab" aria-selected={browserTab === tab.id} className={`edit-seg__item ${browserTab === tab.id ? 'edit-seg__item--active' : ''}`} onClick={() => setBrowserTab(tab.id)}>

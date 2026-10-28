@@ -37,7 +37,7 @@ export const createBrowserRuntime = (): SoundRuntime => ({
     const Ctx = (globalThis as { OfflineAudioContext?: typeof OfflineAudioContext }).OfflineAudioContext;
     if (!Ctx || typeof fetch !== 'function') return null;
     const response = await fetch(media.url);
-    if (!response.ok) throw new Error(`Audio konnte nicht geladen werden (${response.status}).`);
+    if (!response.ok) throw new Error(`Audio could not be loaded (${response.status}).`);
     const data = await response.arrayBuffer();
     const ctx = new Ctx(2, 1, ENGINE_SAMPLE_RATE);
     try {
@@ -52,7 +52,7 @@ export const createBrowserRuntime = (): SoundRuntime => ({
   },
   writeProjectFile: async (projectPath, relativePath, bytes) => {
     const api = (globalThis as { window?: { electron?: { project?: { writeProjectFile?: (p: unknown) => Promise<unknown> } } } }).window?.electron?.project;
-    if (!api?.writeProjectFile) throw new Error('Dateien speichern geht nur in der Desktop-App.');
+    if (!api?.writeProjectFile) throw new Error('Saving files only works in the desktop app.');
     await api.writeProjectFile({ folderPath: projectPath, relativePath, data: toBase64(bytes), encoding: 'base64' });
     const absolute = `${projectPath.replace(/\/+$/, '')}/${relativePath}`;
     return { path: absolute, url: toFileUrl(absolute) };

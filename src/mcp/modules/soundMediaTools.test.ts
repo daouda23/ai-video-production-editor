@@ -23,7 +23,7 @@ setSoundAudioServices({
   sonautoAvailable: async () => true,
   demucs: async (...args) => { calls.push({ service: 'demucs', args }); return ['vocals', 'drums', 'bass', 'other'].map((n, i) => fakeItem(`st-${i}-${calls.length}`, `${n}.wav`, 8)); },
   urlToPayload: async (url) => { calls.push({ service: 'payload', args: [url] }); return { base64: 'AAAA', mimeType: 'audio/wav' }; },
-  masteringStatus: async () => ({ ready: masteringReady, available: true, error: masteringReady ? null : 'Python fehlt' }),
+  masteringStatus: async () => ({ ready: masteringReady, available: true, error: masteringReady ? null : 'Python missing' }),
   masteringSetup: async () => { calls.push({ service: 'setup', args: [] }); masteringReady = true; return { ready: true, available: true }; },
   masteringRun: async (request) => {
     calls.push({ service: 'master', args: [request] });
@@ -33,14 +33,14 @@ setSoundAudioServices({
 setSoundRuntime({ decode: async () => null });
 
 const LIBRARY = [
-  { id: 'lib-1', name: 'Regen auf Dach.wav', kind: 'audio', url: 'file:///lib/regen.wav', duration: 12, projectName: 'Altprojekt', origin: 'recent' },
-  { id: 'lib-2', name: 'Bild.png', kind: 'image', url: 'file:///lib/bild.png', projectName: 'Altprojekt', origin: 'recent' },
+  { id: 'lib-1', name: 'Rain on roof.wav', kind: 'audio', url: 'file:///lib/regen.wav', duration: 12, projectName: 'Legacy project', origin: 'recent' },
+  { id: 'lib-2', name: 'Image.png', kind: 'image', url: 'file:///lib/bild.png', projectName: 'Legacy project', origin: 'recent' },
 ];
 registerLiveCommand('sound.library.list', () => ({ assets: LIBRARY.filter((a) => a.kind === 'audio') }));
 
 const tracks = (): TimelineTrack[] => [
   { id: 'a1', name: 'Dialog', type: 'audio', isLocked: false, isMuted: false },
-  { id: 'a2', name: 'Musik', type: 'audio', isLocked: true, isMuted: false },
+  { id: 'a2', name: 'Music', type: 'audio', isLocked: true, isMuted: false },
 ];
 const setup = async () => {
   const { ctx, state } = createTestContext({
@@ -57,7 +57,7 @@ type Env = Awaited<ReturnType<typeof setup>>;
 
 const CASES: Record<string, { args: Record<string, unknown>; check: (env: Env, r: Record<string, unknown>) => void; before?: () => void }> = {
   sound_generate_voice: {
-    args: { text: 'Hallo Welt', provider: 'minimax', speed: 1.2, confirm: true },
+    args: { text: 'Hello world', provider: 'minimax', speed: 1.2, confirm: true },
     check: (e, r) => {
       assert.equal(calls.at(-1)?.service, 'minimax');
       const placed = (r.placed as Array<{ trackId: string; start: number }>)[0];
@@ -68,7 +68,7 @@ const CASES: Record<string, { args: Record<string, unknown>; check: (env: Env, r
     },
   },
   sound_generate_music: {
-    args: { prompt: 'ruhiges Klavier', provider: 'sonauto-v3', instrumental: true, start: 10, trackId: 'a1', confirm: true },
+    args: { prompt: 'calm piano', provider: 'sonauto-v3', instrumental: true, start: 10, trackId: 'a1', confirm: true },
     check: (e, r) => {
       assert.equal(calls.at(-1)?.service, 'sonauto');
       assert.deepEqual((r.placed as Array<{ trackId: string; start: number }>).map((p) => [p.trackId, p.start]), [['a1', 10]]);
@@ -76,7 +76,7 @@ const CASES: Record<string, { args: Record<string, unknown>; check: (env: Env, r
     },
   },
   sound_generate_sfx: {
-    args: { prompt: 'Tür knallt', duration: 3, placeOnTimeline: false, confirm: true },
+    args: { prompt: 'Door slams', duration: 3, placeOnTimeline: false, confirm: true },
     check: (e, r) => {
       assert.deepEqual(calls.at(-1)?.args[1], { duration: 3 });
       assert.equal(e.state.timelineClips.length, 1, 'not placed');
@@ -106,7 +106,7 @@ const CASES: Record<string, { args: Record<string, unknown>; check: (env: Env, r
     },
   },
   sound_library_list: {
-    args: { query: 'regen' },
+    args: { query: 'rain' },
     check: (_e, r) => {
       assert.deepEqual((r.library as Array<{ assetId: string }>).map((a) => a.assetId), ['lib-1']);
       assert.deepEqual(r.project, []);
@@ -186,9 +186,9 @@ test('mastering refuses when the environment is not ready; bad sources are repor
     const bad = await mcp.call('sound_stems_separate', { clipId: 'nope', confirm: true });
     assert.equal(bad.ok, false);
     const none = await mcp.call('sound_stems_separate', { confirm: true });
-    assert.match(String(none.message), /Quelle fehlt/);
+    assert.match(String(none.message), /Source missing/);
     const locked = await mcp.call('sound_library_add_to_timeline', { mediaId: 'm1', trackId: 'a2' });
-    assert.match(String(locked.message), /gesperrt/);
+    assert.match(String(locked.message), /locked/);
   } finally {
     mcp.dispose();
   }

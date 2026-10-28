@@ -20,21 +20,21 @@ export type BlendMode =
 /** German labels in Photoshop's menu order; `group` draws the separators. */
 export const BLEND_MODES: Array<{ id: BlendMode; label: string; group: number }> = [
   { id: 'normal', label: 'Normal', group: 0 },
-  { id: 'darken', label: 'Abdunkeln', group: 1 },
-  { id: 'multiply', label: 'Multiplizieren', group: 1 },
-  { id: 'color-burn', label: 'Farbig nachbelichten', group: 1 },
-  { id: 'lighten', label: 'Aufhellen', group: 2 },
-  { id: 'screen', label: 'Negativ multiplizieren', group: 2 },
-  { id: 'color-dodge', label: 'Farbig abwedeln', group: 2 },
-  { id: 'overlay', label: 'Ineinanderkopieren', group: 3 },
-  { id: 'soft-light', label: 'Weiches Licht', group: 3 },
-  { id: 'hard-light', label: 'Hartes Licht', group: 3 },
-  { id: 'difference', label: 'Differenz', group: 4 },
-  { id: 'exclusion', label: 'Ausschluss', group: 4 },
-  { id: 'hue', label: 'Farbton', group: 5 },
-  { id: 'saturation', label: 'Sättigung', group: 5 },
-  { id: 'color', label: 'Farbe', group: 5 },
-  { id: 'luminosity', label: 'Luminanz', group: 5 },
+  { id: 'darken', label: 'Darken', group: 1 },
+  { id: 'multiply', label: 'Multiply', group: 1 },
+  { id: 'color-burn', label: 'Color burn', group: 1 },
+  { id: 'lighten', label: 'Lighten', group: 2 },
+  { id: 'screen', label: 'Screen', group: 2 },
+  { id: 'color-dodge', label: 'Color dodge', group: 2 },
+  { id: 'overlay', label: 'Overlay', group: 3 },
+  { id: 'soft-light', label: 'Soft light', group: 3 },
+  { id: 'hard-light', label: 'Hard light', group: 3 },
+  { id: 'difference', label: 'Difference', group: 4 },
+  { id: 'exclusion', label: 'Exclusion', group: 4 },
+  { id: 'hue', label: 'Hue', group: 5 },
+  { id: 'saturation', label: 'Saturation', group: 5 },
+  { id: 'color', label: 'Color', group: 5 },
+  { id: 'luminosity', label: 'Luminance', group: 5 },
 ];
 
 /** Canvas 2D composite operation for a blend mode. */
@@ -145,7 +145,7 @@ export const getLayer = (doc: PhotoDoc, id: string | null | undefined): Layer | 
 export const getActiveLayer = (doc: PhotoDoc): Layer | null => getLayer(doc, doc.activeLayerId);
 
 /** "Ebene 1", "Ebene 2", … — the next free number for a base name. */
-export const nextLayerName = (doc: PhotoDoc, baseName = 'Ebene') => {
+export const nextLayerName = (doc: PhotoDoc, baseName = 'Layer') => {
   let max = 0;
   const re = new RegExp(`^${baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} (\\d+)$`);
   for (const layer of doc.layers) {
@@ -155,14 +155,14 @@ export const nextLayerName = (doc: PhotoDoc, baseName = 'Ebene') => {
   return `${baseName} ${max + 1}`;
 };
 
-/** Name for a duplicate: "Ebene 1 Kopie", "Ebene 1 Kopie 2", … */
+/** Name for a duplicate: "Layer 1 copy", "Layer 1 copy 2", … */
 export const copyName = (doc: PhotoDoc, name: string) => {
-  const stem = name.replace(/ Kopie(?: \d+)?$/, '');
+  const stem = name.replace(/ copy(?: \d+)?$/, '');
   const names = new Set(doc.layers.map((layer) => layer.name));
-  if (!names.has(`${stem} Kopie`)) return `${stem} Kopie`;
+  if (!names.has(`${stem} copy`)) return `${stem} copy`;
   let n = 2;
-  while (names.has(`${stem} Kopie ${n}`)) n += 1;
-  return `${stem} Kopie ${n}`;
+  while (names.has(`${stem} copy ${n}`)) n += 1;
+  return `${stem} copy ${n}`;
 };
 
 /** Every pixel-store key a document references (used for garbage collection). */
@@ -317,7 +317,7 @@ export function docReducer(doc: PhotoDoc, action: DocAction): PhotoDoc {
 
 /** Short German label of a layer's kind for the Layers panel / Properties header. */
 export const layerKindLabel = (layer: Layer) => {
-  if (layer.kind === 'raster') return layer.fx.length ? 'Pixelebene mit Smartfiltern' : 'Pixelebene';
-  if (layer.kind === 'text') return 'Textebene';
-  return 'Einstellungsebene';
+  if (layer.kind === 'raster') return layer.fx.length ? 'Pixel layer with smart filters' : 'Pixel layer';
+  if (layer.kind === 'text') return 'Text layer';
+  return 'Adjustment layer';
 };

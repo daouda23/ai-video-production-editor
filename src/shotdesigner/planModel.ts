@@ -38,34 +38,34 @@ export type PlanElementSpec = {
 /** Own element library (sizes in metres). */
 export const PLAN_LIBRARY: PlanElementSpec[] = [
   { category: 'wall', label: 'Wand', w: 4, d: 0.15, h: 2.6, color: '#9aa0a6' },
-  { category: 'door', label: 'Tür', w: 0.9, d: 0.1, h: 2.05, color: '#b08d57' },
-  { category: 'window', label: 'Fenster', w: 1.2, d: 0.12, h: 1.3, color: '#8ecae6', elevation: 0.9 },
-  { category: 'table', label: 'Tisch', w: 1.6, d: 0.9, h: 0.75, color: '#a47551' },
-  { category: 'chair', label: 'Stuhl', w: 0.48, d: 0.5, h: 0.9, color: '#7f5539' },
+  { category: 'door', label: 'Door', w: 0.9, d: 0.1, h: 2.05, color: '#b08d57' },
+  { category: 'window', label: 'Window', w: 1.2, d: 0.12, h: 1.3, color: '#8ecae6', elevation: 0.9 },
+  { category: 'table', label: 'Table', w: 1.6, d: 0.9, h: 0.75, color: '#a47551' },
+  { category: 'chair', label: 'Chair', w: 0.48, d: 0.5, h: 0.9, color: '#7f5539' },
   { category: 'sofa', label: 'Sofa', w: 2.1, d: 0.9, h: 0.85, color: '#6d597a' },
-  { category: 'bed', label: 'Bett', w: 1.6, d: 2.05, h: 0.55, color: '#b5838d' },
-  { category: 'desk', label: 'Schreibtisch', w: 1.4, d: 0.7, h: 0.75, color: '#8d6e63' },
-  { category: 'counter', label: 'Theke', w: 2.4, d: 0.6, h: 1.05, color: '#795548' },
+  { category: 'bed', label: 'Bed', w: 1.6, d: 2.05, h: 0.55, color: '#b5838d' },
+  { category: 'desk', label: 'Desk', w: 1.4, d: 0.7, h: 0.75, color: '#8d6e63' },
+  { category: 'counter', label: 'Counter', w: 2.4, d: 0.6, h: 1.05, color: '#795548' },
   { category: 'shelf', label: 'Regal', w: 1.2, d: 0.4, h: 2, color: '#8b6f47' },
-  { category: 'cabinet', label: 'Schrank', w: 1, d: 0.6, h: 2, color: '#6f5b4b' },
-  { category: 'tv', label: 'Bildschirm', w: 1.3, d: 0.12, h: 0.8, color: '#37474f', elevation: 0.6 },
-  { category: 'lamp', label: 'Stehlampe', w: 0.4, d: 0.4, h: 1.7, color: '#e9c46a' },
-  { category: 'plant', label: 'Pflanze', w: 0.6, d: 0.6, h: 1.2, color: '#52b788' },
-  { category: 'tree', label: 'Baum', w: 2.5, d: 2.5, h: 5, color: '#2d6a4f' },
+  { category: 'cabinet', label: 'Cabinet', w: 1, d: 0.6, h: 2, color: '#6f5b4b' },
+  { category: 'tv', label: 'Screen', w: 1.3, d: 0.12, h: 0.8, color: '#37474f', elevation: 0.6 },
+  { category: 'lamp', label: 'Floor lamp', w: 0.4, d: 0.4, h: 1.7, color: '#e9c46a' },
+  { category: 'plant', label: 'Plant', w: 0.6, d: 0.6, h: 1.2, color: '#52b788' },
+  { category: 'tree', label: 'Tree', w: 2.5, d: 2.5, h: 5, color: '#2d6a4f' },
   { category: 'car', label: 'Auto', w: 1.85, d: 4.6, h: 1.45, color: '#457b9d' },
-  { category: 'stairs', label: 'Treppe', w: 1.1, d: 3, h: 2.6, color: '#a8a29e' },
-  { category: 'column', label: 'Säule', w: 0.4, d: 0.4, h: 2.6, color: '#bdbdbd' },
-  { category: 'rug', label: 'Teppich', w: 2.4, d: 1.7, h: 0.02, color: '#c9ada7' },
-  { category: 'bathtub', label: 'Wanne', w: 0.8, d: 1.75, h: 0.6, color: '#e0e0e0' },
-  { category: 'box', label: 'Kiste', w: 0.6, d: 0.6, h: 0.6, color: '#c8a165' },
-  { category: 'light', label: 'Scheinwerfer', w: 0.5, d: 0.5, h: 2.2, color: '#ffd166' },
-  { category: 'track', label: 'Kameraschiene', w: 0.6, d: 4, h: 0.12, color: '#adb5bd' },
+  { category: 'stairs', label: 'Stairs', w: 1.1, d: 3, h: 2.6, color: '#a8a29e' },
+  { category: 'column', label: 'Column', w: 0.4, d: 0.4, h: 2.6, color: '#bdbdbd' },
+  { category: 'rug', label: 'Carpet', w: 2.4, d: 1.7, h: 0.02, color: '#c9ada7' },
+  { category: 'bathtub', label: 'Bathtub', w: 0.8, d: 1.75, h: 0.6, color: '#e0e0e0' },
+  { category: 'box', label: 'Crate', w: 0.6, d: 0.6, h: 0.6, color: '#c8a165' },
+  { category: 'light', label: 'Spotlight', w: 0.5, d: 0.5, h: 2.2, color: '#ffd166' },
+  { category: 'track', label: 'Camera rail', w: 0.6, d: 4, h: 0.12, color: '#adb5bd' },
 ];
 
 export const PLAN_CATEGORIES = PLAN_LIBRARY.map((e) => e.category);
 
 export const specFor = (category: string | undefined): PlanElementSpec =>
-  PLAN_LIBRARY.find((e) => e.category === category) ?? { category: 'other', label: 'Objekt', w: 1, d: 1, h: 1, color: '#9e9e9e' };
+  PLAN_LIBRARY.find((e) => e.category === category) ?? { category: 'other', label: 'Object', w: 1, d: 1, h: 1, color: '#9e9e9e' };
 
 export const DEFAULT_HOST: StageHost = {
   assets: [],

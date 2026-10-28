@@ -121,7 +121,7 @@ export function sanitizeComposition(raw: unknown): CompositionExt | null {
   const fps = Math.min(240, Math.max(1, finite(raw.fps, 24)));
   const comp: CompositionExt = {
     id: raw.id,
-    name: str(raw.name, 'Komposition'),
+    name: str(raw.name, 'Composition'),
     width: Math.round(Math.min(8192, Math.max(16, finite(raw.width, 1920)))),
     height: Math.round(Math.min(8192, Math.max(16, finite(raw.height, 1080)))),
     fps,

@@ -404,9 +404,9 @@ const IMAGE_MODEL_PRICING: Partial<Record<ImageModelId, ImageModelPricing>> = {
 };
 
 const SMART_ROUTER_GOAL_PRESETS = [
-  'realistischer Produktshot',
-  'schnelle Vorschau',
-  'billige Variation',
+  'realistic product shot',
+  'fast preview',
+  'cheap variation',
 ] as const;
 
 const SMART_ROUTER_MODEL_CANDIDATES: SmartModelCandidate<ImageModelId>[] = [
@@ -3442,7 +3442,7 @@ const ImageGenerationWorkspace: React.FC<ImageGenerationWorkspaceProps> = ({
                                   handleApplySmartRoute();
                                 }
                               }}
-                              placeholder="Goal: realistischer Produktshot, schnelle Vorschau, billige Variation..."
+                              placeholder="Goal: realistic product shot, fast preview, cheap variation..."
                               className="app-input flex-1"
                             />
                             <button

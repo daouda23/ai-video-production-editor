@@ -89,42 +89,42 @@ const patchSettings = (settings: DeliverySettings, section: SettingsSection, pat
 const jobContext = (ctx?: ExportCommandContext): JobContext => ({
     timelineDuration: ctx?.timelineDuration ?? 0,
     stillTime: ctx?.stillTime ?? 0,
-    timelineName: ctx?.timelineName ?? 'Sequenz',
+    timelineName: ctx?.timelineName ?? 'Sequence',
     now: ctx?.now,
     makeId: ctx?.makeId,
 });
 
 export const EXPORT_COMMANDS: { [K in ExportCommandId]: CommandSpec<K> } = {
     'export.view.set': {
-        title: 'Ansicht wechseln',
-        description: 'Schaltet zwischen der Premiere- und der DaVinci-Ansicht um.',
+        title: 'Switch view',
+        description: 'Switches between the Premiere and DaVinci views.',
         run: (state, { view }) => ({ ...state, view: view === 'davinci' ? 'davinci' : 'premiere' }),
     },
     'export.destination.select': {
-        title: 'Ziel auswählen',
-        description: 'Zeigt die Einstellungen eines Ziels (media, interchange, still, sequence, audio).',
+        title: 'Choose destination',
+        description: 'Shows the settings of a destination (media, interchange, still, sequence, audio).',
         run: (state, { kind }) => (isKind(kind) ? { ...state, selectedDestination: kind } : state),
     },
     'export.destination.toggle': {
-        title: 'Ziel ein/aus',
-        description: 'Aktiviert oder deaktiviert ein Ziel für „Exportieren“.',
+        title: 'Destination on/off',
+        description: 'Turns a destination on or off for “Export”.',
         run: (state, { kind, enabled }) => (isKind(kind)
             ? { ...state, enabledDestinations: { ...state.enabledDestinations, [kind]: enabled ?? !state.enabledDestinations[kind] } }
             : state),
     },
     'export.preset.apply': {
-        title: 'Vorgabe anwenden',
-        description: 'Setzt Video-/Audio-Einstellungen nach einer Vorgabe (siehe DELIVERY_PRESETS).',
+        title: 'Apply preset',
+        description: 'Sets video/audio settings from a preset (see DELIVERY_PRESETS).',
         run: (state, { presetId }, ctx) => ({ ...state, settings: applyPreset(state.settings, presetId, ctx?.source ?? null) }),
     },
     'export.settings.patch': {
-        title: 'Einstellung ändern',
-        description: 'Ändert Felder eines Abschnitts (video, audio, effects, metadata, interchange, still, sequence, audioOnly, root).',
+        title: 'Change setting',
+        description: 'Changes fields of a section (video, audio, effects, metadata, interchange, still, sequence, audioOnly, root).',
         run: (state, { section, patch }) => ({ ...state, settings: patchSettings(state.settings, section, patch || {}) }),
     },
     'export.range.set': {
-        title: 'Bereich setzen',
-        description: 'Gesamte Sequenz (full), In/Out (inout) oder Benutzerdefiniert (custom), Zeiten in Sekunden.',
+        title: 'Set range',
+        description: 'Entire sequence (full), In/Out (inout) or custom (custom), times in seconds.',
         run: (state, { mode, inPoint, outPoint }) => ({
             ...state,
             settings: {
@@ -138,43 +138,43 @@ export const EXPORT_COMMANDS: { [K in ExportCommandId]: CommandSpec<K> } = {
         }),
     },
     'export.queue.add': {
-        title: 'Zur Warteschlange hinzufügen',
-        description: 'Legt Render-Jobs für die angegebenen (sonst die aktivierten) Ziele an.',
+        title: 'Add to queue',
+        description: 'Creates render jobs for the given (otherwise the enabled) destinations.',
         run: (state, { kinds }, ctx) => addJobs(state, createJobs(state, jobContext(ctx), kinds)),
     },
     'export.queue.remove': {
-        title: 'Job löschen',
-        description: 'Entfernt einen nicht laufenden Job aus der Warteschlange.',
+        title: 'Delete job',
+        description: 'Removes a job that is not running from the queue.',
         run: (state, { jobId }) => removeJob(state, jobId),
     },
     'export.queue.retry': {
-        title: 'Job zurücksetzen',
-        description: 'Setzt einen fertigen oder fehlerhaften Job wieder auf „wartend“.',
+        title: 'Reset job',
+        description: 'Sets a finished or failed job back to “waiting”.',
         run: (state, { jobId }) => resetJob(state, jobId),
     },
     'export.queue.clearFinished': {
-        title: 'Erledigte entfernen',
-        description: 'Entfernt fertige, fehlerhafte und abgebrochene Jobs.',
+        title: 'Remove completed',
+        description: 'Removes finished, failed and cancelled jobs.',
         run: (state) => clearFinished(state),
     },
     'export.queue.renderAll': {
-        title: 'Alle rendern',
-        description: 'Startet alle wartenden Jobs nacheinander.',
+        title: 'Render all',
+        description: 'Starts all waiting jobs one after another.',
         run: (state) => startRun(state, null),
     },
     'export.queue.renderJob': {
-        title: 'Job rendern',
-        description: 'Startet genau einen Job (setzt ihn bei Bedarf zurück).',
+        title: 'Render job',
+        description: 'Starts exactly one job (resets it if needed).',
         run: (state, { jobId }) => startRun(state, [jobId]),
     },
     'export.queue.cancel': {
-        title: 'Rendern abbrechen',
-        description: 'Bricht den laufenden Job ab und hält die Warteschlange an.',
+        title: 'Cancel render',
+        description: 'Cancels the running job and pauses the queue.',
         run: (state) => requestCancel(state),
     },
     'export.export': {
-        title: 'Exportieren',
-        description: 'Legt Jobs für alle aktivierten Ziele an und startet nur diese sofort.',
+        title: 'Export',
+        description: 'Creates jobs for all enabled destinations and starts only those right away.',
         run: (state, _args, ctx) => {
             const before = new Set(state.queue.map((job) => job.id));
             const withJobs = addJobs(state, createJobs(state, jobContext(ctx)));
@@ -183,18 +183,18 @@ export const EXPORT_COMMANDS: { [K in ExportCommandId]: CommandSpec<K> } = {
         },
     },
     'export.davinci.kind': {
-        title: 'Render-Art wählen',
-        description: 'DaVinci-Ansicht: media, still, sequence oder audio.',
+        title: 'Choose render type',
+        description: 'DaVinci view: media, still, sequence or audio.',
         run: (state, { kind }) => (isKind(kind) && (kind as DestinationKind) !== 'interchange' ? { ...state, davinciKind: kind } : state),
     },
     'export.davinci.tab': {
-        title: 'Render-Tab wählen',
-        description: 'DaVinci-Ansicht: Video, Audio oder Datei.',
+        title: 'Choose render tab',
+        description: 'DaVinci view: video, audio or file.',
         run: (state, { tab }) => ({ ...state, davinciTab: tab === 'audio' || tab === 'file' ? tab : 'video' }),
     },
     'export.section.toggle': {
-        title: 'Abschnitt ein-/ausklappen',
-        description: 'Premiere-Ansicht: klappt einen Einstellungsabschnitt.',
+        title: 'Expand/collapse section',
+        description: 'Premiere view: collapses a settings section.',
         run: (state, { section }) => ({ ...state, collapsed: { ...state.collapsed, [section]: !state.collapsed[section] } }),
     },
 };

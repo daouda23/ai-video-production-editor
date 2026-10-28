@@ -1,6 +1,6 @@
 import type React from 'react';
 import type { Workspace } from '../types';
-import { UIMode, getWorkspaceDisplayLabel, getWorkspaceGroupDisplayLabel } from './uiModes';
+import type { UIMode } from './uiModes';
 import {
   ScriptIcon,
   BoxIcon,
@@ -77,7 +77,7 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
       { id: 'NODES', name: 'Nodes', description: 'Build advanced AI chains', icon: LayersIcon },
       { id: 'SET_DESIGN', name: 'Set Design', description: 'Arrange props and cameras', icon: CameraIcon },
       { id: 'SCENE_MAP', name: 'Scene Map', description: 'Floor plan, blocking and camera plan', icon: GridIcon },
-      { id: 'WORLD_GEN', name: 'World', description: 'Develop worlds and settings', icon: LandscapeIcon },
+      { id: 'WORLD_GEN', name: '3D World', description: 'Generate explorable 3D worlds', icon: LandscapeIcon },
       { id: 'AVATAR', name: 'Avatar', description: 'Characters and presenters', icon: UserCircleIcon },
       { id: 'SOUND', name: 'Sound', description: 'Voice, music, and effects', icon: MusicNoteIcon },
     ],
@@ -111,7 +111,7 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
     icon: BrainCircuitIcon,
     items: [
       { id: 'ANALYSIS', name: 'Analysis', description: 'Find pacing and quality issues', icon: BrainCircuitIcon },
-      { id: 'REVIEW', name: 'Director', description: 'Approve and annotate work', icon: ClipboardCheckIcon },
+      { id: 'REVIEW', name: 'Approvals', description: 'Approve and annotate work', icon: ClipboardCheckIcon },
       { id: 'REQUESTS', name: 'Requests', description: 'Handle change requests', icon: ListIcon },
     ],
   },
@@ -164,16 +164,8 @@ export const resolveWorkspaceNav = ({
           if (!showReview && item.id === 'REVIEW') return false;
           if (!showRequests && item.id === 'REQUESTS') return false;
           return true;
-        })
-        .map((item) => ({
-          ...item,
-          name: getWorkspaceDisplayLabel(item.id, item.name, uiMode),
-        }));
-      return {
-        ...group,
-        name: getWorkspaceGroupDisplayLabel(group.id, group.name, uiMode),
-        items,
-      };
+        });
+      return { ...group, items };
     })
     .filter((group) => group.items.length > 0);
 

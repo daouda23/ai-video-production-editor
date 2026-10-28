@@ -1691,8 +1691,7 @@ const VideoGenerationWorkspace: React.FC<VideoGenerationWorkspaceProps> = ({
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-xs text-gray-300" data-automation-id="burst-frame.toggle">
-                  <input type="checkbox" checked={burstMode} onChange={(event) => setBurstMode(event.target.checked)} />
-                  Burst Frame (Phil Langer): 20 Einstellungen aus einem Startbild
+                  <input type="checkbox" checked={burstMode} onChange={(event) => setBurstMode(event.target.checked)} />Burst Frame (Phil Langer): 20 setups from one start frame
                 </label>
                 {burstMode && (
                   <BurstFramePanel

@@ -221,7 +221,7 @@ export const createSetDesignAgentExecutor = (deps: SetDesignAgentDeps): Record<s
   const { bus } = deps;
   const tools: Record<string, (args: Record<string, unknown>) => Promise<unknown>> = {
     setdesign_get_scene: async () => sceneOverview(bus),
-    setdesign_list_commands: async () => ({ commands: [...listCommands(), { id: 'edit.undo', label: 'Rückgängig', shortcut: 'Strg+Z' }, { id: 'edit.redo', label: 'Wiederholen', shortcut: 'Strg+Shift+Z' }] }),
+    setdesign_list_commands: async () => ({ commands: [...listCommands(), { id: 'edit.undo', label: 'Undo', shortcut: 'Ctrl+Z' }, { id: 'edit.redo', label: 'Redo', shortcut: 'Ctrl+Shift+Z' }] }),
     setdesign_run_command: async (args) => {
       const id = asString(args.command);
       if (!id) throw new Error('Pass command (see setdesign_list_commands).');
@@ -299,7 +299,7 @@ export const createSetDesignAgentExecutor = (deps: SetDesignAgentDeps): Record<s
       const height = Math.round(Math.min(8192, Math.max(16, Number(args.height) || (args.width ? (Number(args.width) * output.height) / output.width : output.height))));
       const frame = await deps.capture({ cameraId: active.id, width, height, pass }, scene);
       const setup = describeCamera(active, width / height);
-      const name = `${active.name} – ${pass === 'beauty' ? 'Referenzframe' : pass === 'clay' ? 'Clay' : 'Tiefe'}`;
+      const name = `${active.name} – ${pass === 'beauty' ? 'Reference frame' : pass === 'clay' ? 'Clay' : 'Depth'}`;
       const prompt = `Set reference frame (${pass}). ${setup.en}.`;
       const notes: string[] = [];
       let imageUrl = frame.dataUrl;

@@ -47,7 +47,7 @@ export const Fader: React.FC<{ db: number; onChange: (db: number) => void; onCom
       aria-valuemax={MAX_FADER_DB}
       aria-valuenow={db}
       aria-label="Fader"
-      title={`${formatDb(db)} dB · Doppelklick: 0 dB · ⌥ ziehen: fein`}
+      title={`${formatDb(db)} dB · Double-click: 0 dB · ⌥ drag: fine`}
       onDoubleClick={() => { onChange(0); onCommit?.(); }}
       onWheel={(e) => { e.preventDefault(); onChange(clamp((db <= MIN_DB ? -60 : db) + (e.deltaY < 0 ? 0.5 : -0.5), MIN_DB, MAX_FADER_DB)); }}
       onPointerDown={(e) => {
@@ -112,7 +112,7 @@ export const eqCurvePath = (bands: EqBand[], width: number, height: number, rang
 export const EqMini: React.FC<{ bands: EqBand[] | null; onClick: () => void; id: string }> = ({ bands, onClick, id }) => {
   const path = useMemo(() => (bands ? eqCurvePath(bands, 76, 34) : ''), [bands]);
   return (
-    <svg className="snd-eqmini" viewBox="0 0 76 34" onClick={onClick} data-automation-id={id} role="button" aria-label="EQ öffnen">
+    <svg className="snd-eqmini" viewBox="0 0 76 34" onClick={onClick} data-automation-id={id} role="button" aria-label="Open EQ">
       <line x1="0" x2="76" y1="17" y2="17" />
       {bands ? <path d={path} /> : <text x="38" y="21" textAnchor="middle" fill="#4d5560" fontSize="9">EQ +</text>}
     </svg>

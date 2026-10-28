@@ -149,7 +149,7 @@ const FocusPreview: React.FC<{ entry: BrowserEntry | null; onMeta: (id: string, 
     }, [entry, onMeta]);
 
     if (!entry) {
-        return <div className="mpx-preview mpx-preview--empty"><Film className="w-6 h-6" strokeWidth={1.4} /><span>Element auswählen, um es hier anzusehen</span></div>;
+        return <div className="mpx-preview mpx-preview--empty"><Film className="w-6 h-6" strokeWidth={1.4} /><span>Select an element to view it here</span></div>;
     }
     return (
         <div className="mpx-preview" data-automation-id="media.preview">
@@ -197,7 +197,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
 }) => {
     const browseApi = useMemo(() => getBrowseApi(), []);
     const desktop = useMemo(() => hasDesktopProject(), []);
-    const projectLabel = projectName || currentProjectName || 'Unbenanntes Projekt';
+    const projectLabel = projectName || currentProjectName || 'Untitled project';
 
     const [prefs, setPrefs] = useState<MediaPagePrefs>(() => loadPrefs());
     const updatePrefs = useCallback((patch: Partial<MediaPagePrefs>) => {
@@ -242,7 +242,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
         browseApi.listDir({ dirPath: fsPath }).then((result) => {
             if (!alive) return;
             if (!result?.ok) {
-                setListing({ path: fsPath, entries: [], loading: false, error: result?.error || 'Ordner konnte nicht gelesen werden.', truncated: false });
+                setListing({ path: fsPath, entries: [], loading: false, error: result?.error || 'Folder could not be read.', truncated: false });
                 return;
             }
             const entries: BrowserEntry[] = (result.entries || []).map((raw) => ({
@@ -418,7 +418,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
             }
         });
         if (added.length === 0) {
-            setStatus('Keine Video-, Bild- oder Audiodateien erkannt.');
+            setStatus('No video, image or audio files recognized.');
             return;
         }
         setPickedEntries((prev) => [...prev.filter((entry) => !added.some((a) => a.id === entry.id)), ...added]);
@@ -448,12 +448,12 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
         const file = event.target.files?.[0];
         event.target.value = '';
         if (!file || !onImportTimelineOtio) return;
-        setStatus(`Importiere ${file.name}…`);
+        setStatus(`Importing ${file.name}…`);
         try {
             const result = await onImportTimelineOtio(file, otioMode);
             setStatus(result || `${file.name} importiert.`);
         } catch (error) {
-            setStatus(error instanceof Error ? error.message : 'OTIO-Import fehlgeschlagen.');
+            setStatus(error instanceof Error ? error.message : 'OTIO import failed.');
         }
     };
 
@@ -477,9 +477,9 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
 
     /** Import `entries` (in selection order). Resolves once the app has created the MediaItems. */
     const performImport = useCallback(async (entries: BrowserEntry[], options: ImportOptions): Promise<ImportOutcome> => {
-        if (busy) throw new Error('Ein Import läuft bereits.');
+        if (busy) throw new Error('An import is already running.');
         const candidates = entries.filter(isImportable);
-        if (candidates.length === 0) throw new Error('Keine importierbaren Medien ausgewählt.');
+        if (candidates.length === 0) throw new Error('No importable media selected.');
         const byId = new Map(candidates.map((entry) => [entry.id, entry]));
         const ordered = orderForSequence(candidates.map((entry) => entry.id), byId, options.sequenceOrder);
         const copy = canCopy && options.copyToProject;
@@ -489,7 +489,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
         const kinds: Record<string, BrowserEntry['kind']> = {};
         const files: File[] = [];
         setBusy(true);
-        setStatus(`Importiere ${ordered.length} ${ordered.length === 1 ? 'Element' : 'Elemente'}…`);
+        setStatus(`Importing ${ordered.length} ${ordered.length === 1 ? 'Element' : 'Elements'}…`);
         try {
             for (const entry of ordered) {
                 kinds[entry.id] = entry.kind;
@@ -521,11 +521,11 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                         kind: entry.kind,
                         url,
                         duration,
-                        projectName: 'Dateisystem',
+                        projectName: 'File system',
                         projectPath: null,
                         origin: 'current',
                         source: 'upload',
-                        generatedBy: 'Lokaler Import',
+                        generatedBy: 'Local import',
                     };
                     await onImportLibraryAsset(asset, { collectToProject: copy });
                     pending.push({ key: entry.id, name: entry.name, url });
@@ -536,7 +536,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
             setBatch({ pending, resolved, beforeIds, order: ordered.map((entry) => entry.id), kinds, bin: options.bin, sequence: options.sequence, transcribe: canTranscribe && options.transcribe, startedAt: Date.now() });
             return await outcome;
         } catch (error) {
-            setStatus(error instanceof Error ? `Import fehlgeschlagen: ${error.message}` : 'Import fehlgeschlagen.');
+            setStatus(error instanceof Error ? `Import failed: ${error.message}` : 'Import failed.');
             setBusy(false);
             throw error;
         }
@@ -545,7 +545,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
     const optionsFromPrefs = useCallback((): ImportOptions => ({
         copyToProject: prefs.copyToProject,
         bin: prefs.binEnabled ? cleanBinName(prefs.binName, Object.keys(bins)) : null,
-        sequence: prefs.sequenceEnabled ? (prefs.sequenceName.trim() || `Sequenz ${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`) : null,
+        sequence: prefs.sequenceEnabled ? (prefs.sequenceName.trim() || `Sequence ${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`) : null,
         sequenceOrder: prefs.sequenceOrder,
         transcribe: prefs.transcribe,
     }), [prefs, bins]);
@@ -568,7 +568,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
         const ids: Record<string, string> = { ...batch.resolved };
         Object.entries(matched).forEach(([key, id]) => { if (id) ids[key] = id; });
         const mediaIds = batch.order.map((key) => ids[key]).filter((id): id is string => Boolean(id));
-        const sequenceBin = batch.sequence ? `Sequenz – ${batch.sequence}` : null;
+        const sequenceBin = batch.sequence ? `Sequence – ${batch.sequence}` : null;
         if (batch.bin || sequenceBin) {
             setBins((prev) => {
                 let next = prev;
@@ -584,10 +584,10 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
             const avIds = batch.order.filter((key) => batch.kinds[key] === 'video' || batch.kinds[key] === 'audio').map((key) => ids[key]).filter(Boolean);
             (async () => { for (const id of avIds) { try { await transcribe(id); } catch { /* reported by the host */ } } })();
         }
-        const parts = [`${mediaIds.length} ${mediaIds.length === 1 ? 'Element' : 'Elemente'} übernommen`];
-        if (missing.length > 0) parts.push(`${missing.length} nicht bestätigt`);
-        if (batch.bin) parts.push(`Ablage „${batch.bin}“`);
-        if (batch.sequence) parts.push(`Sequenz „${batch.sequence}“ wird an die Timeline angefügt`);
+        const parts = [`${mediaIds.length} ${mediaIds.length === 1 ? 'Element' : 'Elements'} taken over`];
+        if (missing.length > 0) parts.push(`${missing.length} not confirmed`);
+        if (batch.bin) parts.push(`Bin “${batch.bin}”`);
+        if (batch.sequence) parts.push(`Sequence “${batch.sequence}” is appended to the timeline`);
         setStatus(parts.join(' · '));
         setSelection(EMPTY_SELECTION);
         batchResolve.current?.({ mediaIds, unconfirmed: missing.map((entry) => entry.name), bin: batch.bin, sequenceBin, sequence: batch.sequence, timelineQueued: batch.sequence ? mediaIds.length : 0 });
@@ -668,17 +668,17 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
     const localPlaces = useMemo(() => {
         if (!places) return [] as Array<{ id: string; label: string; path: string; icon: React.ReactNode }>;
         const list = [
-            { id: 'home', label: 'Benutzer', path: places.home, icon: <House className="w-3.5 h-3.5" /> },
-            { id: 'desktop', label: 'Schreibtisch', path: places.desktop, icon: <Monitor className="w-3.5 h-3.5" /> },
+            { id: 'home', label: 'User', path: places.home, icon: <House className="w-3.5 h-3.5" /> },
+            { id: 'desktop', label: 'Desk', path: places.desktop, icon: <Monitor className="w-3.5 h-3.5" /> },
             { id: 'downloads', label: 'Downloads', path: places.downloads, icon: <Download className="w-3.5 h-3.5" /> },
-            { id: 'movies', label: 'Filme', path: places.movies, icon: <Film className="w-3.5 h-3.5" /> },
-            { id: 'music', label: 'Musik', path: places.music, icon: <Music className="w-3.5 h-3.5" /> },
-            { id: 'pictures', label: 'Bilder', path: places.pictures, icon: <ImageIcon className="w-3.5 h-3.5" /> },
-            { id: 'volumes', label: 'Laufwerke', path: places.volumes || undefined, icon: <HardDrive className="w-3.5 h-3.5" /> },
+            { id: 'movies', label: 'Films', path: places.movies, icon: <Film className="w-3.5 h-3.5" /> },
+            { id: 'music', label: 'Music', path: places.music, icon: <Music className="w-3.5 h-3.5" /> },
+            { id: 'pictures', label: 'Images', path: places.pictures, icon: <ImageIcon className="w-3.5 h-3.5" /> },
+            { id: 'volumes', label: 'Drives', path: places.volumes || undefined, icon: <HardDrive className="w-3.5 h-3.5" /> },
         ];
         return list.filter((entry): entry is typeof entry & { path: string } => Boolean(entry.path));
     }, [places]);
-    const crumbs = fsPath ? breadcrumbs(fsPath, { home: places?.home, homeLabel: 'Benutzer' }) : [];
+    const crumbs = fsPath ? breadcrumbs(fsPath, { home: places?.home, homeLabel: 'User' }) : [];
     const binNames = Object.keys(liveBins);
 
     const placeButton = (key: string, label: string, icon: React.ReactNode, active: boolean, onClick: () => void, extra?: React.ReactNode, title?: string) => (
@@ -693,10 +693,10 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
     const sourceTitle = (() => {
         switch (source.type) {
             case 'fs': return baseName(source.path) || source.path;
-            case 'picked': return 'Ausgewählte Dateien';
-            case 'library': return 'Bibliothek';
-            case 'project': return source.bin ? `Ablage: ${source.bin}` : 'Projektmedien';
-            default: return 'Medienablage';
+            case 'picked': return 'Selected files';
+            case 'library': return 'Library';
+            case 'project': return source.bin ? `Bin: ${source.bin}` : 'Project media';
+            default: return 'Media bin';
         }
     })();
 
@@ -794,10 +794,10 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
             let location: Record<string, unknown> = { type: requested };
             if (requested === 'fs') {
                 const path = typeof args.path === 'string' && args.path.trim() ? normalizePath(args.path) : fsPath || prefs.lastFolder || places?.movies || places?.home;
-                if (!browseApi) throw new Error('Ordner durchsuchen geht nur in der Desktop-App (media:listDir). Nutze media_import mit paths oder urls.');
-                if (!path) throw new Error('Kein Ordner angegeben (path).');
+                if (!browseApi) throw new Error('Browsing folders only works in the desktop app (media:listDir). Use media_import with paths or urls.');
+                if (!path) throw new Error('No folder given (path).');
                 const result = await browseApi.listDir({ dirPath: path, showHidden: Boolean(args.showHidden) });
-                if (!result?.ok) throw new Error(result?.error || `Ordner ${path} nicht lesbar.`);
+                if (!result?.ok) throw new Error(result?.error || `Folder ${path} not readable.`);
                 entries = (result.entries || []).map((raw) => ({ id: raw.path, name: raw.name, path: raw.path, isDir: raw.isDir, kind: raw.isDir ? 'folder' : kindFromName(raw.name), size: raw.size, mtime: raw.mtime, url: raw.isDir ? undefined : raw.url || pathToFileUrl(raw.path), origin: 'fs' }));
                 setSource({ type: 'fs', path: result.path || path });
                 location = { type: 'fs', path: result.path || path, parent: result.parent ?? parentPath(path), truncated: Boolean(result.truncated) };
@@ -807,12 +807,12 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                 entries = libraryEntries; setSource({ type: 'library' });
             } else if (requested === 'project') {
                 const bin = typeof args.bin === 'string' && args.bin ? args.bin : null;
-                if (bin && !liveBins[bin]) throw new Error(`Ablage "${bin}" gibt es nicht.`);
+                if (bin && !liveBins[bin]) throw new Error(`Bin "${bin}" does not exist.`);
                 entries = bin ? (liveBins[bin] || []).map((id) => projectEntryById.get(`project:${id}`)).filter((entry): entry is BrowserEntry => Boolean(entry)) : projectEntries;
                 setSource({ type: 'project', bin });
                 location = { type: 'project', bin };
             } else {
-                throw new Error(`Unbekannte Quelle "${requested}" (fs, picked, library, project).`);
+                throw new Error(`Unknown source "${requested}" (fs, picked, library, project).`);
             }
             remember(entries);
             const kind = args.kind === 'video' || args.kind === 'image' || args.kind === 'audio' ? args.kind : 'all';
@@ -863,7 +863,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
             if (typeof args.transcribe === 'boolean') patch.transcribe = args.transcribe;
             updatePrefs(patch);
             const next = { ...prefs, ...patch };
-            return { ...capabilities(), options: { copyToProject: next.copyToProject && canCopy, bin: next.binEnabled ? next.binName || null : null, sequence: next.sequenceEnabled ? next.sequenceName || '(automatisch)' : null, sequenceOrder: next.sequenceOrder, transcribe: canTranscribe && next.transcribe } };
+            return { ...capabilities(), options: { copyToProject: next.copyToProject && canCopy, bin: next.binEnabled ? next.binName || null : null, sequence: next.sequenceEnabled ? next.sequenceName || '(automatic)' : null, sequenceOrder: next.sequenceOrder, transcribe: canTranscribe && next.transcribe } };
         },
         import: async (args: Record<string, unknown>) => {
             const refs = [
@@ -892,7 +892,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
         bins: (args: Record<string, unknown>) => {
             const name = typeof args.bin === 'string' && args.bin ? args.bin : null;
             if (name) {
-                if (!liveBins[name]) throw new Error(`Ablage "${name}" gibt es nicht.`);
+                if (!liveBins[name]) throw new Error(`Bin "${name}" does not exist.`);
                 const byId = new Map(mediaItems.map((item) => [item.id, item]));
                 return { bin: name, items: liveBins[name].map((id) => byId.get(id)).filter((item): item is MediaItem => Boolean(item)).map((item) => ({ mediaId: item.id, name: item.name, type: item.type, duration: item.duration ?? null })) };
             }
@@ -900,7 +900,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
         },
         binUpdate: (args: Record<string, unknown>) => {
             const name = typeof args.bin === 'string' ? args.bin.trim() : '';
-            if (!name) throw new Error('Parameter "bin" fehlt.');
+            if (!name) throw new Error('Parameter "bin" is missing.');
             const ids = (key: string) => (Array.isArray(args[key]) ? (args[key] as unknown[]).filter((value): value is string => typeof value === 'string' && mediaIdSet.has(value)) : []);
             let next: BinAssignments = { ...bins };
             if (args.delete === true) {
@@ -921,7 +921,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
         },
         favorite: (args: Record<string, unknown>) => {
             const path = typeof args.path === 'string' && args.path.trim() ? normalizePath(args.path) : fsPath;
-            if (!path) throw new Error('Parameter "path" fehlt.');
+            if (!path) throw new Error('Parameter "path" is missing.');
             const has = prefs.favorites.includes(path);
             const wantAdd = args.action !== 'remove';
             const favorites = wantAdd === has ? prefs.favorites : toggleFavorite(prefs.favorites, path);
@@ -967,13 +967,13 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
             <header className="mpx-head">
                 <div className="mpx-head__title"><Upload className="w-4 h-4" /><strong>Import</strong></div>
                 <div className="mpx-head__project" title={currentProjectPath || undefined}>
-                    <span>Projekt</span><strong>{projectLabel}</strong>
-                    <small>{currentProjectPath || 'Kein Projektordner gewählt'}</small>
+                    <span>Project</span><strong>{projectLabel}</strong>
+                    <small>{currentProjectPath || 'No project folder chosen'}</small>
                 </div>
             </header>
 
             {/* ── Left: places ── */}
-            <aside className="mpx-places" aria-label="Orte">
+            <aside className="mpx-places" aria-label="Locations">
                 <div className="mpx-places__scroll">
                     <div
                         className={`mpx-drop ${dragOver ? 'mpx-drop--over' : ''}`}
@@ -983,9 +983,9 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                         data-automation-id="media.dropzone"
                     >
                         <button type="button" className="mpx-btn mpx-btn--primary mpx-btn--block" onClick={() => fileInputRef.current?.click()} data-automation-id="media.pickFiles">
-                            <Plus className="w-3.5 h-3.5" />Dateien auswählen…
+                            <Plus className="w-3.5 h-3.5" />Choose files…
                         </button>
-                        <span>oder Dateien hierher ziehen</span>
+                        <span>or drag files here</span>
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -1000,55 +1000,55 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                         <>
                             {prefs.recent.length > 0 && (
                                 <section className="mpx-places__group">
-                                    <h4>Zuletzt verwendet</h4>
+                                    <h4>Recently used</h4>
                                     {prefs.recent.slice(0, 6).map((path) => placeButton(`recent-${path}`, baseName(path) || path, <Clock className="w-3.5 h-3.5" />, fsPath === path, () => navigate(path), undefined, path))}
                                 </section>
                             )}
                             <section className="mpx-places__group">
-                                <h4>Favoriten</h4>
-                                {prefs.favorites.length === 0 && <p className="mpx-places__empty">Ordner mit dem Stern anheften</p>}
+                                <h4>Favorites</h4>
+                                {prefs.favorites.length === 0 && <p className="mpx-places__empty">Pin the folder with the star</p>}
                                 {prefs.favorites.map((path) => placeButton(`fav-${path}`, baseName(path) || path, <Star className="w-3.5 h-3.5" />, fsPath === path, () => navigate(path), (
-                                    <button type="button" className="mpx-place__x" aria-label="Favorit entfernen" onClick={() => updatePrefs({ favorites: toggleFavorite(prefs.favorites, path) })}><X className="w-3 h-3" /></button>
+                                    <button type="button" className="mpx-place__x" aria-label="Remove favorite" onClick={() => updatePrefs({ favorites: toggleFavorite(prefs.favorites, path) })}><X className="w-3 h-3" /></button>
                                 ), path))}
                             </section>
                             <section className="mpx-places__group">
-                                <h4>Lokal</h4>
-                                {currentProjectPath && placeButton('projectFolder', 'Projektordner', <FolderOpen className="w-3.5 h-3.5" />, fsPath === normalizePath(currentProjectPath), () => navigate(currentProjectPath), undefined, currentProjectPath)}
+                                <h4>Local</h4>
+                                {currentProjectPath && placeButton('projectFolder', 'Project folder', <FolderOpen className="w-3.5 h-3.5" />, fsPath === normalizePath(currentProjectPath), () => navigate(currentProjectPath), undefined, currentProjectPath)}
                                 {localPlaces.map((place) => placeButton(place.id, place.label, place.icon, fsPath === normalizePath(place.path), () => navigate(place.path), undefined, place.path))}
                             </section>
                         </>
                     ) : (
                         <section className="mpx-places__group">
-                            <h4>Lokal</h4>
+                            <h4>Local</h4>
                             <p className="mpx-places__empty">
-                                {desktop ? 'Ordner-Browser wird nach dem Update der Desktop-App aktiv.' : 'Ordner durchsuchen geht in der Desktop-App. Im Browser: Dateien auswählen oder hineinziehen.'}
+                                {desktop ? 'The folder browser becomes active after updating the desktop app.' : 'Browsing folders works in the desktop app. In the browser: choose or drag in files.'}
                             </p>
                         </section>
                     )}
 
                     <section className="mpx-places__group">
-                        <h4>Diese App</h4>
-                        {placeButton('picked', `Ausgewählte Dateien (${pickedEntries.length})`, <Upload className="w-3.5 h-3.5" />, source.type === 'picked', () => setSource({ type: 'picked' }))}
-                        {placeButton('library', `Bibliothek (${libraryEntries.length})`, <Library className="w-3.5 h-3.5" />, source.type === 'library', () => setSource({ type: 'library' }), undefined, 'Medien aus zuletzt geöffneten Projekten')}
-                        {placeButton('project', `Projektmedien (${mediaItems.length})`, <Layers className="w-3.5 h-3.5" />, source.type === 'project' && !source.bin, () => setSource({ type: 'project', bin: null }))}
+                        <h4>This app</h4>
+                        {placeButton('picked', `Selected files (${pickedEntries.length})`, <Upload className="w-3.5 h-3.5" />, source.type === 'picked', () => setSource({ type: 'picked' }))}
+                        {placeButton('library', `Library (${libraryEntries.length})`, <Library className="w-3.5 h-3.5" />, source.type === 'library', () => setSource({ type: 'library' }), undefined, 'Media from recently opened projects')}
+                        {placeButton('project', `Project media (${mediaItems.length})`, <Layers className="w-3.5 h-3.5" />, source.type === 'project' && !source.bin, () => setSource({ type: 'project', bin: null }))}
                         {binNames.map((name) => placeButton(`bin-${name}`, `${name} (${liveBins[name].length})`, <Folder className="w-3.5 h-3.5" />, source.type === 'project' && source.bin === name, () => setSource({ type: 'project', bin: name }), (
-                            <button type="button" className="mpx-place__x" aria-label="Ablage entfernen" title="Ablage entfernen (Medien bleiben im Projekt)" onClick={() => setBins((prev) => { const next = { ...prev }; delete next[name]; saveBins(binKey, next); return next; })}><X className="w-3 h-3" /></button>
+                            <button type="button" className="mpx-place__x" aria-label="Remove bin" title="Remove bin (media stay in the project)" onClick={() => setBins((prev) => { const next = { ...prev }; delete next[name]; saveBins(binKey, next); return next; })}><X className="w-3 h-3" /></button>
                         )))}
-                        {placeButton('classic', 'Medienablage (klassisch)', <Clapperboard className="w-3.5 h-3.5" />, source.type === 'classic', () => setSource({ type: 'classic' }), undefined, 'Smart Bins, Bibliothek und Projektansicht wie bisher')}
+                        {placeButton('classic', 'Media bin (classic)', <Clapperboard className="w-3.5 h-3.5" />, source.type === 'classic', () => setSource({ type: 'classic' }), undefined, 'Smart bins, library and project view as before')}
                     </section>
 
                     <section className="mpx-places__group">
-                        <h4>Austausch</h4>
+                        <h4>Interchange</h4>
                         <div className="mpx-seg" role="tablist" aria-label="OTIO-Modus">
                             {(['replace', 'append'] as OpenTimelineIOImportMode[]).map((mode) => (
                                 <button key={mode} type="button" role="tab" aria-selected={otioMode === mode} className={`mpx-seg__item ${otioMode === mode ? 'mpx-seg__item--on' : ''}`} onClick={() => setOtioMode(mode)}>
-                                    {mode === 'replace' ? 'Ersetzen' : 'Anhängen'}
+                                    {mode === 'replace' ? 'Replace' : 'Append'}
                                 </button>
                             ))}
                         </div>
                         <input ref={otioInputRef} type="file" accept=".otio,.json,application/json,application/vnd.opentimelineio+json" className="hidden" onChange={handleOtioChange} />
                         <button type="button" className="mpx-btn mpx-btn--block" disabled={!onImportTimelineOtio} onClick={() => otioInputRef.current?.click()} data-automation-id="media.importOtio">
-                            <Film className="w-3.5 h-3.5" />OTIO-Timeline importieren
+                            <Film className="w-3.5 h-3.5" />Import OTIO timeline
                         </button>
                     </section>
                 </div>
@@ -1064,10 +1064,10 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                 <div className="mpx-bar">
                     {source.type === 'fs' ? (
                         <>
-                            <button type="button" className="mpx-icon-btn" aria-label="Übergeordneter Ordner" title="Übergeordneter Ordner (Backspace)" disabled={!parentPath(source.path)} onClick={() => { const parent = parentPath(source.path); if (parent) navigate(parent); }} data-automation-id="media.up">
+                            <button type="button" className="mpx-icon-btn" aria-label="Parent folder" title="Parent folder (Backspace)" disabled={!parentPath(source.path)} onClick={() => { const parent = parentPath(source.path); if (parent) navigate(parent); }} data-automation-id="media.up">
                                 <ArrowUp className="w-3.5 h-3.5" />
                             </button>
-                            <nav className="mpx-crumbs" aria-label="Pfad" data-automation-id="media.breadcrumbs">
+                            <nav className="mpx-crumbs" aria-label="Path" data-automation-id="media.breadcrumbs">
                                 {crumbs.map((crumb, index) => (
                                     <React.Fragment key={crumb.path}>
                                         {index > 0 && <span className="mpx-crumbs__sep">›</span>}
@@ -1075,45 +1075,45 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                                     </React.Fragment>
                                 ))}
                             </nav>
-                            <button type="button" className={`mpx-icon-btn ${isFav ? 'mpx-icon-btn--on' : ''}`} aria-pressed={isFav} aria-label="Als Favorit anheften" title={isFav ? 'Favorit entfernen' : 'Als Favorit anheften'} onClick={() => updatePrefs({ favorites: toggleFavorite(prefs.favorites, source.path) })} data-automation-id="media.favorite">
+                            <button type="button" className={`mpx-icon-btn ${isFav ? 'mpx-icon-btn--on' : ''}`} aria-pressed={isFav} aria-label="Pin as favorite" title={isFav ? 'Remove favorite' : 'Pin as favorite'} onClick={() => updatePrefs({ favorites: toggleFavorite(prefs.favorites, source.path) })} data-automation-id="media.favorite">
                                 <Star className="w-3.5 h-3.5" fill={isFav ? 'currentColor' : 'none'} />
                             </button>
-                            <button type="button" className="mpx-icon-btn" aria-label="Neu laden" title="Neu laden" onClick={() => setReloadTick((n) => n + 1)} data-automation-id="media.reload"><RefreshCw className="w-3.5 h-3.5" /></button>
+                            <button type="button" className="mpx-icon-btn" aria-label="Reload" title="Reload" onClick={() => setReloadTick((n) => n + 1)} data-automation-id="media.reload"><RefreshCw className="w-3.5 h-3.5" /></button>
                         </>
                     ) : (
                         <div className="mpx-crumbs"><span className="mpx-crumbs__item mpx-crumbs__item--current">{sourceTitle}</span></div>
                     )}
                     <div className="mpx-search">
                         <Search className="w-3.5 h-3.5" />
-                        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Suchen" aria-label="Suchen" data-automation-id="media.search" />
-                        {query && <button type="button" aria-label="Suche leeren" onClick={() => setQuery('')}><X className="w-3 h-3" /></button>}
+                        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search" aria-label="Search" data-automation-id="media.search" />
+                        {query && <button type="button" aria-label="Clear search" onClick={() => setQuery('')}><X className="w-3 h-3" /></button>}
                     </div>
                 </div>
 
                 {source.type !== 'classic' && (
                     <div className="mpx-toolbar">
-                        <div className="mpx-seg" role="tablist" aria-label="Typfilter">
-                            {([['all', 'Alle'], ['video', 'Video'], ['image', 'Bild'], ['audio', 'Audio']] as Array<[KindFilter, string]>).map(([kind, label]) => (
+                        <div className="mpx-seg" role="tablist" aria-label="Type filter">
+                            {([['all', 'All'], ['video', 'Video'], ['image', 'Image'], ['audio', 'Audio']] as Array<[KindFilter, string]>).map(([kind, label]) => (
                                 <button key={kind} type="button" role="tab" aria-selected={prefs.kind === kind} className={`mpx-seg__item ${prefs.kind === kind ? 'mpx-seg__item--on' : ''}`} onClick={() => updatePrefs({ kind })} data-automation-id={`media.filter.${kind}`}>
                                     {label}<small>{kindCounts[kind]}</small>
                                 </button>
                             ))}
                         </div>
                         <div className="mpx-toolbar__spacer" />
-                        <button type="button" className="mpx-btn mpx-btn--ghost" disabled={selectableIds.length === 0} onClick={() => { rememberEntries(viewEntries.filter(isImportable)); setSelection(selectAll(selectableIds)); }} data-automation-id="media.selectAll">Alle auswählen</button>
-                        <select className="mpx-select" value={`${prefs.sortKey}:${prefs.sortDesc ? 'desc' : 'asc'}`} aria-label="Sortierung" onChange={(event) => { const [sortKey, dir] = event.target.value.split(':'); updatePrefs({ sortKey: sortKey as SortKey, sortDesc: dir === 'desc' }); }} data-automation-id="media.sort">
+                        <button type="button" className="mpx-btn mpx-btn--ghost" disabled={selectableIds.length === 0} onClick={() => { rememberEntries(viewEntries.filter(isImportable)); setSelection(selectAll(selectableIds)); }} data-automation-id="media.selectAll">Select all</button>
+                        <select className="mpx-select" value={`${prefs.sortKey}:${prefs.sortDesc ? 'desc' : 'asc'}`} aria-label="Sort order" onChange={(event) => { const [sortKey, dir] = event.target.value.split(':'); updatePrefs({ sortKey: sortKey as SortKey, sortDesc: dir === 'desc' }); }} data-automation-id="media.sort">
                             <option value="name:asc">Name A–Z</option>
                             <option value="name:desc">Name Z–A</option>
-                            <option value="date:desc">Neueste zuerst</option>
-                            <option value="date:asc">Älteste zuerst</option>
-                            <option value="size:desc">Größte zuerst</option>
-                            <option value="type:asc">Typ</option>
+                            <option value="date:desc">Newest first</option>
+                            <option value="date:asc">Oldest first</option>
+                            <option value="size:desc">Largest first</option>
+                            <option value="type:asc">Type</option>
                         </select>
-                        <div className="mpx-seg" role="tablist" aria-label="Ansicht">
-                            <button type="button" role="tab" aria-selected={prefs.view === 'grid'} aria-label="Rasteransicht" className={`mpx-seg__item ${prefs.view === 'grid' ? 'mpx-seg__item--on' : ''}`} onClick={() => updatePrefs({ view: 'grid' })} data-automation-id="media.view.grid"><LayoutGrid className="w-3.5 h-3.5" /></button>
-                            <button type="button" role="tab" aria-selected={prefs.view === 'list'} aria-label="Listenansicht" className={`mpx-seg__item ${prefs.view === 'list' ? 'mpx-seg__item--on' : ''}`} onClick={() => updatePrefs({ view: 'list' })} data-automation-id="media.view.list"><List className="w-3.5 h-3.5" /></button>
+                        <div className="mpx-seg" role="tablist" aria-label="View">
+                            <button type="button" role="tab" aria-selected={prefs.view === 'grid'} aria-label="Grid view" className={`mpx-seg__item ${prefs.view === 'grid' ? 'mpx-seg__item--on' : ''}`} onClick={() => updatePrefs({ view: 'grid' })} data-automation-id="media.view.grid"><LayoutGrid className="w-3.5 h-3.5" /></button>
+                            <button type="button" role="tab" aria-selected={prefs.view === 'list'} aria-label="List view" className={`mpx-seg__item ${prefs.view === 'list' ? 'mpx-seg__item--on' : ''}`} onClick={() => updatePrefs({ view: 'list' })} data-automation-id="media.view.list"><List className="w-3.5 h-3.5" /></button>
                         </div>
-                        <input type="range" min={110} max={320} step={2} value={prefs.thumbSize} disabled={prefs.view === 'list'} aria-label="Miniaturgröße" title="Miniaturgröße" className="mpx-range" onChange={(event) => updatePrefs({ thumbSize: Number(event.target.value) })} data-automation-id="media.thumbSize" />
+                        <input type="range" min={110} max={320} step={2} value={prefs.thumbSize} disabled={prefs.view === 'list'} aria-label="Thumbnail size" title="Thumbnail size" className="mpx-range" onChange={(event) => updatePrefs({ thumbSize: Number(event.target.value) })} data-automation-id="media.thumbSize" />
                     </div>
                 )}
 
@@ -1148,7 +1148,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                     >
                         {prefs.view === 'list' && viewEntries.length > 0 && (
                             <div className="mpx-row mpx-row--head" aria-hidden>
-                                <span /><span /><span>Name</span><span>Typ</span><span>Dauer</span><span>Auflösung</span><span>Größe</span><span>Geändert</span>
+                                <span /><span /><span>Name</span><span>Type</span><span>Duration</span><span>Resolution</span><span>Size</span><span>Changed</span>
                             </div>
                         )}
                         {viewEntries.map((entry) => {
@@ -1171,65 +1171,65 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                         })}
                         {viewEntries.length === 0 && (
                             <div className="mpx-empty">
-                                {source.type === 'fs' && listing.loading ? <><RefreshCw className="w-5 h-5 mpx-spin" /><strong>Lade Ordner…</strong></> : null}
-                                {source.type === 'fs' && listing.error ? <><Info className="w-5 h-5" /><strong>Ordner nicht lesbar</strong><span>{listing.error}</span></> : null}
+                                {source.type === 'fs' && listing.loading ? <><RefreshCw className="w-5 h-5 mpx-spin" /><strong>Loading folder…</strong></> : null}
+                                {source.type === 'fs' && listing.error ? <><Info className="w-5 h-5" /><strong>Folder not readable</strong><span>{listing.error}</span></> : null}
                                 {!(source.type === 'fs' && (listing.loading || listing.error)) && (
                                     <>
                                         <Upload className="w-6 h-6" strokeWidth={1.4} />
-                                        <strong>{query ? 'Keine Treffer' : source.type === 'picked' ? 'Noch keine Dateien ausgewählt' : source.type === 'library' ? (libraryLoading ? 'Bibliothek wird geladen…' : 'Bibliothek ist leer') : 'Keine Medien'}</strong>
-                                        <span>{source.type === 'library' && libraryError ? libraryError : 'Dateien hierher ziehen oder „Dateien auswählen…“ nutzen.'}</span>
-                                        {source.type === 'picked' && <button type="button" className="mpx-btn mpx-btn--primary" onClick={() => fileInputRef.current?.click()}><Plus className="w-3.5 h-3.5" />Dateien auswählen…</button>}
+                                        <strong>{query ? 'No results' : source.type === 'picked' ? 'No files selected yet' : source.type === 'library' ? (libraryLoading ? 'Loading library…' : 'Library is empty') : 'No media'}</strong>
+                                        <span>{source.type === 'library' && libraryError ? libraryError : 'Drag files here or use “Choose files…”.'}</span>
+                                        {source.type === 'picked' && <button type="button" className="mpx-btn mpx-btn--primary" onClick={() => fileInputRef.current?.click()}><Plus className="w-3.5 h-3.5" />Choose files…</button>}
                                     </>
                                 )}
                             </div>
                         )}
-                        {source.type === 'fs' && listing.truncated && <p className="mpx-note">Nur die ersten 5000 Einträge werden angezeigt.</p>}
+                        {source.type === 'fs' && listing.truncated && <p className="mpx-note">Only the first 5000 entries are shown.</p>}
                     </div>
                 )}
             </main>
 
             {/* ── Right: import settings + preview ── */}
-            <aside className="mpx-side" aria-label="Importeinstellungen">
+            <aside className="mpx-side" aria-label="Import settings">
                 <section className="mpx-side__group">
-                    <h4>Importeinstellungen</h4>
-                    {toggleRow('copy', 'In Projektordner kopieren', prefs.copyToProject, (value) => updatePrefs({ copyToProject: value }), !canCopy,
-                        canCopy ? 'Dateien werden in den Medienordner des Projekts kopiert.' : 'Nur in der Desktop-App mit gespeichertem Projektordner. Sonst wird per Verweis importiert.')}
-                    {toggleRow('bin', 'Neue Ablage', prefs.binEnabled, (value) => updatePrefs({ binEnabled: value }), false, undefined, (
-                        <input className="mpx-input" value={prefs.binName} placeholder={cleanBinName('', Object.keys(bins))} onChange={(event) => updatePrefs({ binName: event.target.value })} aria-label="Name der Ablage" data-automation-id="media.setting.binName" />
+                    <h4>Import settings</h4>
+                    {toggleRow('copy', 'Copy to project folder', prefs.copyToProject, (value) => updatePrefs({ copyToProject: value }), !canCopy,
+                        canCopy ? 'Files are copied into the project media folder.' : 'Only in the desktop app with a saved project folder. Otherwise imported by reference.')}
+                    {toggleRow('bin', 'New bin', prefs.binEnabled, (value) => updatePrefs({ binEnabled: value }), false, undefined, (
+                        <input className="mpx-input" value={prefs.binName} placeholder={cleanBinName('', Object.keys(bins))} onChange={(event) => updatePrefs({ binName: event.target.value })} aria-label="Bin name" data-automation-id="media.setting.binName" />
                     ))}
-                    {toggleRow('sequence', 'Neue Sequenz aus Auswahl erstellen', prefs.sequenceEnabled, (value) => updatePrefs({ sequenceEnabled: value }), false, prefs.sequenceEnabled ? 'Clips werden der Reihe nach ans Ende der Timeline gelegt.' : undefined, (
+                    {toggleRow('sequence', 'New sequence from selection', prefs.sequenceEnabled, (value) => updatePrefs({ sequenceEnabled: value }), false, prefs.sequenceEnabled ? 'Clips are added in order to the end of the timeline.' : undefined, (
                         <>
-                            <input className="mpx-input" value={prefs.sequenceName} placeholder="Name der Sequenz" onChange={(event) => updatePrefs({ sequenceName: event.target.value })} aria-label="Name der Sequenz" data-automation-id="media.setting.sequenceName" />
-                            <select className="mpx-select mpx-select--block" value={prefs.sequenceOrder} onChange={(event) => updatePrefs({ sequenceOrder: event.target.value as MediaPagePrefs['sequenceOrder'] })} aria-label="Reihenfolge" data-automation-id="media.setting.sequenceOrder">
-                                <option value="selection">Reihenfolge der Auswahl</option>
-                                <option value="name">Nach Name</option>
-                                <option value="date">Nach Datum</option>
+                            <input className="mpx-input" value={prefs.sequenceName} placeholder="Sequence name" onChange={(event) => updatePrefs({ sequenceName: event.target.value })} aria-label="Sequence name" data-automation-id="media.setting.sequenceName" />
+                            <select className="mpx-select mpx-select--block" value={prefs.sequenceOrder} onChange={(event) => updatePrefs({ sequenceOrder: event.target.value as MediaPagePrefs['sequenceOrder'] })} aria-label="Order" data-automation-id="media.setting.sequenceOrder">
+                                <option value="selection">Selection order</option>
+                                <option value="name">By name</option>
+                                <option value="date">By date</option>
                             </select>
                         </>
                     ))}
-                    {canTranscribe && toggleRow('transcribe', 'Automatisch transkribieren', prefs.transcribe, (value) => updatePrefs({ transcribe: value }), false, 'Video- und Audioclips werden nach dem Import transkribiert.')}
+                    {canTranscribe && toggleRow('transcribe', 'Transcribe automatically', prefs.transcribe, (value) => updatePrefs({ transcribe: value }), false, 'Video and audio clips are transcribed after import.')}
                 </section>
 
                 <section className="mpx-side__group mpx-side__group--grow">
-                    <h4>Vorschau</h4>
+                    <h4>Preview</h4>
                     <FocusPreview entry={focusedEntry} onMeta={handleMeta} />
                     {focusedEntry && (
                         <dl className="mpx-meta" data-automation-id="media.metadata">
                             <div><dt>Name</dt><dd title={focusedEntry.name}>{focusedEntry.name}</dd></div>
-                            <div><dt>Typ</dt><dd>{entryKindLabel(focusedEntry)}</dd></div>
-                            {formatDuration(focusedMeta?.duration ?? focusedEntry.duration) && <div><dt>Dauer</dt><dd className="mpx-mono">{formatDuration(focusedMeta?.duration ?? focusedEntry.duration)}</dd></div>}
-                            {focusedMeta?.width ? <div><dt>Auflösung</dt><dd className="mpx-mono">{focusedMeta.width} × {focusedMeta.height}</dd></div> : null}
-                            {focusedEntry.kind === 'video' && <div><dt>Bildrate</dt><dd className="mpx-mono">{focusedMeta?.fps ? `${String(focusedMeta.fps).replace('.', ',')} fps` : 'beim Abspielen ermittelt'}</dd></div>}
-                            {formatBytes(focusedEntry.size) && <div><dt>Größe</dt><dd className="mpx-mono">{formatBytes(focusedEntry.size)}</dd></div>}
-                            {formatDate(focusedEntry.mtime) && <div><dt>Geändert</dt><dd className="mpx-mono">{formatDate(focusedEntry.mtime)}</dd></div>}
-                            {focusedEntry.detail && <div><dt>Herkunft</dt><dd title={focusedEntry.detail}>{focusedEntry.detail}</dd></div>}
-                            {focusedEntry.path && <div><dt>Pfad</dt><dd title={focusedEntry.path} className="mpx-meta__path">{focusedEntry.path}</dd></div>}
-                            {focusedMediaId && <div><dt>In Timeline</dt><dd>{focusedUsage === 0 ? 'nicht verwendet' : `${focusedUsage} Clip${focusedUsage === 1 ? '' : 's'}`}</dd></div>}
+                            <div><dt>Type</dt><dd>{entryKindLabel(focusedEntry)}</dd></div>
+                            {formatDuration(focusedMeta?.duration ?? focusedEntry.duration) && <div><dt>Duration</dt><dd className="mpx-mono">{formatDuration(focusedMeta?.duration ?? focusedEntry.duration)}</dd></div>}
+                            {focusedMeta?.width ? <div><dt>Resolution</dt><dd className="mpx-mono">{focusedMeta.width} × {focusedMeta.height}</dd></div> : null}
+                            {focusedEntry.kind === 'video' && <div><dt>Frame rate</dt><dd className="mpx-mono">{focusedMeta?.fps ? `${String(focusedMeta.fps).replace('.', ',')} fps` : 'measured during playback'}</dd></div>}
+                            {formatBytes(focusedEntry.size) && <div><dt>Size</dt><dd className="mpx-mono">{formatBytes(focusedEntry.size)}</dd></div>}
+                            {formatDate(focusedEntry.mtime) && <div><dt>Changed</dt><dd className="mpx-mono">{formatDate(focusedEntry.mtime)}</dd></div>}
+                            {focusedEntry.detail && <div><dt>Origin</dt><dd title={focusedEntry.detail}>{focusedEntry.detail}</dd></div>}
+                            {focusedEntry.path && <div><dt>Path</dt><dd title={focusedEntry.path} className="mpx-meta__path">{focusedEntry.path}</dd></div>}
+                            {focusedMediaId && <div><dt>In Timeline</dt><dd>{focusedUsage === 0 ? 'not used' : `${focusedUsage} Clip${focusedUsage === 1 ? '' : 's'}`}</dd></div>}
                         </dl>
                     )}
                     {focusedMediaId && (
                         <button type="button" className="mpx-btn mpx-btn--block" onClick={() => onAddToTimeline(focusedMediaId)} data-automation-id="media.addToTimeline">
-                            <Plus className="w-3.5 h-3.5" />Zur Timeline hinzufügen
+                            <Plus className="w-3.5 h-3.5" />Add to timeline
                         </button>
                     )}
                 </section>
@@ -1239,10 +1239,10 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
             <footer className="mpx-tray" data-automation-id="media.tray">
                 <div className="mpx-tray__count">
                     <strong>{importables.length}</strong>
-                    <span>{importables.length === 1 ? 'Element ausgewählt' : 'Elemente ausgewählt'}</span>
-                    {importables.length > 0 && <button type="button" className="mpx-link" onClick={() => setSelection(EMPTY_SELECTION)} data-automation-id="media.clearSelection">Auswahl leeren</button>}
+                    <span>{importables.length === 1 ? 'element selected' : 'elements selected'}</span>
+                    {importables.length > 0 && <button type="button" className="mpx-link" onClick={() => setSelection(EMPTY_SELECTION)} data-automation-id="media.clearSelection">Clear selection</button>}
                 </div>
-                <div className="mpx-tray__strip" role="list" aria-label="Auswahl">
+                <div className="mpx-tray__strip" role="list" aria-label="Selection">
                     {importables.map((entry, index) => (
                         <div key={entry.id} role="listitem" className={`mpx-chip ${focusId === entry.id ? 'mpx-chip--focused' : ''}`} title={entry.name} onClick={() => setFocusId(entry.id)}>
                             <span className="mpx-chip__n">{index + 1}</span>
@@ -1250,7 +1250,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                             <button type="button" className="mpx-chip__x" aria-label={`${entry.name} entfernen`} onClick={(event) => { event.stopPropagation(); setSelection((prev) => toggleSelection(prev, entry.id)); }}><X className="w-3 h-3" /></button>
                         </div>
                     ))}
-                    {importables.length === 0 && <span className="mpx-tray__hint">Mit dem Kästchen, Leertaste oder ⌘/Strg-Klick auswählen · Enter importiert</span>}
+                    {importables.length === 0 && <span className="mpx-tray__hint">Select with the checkbox, Space or ⌘/Ctrl-click · Enter imports</span>}
                 </div>
                 <div className="mpx-tray__actions">
                     {status && <span className="mpx-tray__status" role="status" data-automation-id="media.status">{status}</span>}
@@ -1261,7 +1261,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                         onClick={() => { void runImport(); }}
                         data-automation-id="media.import"
                     >
-                        {busy ? 'Importiere…' : onlyProjectItems ? 'Übernehmen' : 'Importieren'}
+                        {busy ? 'Importing…' : onlyProjectItems ? 'Apply' : 'Import'}
                     </button>
                 </div>
             </footer>

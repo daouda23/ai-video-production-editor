@@ -111,7 +111,7 @@ const ComparePreview: React.FC<Props> = ({
     || (!preview.frame && (!preview.range || (time >= preview.range.start - 1e-3 && time <= preview.range.end + 1e-3)))
   ));
   const afterKind: 'image' | 'video' | 'sim' = previewMatches ? (preview!.kind === 'video' ? 'video' : 'image') : 'sim';
-  const afterLabel = afterKind === 'sim' ? 'Simulation (lokal, ohne KI)' : preview!.label;
+  const afterLabel = afterKind === 'sim' ? 'Simulation (local, no AI)' : preview!.label;
 
   // --- playback clock -----------------------------------------------------
   useEffect(() => {
@@ -301,7 +301,7 @@ const ComparePreview: React.FC<Props> = ({
   const afterLayer = input && (
     <div className="ups-content" style={contentBox}>
       {afterKind === 'sim' && <canvas ref={simCanvasRef} style={{ left: 0, top: 0, width: '100%', height: '100%' }} data-automation-id="upscale-after-simulation" />}
-      {afterKind === 'image' && <img src={preview!.url} alt="Vorschau" style={{ left: 0, top: 0, width: '100%', height: '100%' }} data-automation-id="upscale-after-image" />}
+      {afterKind === 'image' && <img src={preview!.url} alt="Preview" style={{ left: 0, top: 0, width: '100%', height: '100%' }} data-automation-id="upscale-after-image" />}
       {afterKind === 'video' && <video ref={afterVideoRef} src={preview!.url} muted playsInline style={{ left: 0, top: 0, width: '100%', height: '100%' }} data-automation-id="upscale-after-video" />}
     </div>
   );
@@ -324,8 +324,8 @@ const ComparePreview: React.FC<Props> = ({
       {!input && (
         <div className="ups-empty">
           <Clapperboard />
-          <strong>Videos oder Bilder hierher ziehen</strong>
-          <span>oder links über „Hinzufügen“ aus Datei, Media-Bin oder Bibliothek wählen</span>
+          <strong>Drag videos or images here</strong>
+          <span>or choose from a file, the Media Bin or the library with “Add” on the left</span>
         </div>
       )}
       {input && view.mode === 'single' && (
@@ -355,7 +355,7 @@ const ComparePreview: React.FC<Props> = ({
             onPointerDown={onDividerDown}
             onDoubleClick={(event) => { event.stopPropagation(); onViewChange({ wipe: 0.5 }); }}
             role="slider"
-            aria-label="Vergleichsteiler"
+            aria-label="Comparison divider"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(view.wipe * 100)}
@@ -372,11 +372,11 @@ const ComparePreview: React.FC<Props> = ({
       )}
       {input && (
         <div className="ups-zoombar" onPointerDown={(event) => event.stopPropagation()} onDoubleClick={(event) => event.stopPropagation()}>
-          <button type="button" className="ups-icon-btn" title="Verkleinern" onClick={() => setZoom(Math.max(0.05, rect.scale / 1.5))} data-automation-id="upscale-zoom-out"><ZoomOut /></button>
-          <button type="button" className="ups-icon-btn" aria-pressed={view.zoom === 'fit'} title="Einpassen" onClick={() => setZoom('fit')} data-automation-id="upscale-zoom-fit"><Maximize /></button>
+          <button type="button" className="ups-icon-btn" title="Zoom out" onClick={() => setZoom(Math.max(0.05, rect.scale / 1.5))} data-automation-id="upscale-zoom-out"><ZoomOut /></button>
+          <button type="button" className="ups-icon-btn" aria-pressed={view.zoom === 'fit'} title="Fit" onClick={() => setZoom('fit')} data-automation-id="upscale-zoom-fit"><Maximize /></button>
           <button type="button" className="ups-icon-btn" aria-pressed={view.zoom === 1} onClick={() => setZoom(1)} data-automation-id="upscale-zoom-100">100 %</button>
           <button type="button" className="ups-icon-btn" aria-pressed={view.zoom === 2} onClick={() => setZoom(2)} data-automation-id="upscale-zoom-200">200 %</button>
-          <button type="button" className="ups-icon-btn" title="Vergrößern" onClick={() => setZoom(Math.min(16, rect.scale * 1.5))} data-automation-id="upscale-zoom-in"><ZoomIn /></button>
+          <button type="button" className="ups-icon-btn" title="Zoom in" onClick={() => setZoom(Math.min(16, rect.scale * 1.5))} data-automation-id="upscale-zoom-in"><ZoomIn /></button>
           <span className="ups-icon-btn ups-tc" style={{ cursor: 'default' }} data-automation-id="upscale-zoom-label">{zoomPercent} %</span>
         </div>
       )}

@@ -45,15 +45,15 @@ export const parseNumeric = (text: string): number | null => {
   return Number.isFinite(value) ? value : null;
 };
 
-const fmt = (value: number, digits: number) => value.toFixed(digits).replace('.', ',');
+const fmt = (value: number, digits: number) => value.toFixed(digits);
 
-/** Header line like Blender's: "D: 1,250 m (1,250 m) entlang X" / "Drehung: 45° um Z" / "Skalierung: 2,000". */
+/** Header line like Blender's: "Move: 1.250 m along X" / "Rotate: 45.0° around Z" / "Scale: 2.000". */
 export const describeModal = (kind: ModalKind, value: number, constraint: Constraint, typed: string) => {
-  const axisLabel = constraint.axis ? (constraint.plane ? ` (Ebene ohne ${constraint.axis.toUpperCase()})` : ` entlang ${constraint.axis.toUpperCase()}`) : '';
-  const typedLabel = typed ? ` [${typed.replace('.', ',')}]` : '';
-  if (kind === 'grab') return `Verschieben: ${fmt(value, 3)} m${axisLabel}${typedLabel}`;
-  if (kind === 'rotate') return `Drehen: ${fmt(value, 1)}°${constraint.axis ? ` um ${constraint.axis.toUpperCase()}` : ''}${typedLabel}`;
-  return `Skalieren: ${fmt(value, 3)}${axisLabel}${typedLabel}`;
+  const axisLabel = constraint.axis ? (constraint.plane ? ` (plane without ${constraint.axis.toUpperCase()})` : ` along ${constraint.axis.toUpperCase()}`) : '';
+  const typedLabel = typed ? ` [${typed}]` : '';
+  if (kind === 'grab') return `Move: ${fmt(value, 3)} m${axisLabel}${typedLabel}`;
+  if (kind === 'rotate') return `Rotate: ${fmt(value, 1)}°${constraint.axis ? ` around ${constraint.axis.toUpperCase()}` : ''}${typedLabel}`;
+  return `Scale: ${fmt(value, 3)}${axisLabel}${typedLabel}`;
 };
 
 /** Ctrl while moving snaps: 0.1 m, 5°, 0.1 scale steps (Blender increments). */

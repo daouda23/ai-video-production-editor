@@ -53,7 +53,7 @@ test('transform, rotation and clip-property keyframes over MCP', async () => {
     const get = await mcp.call('effect_controls_get', { animatedOnly: true });
     assert.equal(get.playheadLocalTime, 1);
     assert.equal((get.tracks as unknown[]).length, 1);
-    assert.ok((get.exportWarnings as string[]).some((w) => /Drehung/.test(w)));
+    assert.ok((get.exportWarnings as string[]).some((w) => /Rotation/.test(w)));
 
     const removedOne = await mcp.call('keyframe_remove', { property: 'rotation', time: 1 });
     assert.equal(removedOne.removed, 1);

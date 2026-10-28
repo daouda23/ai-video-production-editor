@@ -7,13 +7,13 @@ import type { ReferenceItem, ShotPrompt } from '../types';
 import type { StageState } from '../scene/stageModel.ts';
 import { shotRows, type ShotRow } from './shotList.ts';
 
-export const BLOCKING_NOTE_PREFIX = 'Kameraplan:';
+export const BLOCKING_NOTE_PREFIX = 'Camera plan:';
 
 /** Plain-language camera note for prompts (no marketing words). */
 export const cameraPromptHint = (row: ShotRow): string => {
-  const parts = [`${row.sizeLabel}`, `${Math.round(row.lensMm)} mm`, `Kamerahöhe ${row.heightM.toFixed(1).replace('.', ',')} m`];
-  if (row.angleLabel && row.angleLabel !== 'Augenhöhe') parts.push(row.angleLabel);
-  if (row.moveLabel && row.moveLabel !== 'Statisch') parts.push(row.moveLabel);
+  const parts = [`${row.sizeLabel}`, `${Math.round(row.lensMm)} mm`, `Camera height ${row.heightM.toFixed(1).replace('.', ',')} m`];
+  if (row.angleLabel && row.angleLabel !== 'Eye level') parts.push(row.angleLabel);
+  if (row.moveLabel && row.moveLabel !== 'Static') parts.push(row.moveLabel);
   return parts.join(', ');
 };
 
@@ -45,7 +45,7 @@ export const syncStoryboard = (
   for (const row of rows) {
     const note = `${BLOCKING_NOTE_PREFIX} ${row.code} – ${cameraPromptHint(row)}`;
     const characters = row.subjects.map((s) => castName(s.id)).filter(Boolean);
-    const cameraAngle = `${englishSize[row.size || ''] || 'shot'}, ${Math.round(row.lensMm)}mm lens, camera height ${row.heightM.toFixed(1)} m${row.angleLabel && row.angleLabel !== 'Augenhöhe' ? `, ${row.angleLabel}` : ''}`;
+    const cameraAngle = `${englishSize[row.size || ''] || 'shot'}, ${Math.round(row.lensMm)}mm lens, camera height ${row.heightM.toFixed(1)} m${row.angleLabel && row.angleLabel !== 'Eye level' ? `, ${row.angleLabel}` : ''}`;
     const frame = opts.frames?.[row.id] || row.frameUrl || undefined;
     const existingIdx = row.storyboardShot ? list.findIndex((s) => s.shot === row.storyboardShot) : -1;
     if (existingIdx >= 0) {

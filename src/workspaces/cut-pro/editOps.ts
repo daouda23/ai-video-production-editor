@@ -248,15 +248,15 @@ const unlockedIds = (tracks: CutTrack[]) => new Set(tracks.filter((track) => !tr
 
 const checkTrack = (tracks: CutTrack[], trackId: string | null, source: EditSource): EditFailure | CutTrack => {
     const track = trackId ? tracks.find((entry) => entry.id === trackId) : null;
-    if (!track || track.isLocked) return { ok: false, reason: 'no-track', message: 'Keine freigeschaltete Zielspur.' };
-    if ((source.mediaType === 'audio') !== (track.type === 'audio')) return { ok: false, reason: 'no-track', message: 'Die Zielspur passt nicht zum Medientyp.' };
+    if (!track || track.isLocked) return { ok: false, reason: 'no-track', message: 'No enabled target track.' };
+    if ((source.mediaType === 'audio') !== (track.type === 'audio')) return { ok: false, reason: 'no-track', message: 'The target track does not match the media type.' };
     return track;
 };
 
 const validSource = (source: EditSource | null): source is EditSource =>
     Boolean(source && source.mediaId && Number.isFinite(source.sourceIn) && Number.isFinite(source.sourceOut) && source.sourceOut > source.sourceIn + EPS);
 
-const invalidSource: EditFailure = { ok: false, reason: 'invalid', message: 'Keine gültige Quelle (In/Out prüfen).' };
+const invalidSource: EditFailure = { ok: false, reason: 'invalid', message: 'No valid source (check In/Out).' };
 
 /* ─── Smart edit buttons ─── */
 
@@ -297,7 +297,7 @@ export function rippleOverwrite<T extends CutClip>(clips: T[], tracks: CutTrack[
     const track = checkTrack(tracks, trackId, source);
     if ('ok' in track) return track;
     const target = clipAt(clips, track.id, playhead);
-    if (!target) return { ok: false, reason: 'no-clip', message: 'Unter dem Playhead liegt auf der Zielspur kein Clip.' };
+    if (!target) return { ok: false, reason: 'no-clip', message: 'No clip on the target track under the playhead.' };
     const length = sourceLength(source);
     const delta = length - lengthOf(target);
     const unlocked = unlockedIds(tracks);
@@ -322,12 +322,12 @@ export function closeUp<T extends CutClip>(
     const visual = clips.filter((clip) => video.some((track) => track.id === clip.trackId));
     const topMost = [...video].reverse().map((track) => clipAt(visual, track.id, playhead)).find(Boolean) || null;
     const base = (baseTrackId ? clipAt(visual, baseTrackId, playhead) : null) || topMost;
-    if (!base) return { ok: false, reason: 'no-clip', message: 'Unter dem Playhead liegt kein Videoclip.' };
+    if (!base) return { ok: false, reason: 'no-clip', message: 'No video clip under the playhead.' };
     const from = Math.max(base.start, options.range ? options.range.start : playhead);
     const to = Math.min(base.end, options.range ? options.range.end : base.end);
-    if (to - from < MIN_CLIP_LENGTH) return { ok: false, reason: 'invalid', message: 'Der Bereich für die Nahaufnahme ist zu kurz.' };
+    if (to - from < MIN_CLIP_LENGTH) return { ok: false, reason: 'invalid', message: 'The range for the close-up is too short.' };
     const target = freeTrackAbove(clips, tracks, base.trackId, from, to);
-    if (!target) return { ok: false, reason: 'needs-track', needsTrack: 'video', message: 'Keine freie Videospur darüber.' };
+    if (!target) return { ok: false, reason: 'needs-track', needsTrack: 'video', message: 'No free video track above.' };
     const scale = options.scale ?? CLOSE_UP_SCALE;
     const copy = cropClip({ ...base, id: makeId(), trackId: target.id }, from, to);
     delete (copy as CutClip).transitionOut;
@@ -343,7 +343,7 @@ export function placeOnTop<T extends CutClip>(clips: T[], tracks: CutTrack[], so
         const audio = tracks.filter((track) => track.type === 'audio' && !track.isLocked);
         const start = Math.max(0, playhead);
         const free = audio.find((track) => isRangeFree(clips, track.id, start, start + sourceLength(source)));
-        if (!free) return { ok: false, reason: 'needs-track', needsTrack: 'audio', message: 'Keine freie Audiospur.' };
+        if (!free) return { ok: false, reason: 'needs-track', needsTrack: 'audio', message: 'No free audio track.' };
         const clip = createClip<T>(source, free.id, start, makeId());
         return { ok: true, clips: [...clips, clip], selectId: clip.id, playhead: start, trackId: free.id };
     }
@@ -353,7 +353,7 @@ export function placeOnTop<T extends CutClip>(clips: T[], tracks: CutTrack[], so
     let topIndex = -1;
     video.forEach((track, index) => { if (!isRangeFree(clips, track.id, start, end)) topIndex = index; });
     const target = video.slice(topIndex + 1).find((track) => !track.isLocked && isRangeFree(clips, track.id, start, end)) || null;
-    if (!target) return { ok: false, reason: 'needs-track', needsTrack: 'video', message: 'Keine freie Videospur darüber.' };
+    if (!target) return { ok: false, reason: 'needs-track', needsTrack: 'video', message: 'No free video track above.' };
     const clip = createClip<T>(source, target.id, start, makeId());
     return { ok: true, clips: [...clips, clip], selectId: clip.id, playhead: start, trackId: target.id };
 }
@@ -376,7 +376,7 @@ export function sourceOverwrite<T extends CutClip>(
     const end = start + sourceLength(trimmed);
     if (source.mediaType === 'audio') return placeOnTop(clips, tracks, trimmed, start, makeId);
     const target = freeTrackAbove(clips, tracks, baseTrackId, start, end);
-    if (!target) return { ok: false, reason: 'needs-track', needsTrack: 'video', message: 'Keine freie Videospur darüber.' };
+    if (!target) return { ok: false, reason: 'needs-track', needsTrack: 'video', message: 'No free video track above.' };
     const clip = createClip<T>(trimmed, target.id, start, makeId());
     return { ok: true, clips: [...clips, clip], selectId: clip.id, playhead, trackId: target.id };
 }

@@ -128,7 +128,7 @@ const PanelMenu: React.FC<{ node: DockGroup; ctx: DockContext }> = ({ node, ctx 
                 }}
                 aria-haspopup="menu"
                 aria-expanded={open}
-                title={`Menü: ${PRO_PANELS[node.active].label}`}
+                title={`Menu: ${PRO_PANELS[node.active].label}`}
                 data-automation-id={`pp.panel.${node.active}.menu`}
             >
                 <Menu size={12} />
@@ -136,10 +136,10 @@ const PanelMenu: React.FC<{ node: DockGroup; ctx: DockContext }> = ({ node, ctx 
             {open && (
                 <div className="ppx-menu__list ppx-panelmenu__list" role="menu" style={{ position: 'fixed', left: pos.left, top: pos.top, right: 'auto' }}>
                     <button type="button" role="menuitem" className="ppx-menu__item" onClick={run(() => ctx.dispatch({ type: 'toggleMaximize', groupId: node.id }))} data-automation-id={`pp.panel.${node.active}.menu.maximize`}>
-                        <span className="ppx-menu__check" />{ctx.state.maximizedGroupId === node.id ? 'Wiederherstellen' : 'Bedienfeld maximieren'}
+                        <span className="ppx-menu__check" />{ctx.state.maximizedGroupId === node.id ? 'Restore' : 'Maximize panel'}
                     </button>
                     <button type="button" role="menuitem" className="ppx-menu__item" onClick={run(() => ctx.dispatch({ type: 'closePanel', panel: node.active }))} data-automation-id={`pp.panel.${node.active}.menu.close`}>
-                        <span className="ppx-menu__check" />Bedienfeld schließen
+                        <span className="ppx-menu__check" />Close panel
                     </button>
                     {targets.length > 0 && <div className="ppx-menu__sep" />}
                     {targets.map((group) => (
@@ -151,7 +151,7 @@ const PanelMenu: React.FC<{ node: DockGroup; ctx: DockContext }> = ({ node, ctx 
                             onClick={run(() => ctx.dispatch({ type: 'moveTab', panel: node.active, toGroupId: group.id }))}
                             data-automation-id={`pp.panel.${node.active}.menu.move.${group.id}`}
                         >
-                            <span className="ppx-menu__check" />Verschieben zu „{PRO_PANELS[group.active].label}“
+                            <span className="ppx-menu__check" />Move to “{PRO_PANELS[group.active].label}”
                         </button>
                     ))}
                 </div>
@@ -211,7 +211,7 @@ const GroupView: React.FC<{ node: DockGroup; ctx: DockContext }> = ({ node, ctx 
                                     dispatch({ type: 'focusPanel', panel });
                                 }}
                                 onDoubleClick={() => dispatch({ type: 'toggleMaximize', groupId: node.id })}
-                                title={`${PRO_PANELS[panel].hint} · ziehen zum Andocken, Doppelklick maximiert`}
+                                title={`${PRO_PANELS[panel].hint} · drag to dock, double-click maximizes`}
                                 data-automation-id={`pp.tab.${panel}`}
                             >
                                 {PRO_PANELS[panel].label}
@@ -226,7 +226,7 @@ const GroupView: React.FC<{ node: DockGroup; ctx: DockContext }> = ({ node, ctx 
                             type="button"
                             className="ppx-icon"
                             onClick={() => dispatch({ type: 'toggleMaximize', groupId: node.id })}
-                            title={maximized ? 'Wiederherstellen (`)' : 'Maximieren (`)'}
+                            title={maximized ? 'Restore (`)' : 'Maximize (`)'}
                             data-automation-id={`pp.group.${node.id}.maximize`}
                         >
                             {maximized ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
@@ -235,7 +235,7 @@ const GroupView: React.FC<{ node: DockGroup; ctx: DockContext }> = ({ node, ctx 
                             type="button"
                             className="ppx-icon"
                             onClick={() => dispatch({ type: 'closePanel', panel: node.active })}
-                            title={`${PRO_PANELS[node.active].label} schließen (über „Fenster“ wieder öffnen)`}
+                            title={`${PRO_PANELS[node.active].label} close (reopen from “Window”)`}
                             data-automation-id={`pp.panel.${node.active}.close`}
                         >
                             <X size={12} />

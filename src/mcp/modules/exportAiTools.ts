@@ -49,7 +49,7 @@ const timelineDuration = (ctx: StudioToolContext) => ctx.getState().timelineClip
 const jobCtx = (ctx: StudioToolContext) => {
   const projectPath = ctx.getState().projectPath;
   const name = projectPath ? projectPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '';
-  return { timelineDuration: timelineDuration(ctx), stillTime: ctx.getState().playheadPosition, timelineName: name || 'Sequenz' };
+  return { timelineDuration: timelineDuration(ctx), stillTime: ctx.getState().playheadPosition, timelineName: name || 'Sequence' };
 };
 const findJob = (jobId: unknown) => {
   const job = getExportState().queue.find((entry) => entry.id === jobId);
@@ -114,7 +114,7 @@ export const EXPORT_AI_TOOL_MODULE: StudioToolModule = {
     },
     {
       name: 'export_ai_queue_retry',
-      description: 'Reset a finished, failed or cancelled job to waiting ("Job zurücksetzen"); render it with export_queue_render_all.',
+      description: 'Reset a finished, failed or cancelled job to waiting ("Reset job"); render it with export_queue_render_all.',
       writes: true,
       parameters: { type: 'object', properties: { jobId: { type: 'string' } }, required: ['jobId'] },
       handler: (args, ctx) => {

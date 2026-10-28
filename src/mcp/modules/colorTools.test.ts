@@ -42,14 +42,14 @@ test('nodes: primaries create node 01, add/reorder/enable/remove', async () => {
     assert.equal(node.params.gainR, 1.1);
     assert.equal(node.params.saturation, 1.2);
 
-    const added = await mcp.call('color_node_add', { label: 'Haut', params: { hue: 5 } });
+    const added = await mcp.call('color_node_add', { label: 'Skin', params: { hue: 5 } });
     assert.equal(added.index, 1);
     const fx = await mcp.call('color_node_add', { effectId: 'buckswood-post-plugins.optics-lab', afterIndex: -1 });
     assert.equal(fx.index, 0);
     let list = await mcp.call('color_nodes_list');
     const nodes = list.nodes as Array<{ kind: string; label: string; changedParams?: Record<string, unknown> }>;
     assert.deepEqual(nodes.map((n) => n.kind), ['effect', 'color', 'color']);
-    assert.equal(nodes[2].label, '03 Haut');
+    assert.equal(nodes[2].label, '03 Skin');
     assert.equal(nodes[1].changedParams?.temperature, 10);
 
     await mcp.call('color_node_reorder', { nodeIndex: 0, to: 2 });
@@ -109,12 +109,12 @@ test('copy grade, stills grab/apply/remove, grade reset', async () => {
     assert.notEqual(state.timelineClips[1].fxStack![0].id, state.timelineClips[0].fxStack![0].id);
 
     const unmount = registerLiveCommands({ 'color.viewer.thumbnail': () => 'data:image/jpeg;base64,AAA' });
-    const grab = await mcp.call('color_still_grab', { name: 'Abend' });
+    const grab = await mcp.call('color_still_grab', { name: 'Evening' });
     unmount();
     assert.equal(grab.thumbnail, true);
     const stills = await mcp.call('color_stills_list');
     const entry = (stills.stills as Array<{ id: string; name: string }>).find((s) => s.id === grab.stillId);
-    assert.equal(entry?.name, 'Abend');
+    assert.equal(entry?.name, 'Evening');
     await mcp.call('color_still_apply', { stillId: grab.stillId, all: true });
     assert.equal(state.timelineClips[2].fxStack![0].params.gainY, 1.3);
 

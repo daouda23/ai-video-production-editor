@@ -79,7 +79,7 @@ export const PHOTO_TOOL_MODULE: StudioToolModule = {
           name ||= item.name;
         }
         if (!url) throw new Error('Pass mediaId or url.');
-        return live(ctx, PHOTO_LIVE.open, { url, name: name || 'Bild.png', asLayer: Boolean(args.asLayer) }, 15000);
+        return live(ctx, PHOTO_LIVE.open, { url, name: name || 'Image.png', asLayer: Boolean(args.asLayer) }, 15000);
       },
     },
     {
@@ -224,7 +224,7 @@ export const PHOTO_TOOL_MODULE: StudioToolModule = {
     },
     {
       name: 'photo_smart_filter_apply',
-      description: 'Bake the smart filters of a raster layer into its pixels ("Effekte ins Bild übernehmen").',
+      description: 'Bake the smart filters of a raster layer into its pixels ("Apply effects to image").',
       writes: true,
       parameters: { type: 'object', properties: { layerId } },
       handler: (args, ctx) => live(ctx, PHOTO_LIVE.smartFilterApply, args, 30000),
@@ -276,7 +276,7 @@ export const PHOTO_TOOL_MODULE: StudioToolModule = {
     },
     {
       name: 'photo_merge_down',
-      description: 'Merge the layer (active when omitted) into the layer below ("Auf eine Ebene reduzieren").',
+      description: 'Merge the layer (active when omitted) into the layer below ("Merge down").',
       writes: true,
       parameters: { type: 'object', properties: { layerId } },
       handler: (args, ctx) => live(ctx, PHOTO_LIVE.mergeDown, args, 30000),

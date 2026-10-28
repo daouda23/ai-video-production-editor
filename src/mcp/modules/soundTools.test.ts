@@ -215,7 +215,7 @@ test('every sound command is published as an MCP tool with a schema and a test c
       assert.ok(CASES[tool.name], `missing MCP test case for ${tool.name}`);
       assert.ok(tool.description.length > 20, `${tool.name} needs a description`);
     }
-    assert.match(listed.get('sound_clip_delete')!.description, /LÖSCHT/);
+    assert.match(listed.get('sound_clip_delete')!.description, /DELETES/);
   } finally {
     mcp.dispose();
   }
@@ -240,7 +240,7 @@ test('MCP sound tools report bad input as ok:false with a German message', async
   try {
     const bad = await mcp.call('sound_mixer_set_fader', { trackId: 'zzz', db: 0 });
     assert.equal(bad.ok, false);
-    assert.match(String(bad.message), /Spur/);
+    assert.match(String(bad.message), /Track/);
     const badView = await mcp.call('sound_view_set', { view: 'logic' });
     assert.equal(badView.ok, false);
     const empty = await mcp.call('sound_measure_loudness', { start: 3, end: 3 });
@@ -281,7 +281,7 @@ test('locked tracks refuse clip edits over MCP', async () => {
     ] as const) {
       const r = await mcp.call(name, args as Record<string, unknown>);
       assert.equal(r.ok, false, name);
-      assert.match(String(r.message), /gesperrt/, name);
+      assert.match(String(r.message), /locked/, name);
     }
     assert.equal(state.timelineClips.find((c) => c.id === 'c1')!.start, 1, 'clip untouched');
     // the other track stays editable, and unlocking works

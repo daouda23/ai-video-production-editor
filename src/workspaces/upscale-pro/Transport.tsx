@@ -20,7 +20,7 @@ type Props = {
 };
 
 const PREVIEW_LENGTHS = [
-  { value: 0, label: 'Einzelbild' },
+  { value: 0, label: 'Still frame' },
   { value: 1, label: '1 s' },
   { value: 2, label: '2 s' },
   { value: 3, label: '3 s' },
@@ -75,36 +75,36 @@ const Transport: React.FC<Props> = ({
           <div className="ups-track-ticks" />
           <div className="ups-track-range" style={{ left: pct(range.start), width: `calc(${pct(range.end)} - ${pct(range.start)})` }} />
           {previewSpan && <div className="ups-track-preview" style={{ left: pct(previewSpan.start), width: `max(2px, calc(${pct(previewSpan.end)} - ${pct(previewSpan.start)}))` }} />}
-          <div className="ups-track-handle" style={{ left: pct(range.start) }} onPointerDown={(event) => dragFrom(event, setIn)} title="In-Punkt ziehen" data-automation-id="upscale-in-handle" />
-          <div className="ups-track-handle" style={{ left: pct(range.end) }} onPointerDown={(event) => dragFrom(event, setOut)} title="Out-Punkt ziehen" data-automation-id="upscale-out-handle" />
+          <div className="ups-track-handle" style={{ left: pct(range.start) }} onPointerDown={(event) => dragFrom(event, setIn)} title="Drag In point" data-automation-id="upscale-in-handle" />
+          <div className="ups-track-handle" style={{ left: pct(range.end) }} onPointerDown={(event) => dragFrom(event, setOut)} title="Drag Out point" data-automation-id="upscale-out-handle" />
           <div className="ups-track-head" style={{ left: pct(time) }} />
         </div>
       )}
       <div className="ups-transport-row">
         {isVideo ? (
           <>
-            <button type="button" className="ups-icon-btn" title="Bild zurück (←)" onClick={() => { onPlaying(false); onTime(Math.max(0, time - frame)); }} data-automation-id="upscale-frame-back"><StepBack /></button>
-            <button type="button" className="ups-icon-btn" title="Wiedergabe (Leertaste)" onClick={() => onPlaying(!playing)} data-automation-id="upscale-play">{playing ? <Pause /> : <Play />}</button>
-            <button type="button" className="ups-icon-btn" title="Bild vor (→)" onClick={() => { onPlaying(false); onTime(Math.min(duration, time + frame)); }} data-automation-id="upscale-frame-forward"><StepForward /></button>
+            <button type="button" className="ups-icon-btn" title="Previous frame (←)" onClick={() => { onPlaying(false); onTime(Math.max(0, time - frame)); }} data-automation-id="upscale-frame-back"><StepBack /></button>
+            <button type="button" className="ups-icon-btn" title="Play (Space)" onClick={() => onPlaying(!playing)} data-automation-id="upscale-play">{playing ? <Pause /> : <Play />}</button>
+            <button type="button" className="ups-icon-btn" title="Next frame (→)" onClick={() => { onPlaying(false); onTime(Math.min(duration, time + frame)); }} data-automation-id="upscale-frame-forward"><StepForward /></button>
             <span className="ups-tc" data-automation-id="upscale-timecode">{formatTimecode(time, fps)}</span>
-            <span className="ups-dim ups-tc" data-automation-id="upscale-frame-counter">Bild {currentFrame} / {totalFrames}</span>
-            <button type="button" className="ups-icon-btn" title="In-Punkt setzen (I)" onClick={() => setIn(time)} data-automation-id="upscale-set-in">In</button>
+            <span className="ups-dim ups-tc" data-automation-id="upscale-frame-counter">Image {currentFrame} / {totalFrames}</span>
+            <button type="button" className="ups-icon-btn" title="Set In point (I)" onClick={() => setIn(time)} data-automation-id="upscale-set-in">In</button>
             <span className="ups-tc ups-faint">{formatTimecode(range.start, fps)}</span>
-            <button type="button" className="ups-icon-btn" title="Out-Punkt setzen (O)" onClick={() => setOut(time)} data-automation-id="upscale-set-out">Out</button>
+            <button type="button" className="ups-icon-btn" title="Set Out point (O)" onClick={() => setOut(time)} data-automation-id="upscale-set-out">Out</button>
             <span className="ups-tc ups-faint">{formatTimecode(range.end, fps)}</span>
           </>
         ) : (
-          <span className="ups-dim">{input ? 'Bild · keine Zeitachse' : 'Kein Eingang gewählt'}</span>
+          <span className="ups-dim">{input ? 'Image · no timeline' : 'No input chosen'}</span>
         )}
         <span className="ups-spacer" />
         {isVideo && (
-          <select className="ups-select" value={previewLength} onChange={(event) => onPreviewLength(Number(event.target.value))} aria-label="Vorschaulänge" data-automation-id="upscale-preview-length">
+          <select className="ups-select" value={previewLength} onChange={(event) => onPreviewLength(Number(event.target.value))} aria-label="Preview length" data-automation-id="upscale-preview-length">
             {PREVIEW_LENGTHS.map((entry) => <option key={entry.value} value={entry.value}>{entry.label}</option>)}
           </select>
         )}
         {previewHint && <span className="ups-faint" data-automation-id="upscale-preview-hint">{previewHint}</span>}
         <button type="button" className="ups-btn" disabled={!canPreview} onClick={onRenderPreview} data-automation-id="upscale-render-preview">
-          <Sparkles /> Vorschau rendern
+          <Sparkles />Render preview
         </button>
       </div>
     </div>

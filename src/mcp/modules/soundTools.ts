@@ -69,9 +69,9 @@ export const applySoundPatchToContext = async (ctx: StudioToolContext, patch: So
 
 const runAsTool = async (ctx: StudioToolContext, command: SoundCommand, args: Record<string, unknown>): Promise<StudioToolResult> => {
   const outcome = runSoundCommand(soundState(ctx), command.id, args);
-  if (outcome.ok === false) throw new Error('error' in outcome ? outcome.error : 'Befehl fehlgeschlagen.');
-  if (!('patch' in outcome)) throw new Error('Befehl fehlgeschlagen.');
-  if (command.group === 'Ansicht') openSound(ctx)();
+  if (outcome.ok === false) throw new Error('error' in outcome ? outcome.error : 'Command failed.');
+  if (!('patch' in outcome)) throw new Error('Command failed.');
+  if (command.group === 'View') openSound(ctx)();
   const changed = await applySoundPatchToContext(ctx, outcome.patch);
   const result = outcome.patch.result && typeof outcome.patch.result === 'object' ? (outcome.patch.result as Record<string, unknown>) : {};
   return { command: command.id, changed, ...result };
@@ -81,7 +81,7 @@ const READ_ONLY_GROUPS = new Set<SoundCommand['group']>([]);
 
 const commandTools: StudioTool[] = SOUND_COMMANDS.map((command) => ({
   name: soundToolName(command.id),
-  description: `${command.label}: ${command.description}${command.shortcut ? ` Tastenkürzel im Sound-Workspace: ${command.shortcut}.` : ''}`,
+  description: `${command.label}: ${command.description}${command.shortcut ? ` Shortcuts in the Sound workspace: ${command.shortcut}.` : ''}`,
   parameters: command.params as unknown as JsonSchema,
   writes: !READ_ONLY_GROUPS.has(command.group) && command.group !== 'Transport',
   destructive: command.id === 'clip.delete' || command.id === 'edit.deleteSelection' || command.id === 'mix.reset' || command.id === 'bus.remove',
@@ -104,7 +104,7 @@ const describeTrack = (mix: SoundMix, track: TimelineTrack, detail: boolean) => 
     outputBusId: t.outputBusId,
     role: t.role,
     automationMode: t.automationMode,
-    automation: Object.fromEntries(Object.entries(t.automation).map(([k, v]) => [k, detail ? v : `${v?.length ?? 0} Punkte`])),
+    automation: Object.fromEntries(Object.entries(t.automation).map(([k, v]) => [k, detail ? v : `${v?.length ?? 0} points`])),
     inserts: t.inserts.map((slot) => (detail ? slot : { id: slot.id, kind: slot.kind, bypass: slot.bypass })),
     sends: t.sends,
     recordArm: t.recordArm,
@@ -135,7 +135,7 @@ const rangeArgs = (ctx: StudioToolContext, args: Record<string, unknown>) => {
   const start = typeof args.start === 'number' && Number.isFinite(args.start) ? Math.max(0, args.start) : sel?.start ?? 0;
   const endRaw = typeof args.end === 'number' && Number.isFinite(args.end) ? args.end : sel?.end ?? contentEnd(ctx);
   const end = Math.min(start + 4 * 3600, endRaw);
-  if (!(end > start)) throw new Error(s.timelineClips.length ? 'Leerer Bereich: end muss nach start liegen.' : 'Die Timeline hat keine Audio-Clips.');
+  if (!(end > start)) throw new Error(s.timelineClips.length ? 'Empty range: end must come after start.' : 'The timeline has no audio clips.');
   return { start, end };
 };
 
@@ -143,21 +143,21 @@ const fmt = (value: number, digits = 1) => (Number.isFinite(value) ? Number(valu
 
 const RANGE_PROPS = {
   start: { type: 'number', description: 'Start in Sekunden (Standard: 0)' },
-  end: { type: 'number', description: 'Ende in Sekunden (Standard: Ende des letzten Audio-Clips)' },
-  useSelection: { type: 'boolean', description: 'Den Selector-Bereich der Sound-Seite verwenden' },
+  end: { type: 'number', description: 'End in seconds (default: end of the last audio clip)' },
+  useSelection: { type: 'boolean', description: 'Use the selector range of the Sound page' },
 } as const;
 
 const readTools: StudioTool[] = [
   {
     name: 'sound_get_mix',
-    description: 'Liest die Mischung: Spuren (Fader dB, Pan, Mute/Solo, Ausgang, Stem-Rolle, Inserts, Sends, Automation), Busse, Master (Limiter, Ziel-LUFS), ADR-Cues und den Zustand der Sound-Seite (Ansicht fairlight/protools/studio, Edit-Modus, Werkzeug, Auswahl). Mit trackId alle Details einer Spur (Insert-Parameter, Automationspunkte).',
-    parameters: { type: 'object', properties: { trackId: { type: 'string', description: 'optional: nur diese Spur mit allen Details' } } },
+    description: 'Reads the mix: tracks (fader dB, pan, mute/solo, output, stem role, inserts, sends, automation), buses, master (limiter, target LUFS), ADR cues and the state of the Sound page (view fairlight/protools/studio, edit mode, tool, selection). With trackId, all details of one track (insert parameters, automation points).',
+    parameters: { type: 'object', properties: { trackId: { type: 'string', description: 'optional: only this track with all details' } } },
     handler: (args, ctx) => {
       const s = ctx.getState();
       const mix = readSoundMix(ctx);
       if (typeof args.trackId === 'string') {
         const track = s.timelineTracks.find((t) => t.id === args.trackId);
-        if (!track) throw new Error(`Spur „${args.trackId}“ gibt es nicht.`);
+        if (!track) throw new Error(`Track “${args.trackId}” does not exist.`);
         const clips = s.timelineClips.filter((c) => c.trackId === track.id).map((c) => ({
           id: c.id, mediaId: c.mediaId, start: c.start, end: c.end, clipGainDb: fmt(gainToDb(c.volume ?? 1), 2),
           volumeKeyframes: (c.keyframes ?? []).filter((k) => k.property === 'volume').length,
@@ -178,8 +178,8 @@ const readTools: StudioTool[] = [
   },
   {
     name: 'sound_list_commands',
-    description: 'Listet alle Sound-Befehle mit Gruppe, Beschreibung, Tastenkürzel, Parametern und dem passenden MCP-Toolnamen.',
-    parameters: { type: 'object', properties: { group: { type: 'string', description: 'optional: Mixer, Bus, Clip, Bearbeiten, Automation, Ansicht, Transport, ADR, Studio' } } },
+    description: 'Lists all sound commands with group, description, shortcut, parameters and the matching MCP tool name.',
+    parameters: { type: 'object', properties: { group: { type: 'string', description: 'optional: Mixer, Bus, Clip, Edit, Automation, View, Transport, ADR, Studio' } } },
     handler: (args) => ({
       commands: describeSoundCommands()
         .filter((c) => typeof args.group !== 'string' || c.group === args.group)
@@ -188,8 +188,8 @@ const readTools: StudioTool[] = [
   },
   {
     name: 'sound_get_meters',
-    description: 'Misst Pegel an einer Zeitposition (Standard: Abspielposition) über ein kurzes Fenster: Peak und RMS in dBFS je Spur, Bus und Master, Gain Reduction der Dynamics, dazu Momentary-Loudness des Masters. Gerechnet mit derselben Engine wie die Wiedergabe.',
-    parameters: { type: 'object', properties: { time: { type: 'number', description: 'Sekunden, Standard: Abspielposition' }, window: { type: 'number', description: 'Messfenster in Sekunden (0.05–3, Standard 0.4)' } } },
+    description: 'Measures levels at a time position (default: playhead) over a short window: peak and RMS in dBFS per track, bus and master, dynamics gain reduction, plus the master momentary loudness. Computed with the same engine as playback.',
+    parameters: { type: 'object', properties: { time: { type: 'number', description: 'Seconds, default: playhead' }, window: { type: 'number', description: 'Measurement window in seconds (0.05–3, default 0.4)' } } },
     handler: async (args, ctx) => {
       const time = typeof args.time === 'number' && Number.isFinite(args.time) ? Math.max(0, args.time) : ctx.getState().playheadPosition;
       const windowSec = Math.min(3, Math.max(0.05, typeof args.window === 'number' ? args.window : 0.4));
@@ -218,20 +218,20 @@ const readTools: StudioTool[] = [
         tracks: Object.fromEntries(Object.entries(engine.meters.tracks).map(([id, m]) => [id, read(m)])),
         buses: Object.fromEntries(Object.entries(engine.meters.buses).map(([id, m]) => [id, read(m)])),
         master: { ...read(engine.meters.master), lufs: fmt(meter.summary().integratedLufs) },
-        ...(missing.length ? { warnings: missing.map((n) => `Audio von „${n}“ nicht ladbar, zählt als stumm.`) } : {}),
+        ...(missing.length ? { warnings: missing.map((n) => `Audio from “${n}” cannot be loaded, counts as silent.`) } : {}),
       };
     },
   },
   {
     name: 'sound_measure_loudness',
-    description: 'Misst die Loudness der Mischung nach EBU R128 / ITU-R BS.1770 über einen Bereich: Integrated LUFS, Loudness Range (LU), max. Momentary/Short-term, True Peak und Sample Peak (dBTP/dBFS), Abstand zum Master-Ziel. Optional nur ein Stem (dialog, music, effects, ambience).',
+    description: 'Measures mix loudness per EBU R128 / ITU-R BS.1770 over a range: integrated LUFS, loudness range (LU), max. momentary/short-term, true peak and sample peak (dBTP/dBFS), distance to the master target. Optionally one stem only (dialog, music, effects, ambience).',
     parameters: { type: 'object', properties: { ...RANGE_PROPS, stem: { type: 'string', description: 'optional: dialog | music | effects | ambience' } } },
     handler: async (args, ctx) => {
       const { start, end } = rangeArgs(ctx, args);
       const { missing } = await ensureSources(ctx, start, end);
       let mix = readSoundMix(ctx);
       if (typeof args.stem === 'string') {
-        if (!(STEM_ROLES as string[]).includes(args.stem)) throw new Error('stem muss dialog, music, effects oder ambience sein.');
+        if (!(STEM_ROLES as string[]).includes(args.stem)) throw new Error('stem must be dialog, music, effects or ambience.');
         mix = stemMix(mix, STEM_BUS_IDS[args.stem as keyof typeof STEM_BUS_IDS], ctx.getState().timelineTracks.map((t) => t.id));
       }
       const result = bounceMix(engineDoc(ctx, mix), (id) => sourceCache.get(id), { sampleRate: ENGINE_SAMPLE_RATE, start, end });
@@ -244,24 +244,24 @@ const readTools: StudioTool[] = [
         truePeakDbtp: fmt(l.truePeakDb), samplePeakDbfs: fmt(l.samplePeakDb),
         targetLufs: target,
         offsetToTargetLu: Number.isFinite(l.integratedLufs) ? fmt(target - l.integratedLufs) : null,
-        summary: Number.isFinite(l.integratedLufs) ? `${l.integratedLufs.toFixed(1)} LUFS (Ziel ${target}), True Peak ${formatDb(l.truePeakDb)} dBTP` : 'Stille im Bereich.',
-        ...(missing.length ? { warnings: missing.map((n) => `Audio von „${n}“ nicht ladbar, zählt als stumm.`) } : {}),
+        summary: Number.isFinite(l.integratedLufs) ? `${l.integratedLufs.toFixed(1)} LUFS (target ${target}), True Peak ${formatDb(l.truePeakDb)} dBTP` : 'Silence in the range.',
+        ...(missing.length ? { warnings: missing.map((n) => `Audio from “${n}” cannot be loaded, counts as silent.`) } : {}),
       };
     },
   },
   {
     name: 'sound_mixdown',
-    description: 'Rendert die Mischung (oder Stems) als WAV mit derselben Engine wie die Wiedergabe und legt das Ergebnis im Medienpool ab; mit Projektordner wird die Datei unter exports/audio/ gespeichert. Optional normalisiert auf das Master-Ziel (LUFS, True-Peak-begrenzt).',
+    description: 'Renders the mix (or stems) as WAV with the same engine as playback and puts the result in the media pool; with a project folder the file is saved under exports/audio/. Optionally normalized to the master target (LUFS, true-peak limited).',
     writes: true,
     parameters: {
       type: 'object',
       properties: {
         ...RANGE_PROPS,
-        stems: { type: 'boolean', description: 'Zusätzlich je Stem-Bus (Dialog, Musik, Effekte, Atmo) eine Datei' },
-        normalize: { type: 'boolean', description: 'Auf Master-Ziel-LUFS normalisieren (Standard: aus)' },
-        bitDepth: { type: 'number', description: '16, 24 (Standard) oder 32 (float)' },
-        name: { type: 'string', description: 'Dateiname ohne Endung (Standard: Mixdown)' },
-        addToMediaPool: { type: 'boolean', description: 'Ergebnis in den Medienpool legen (Standard: ja)' },
+        stems: { type: 'boolean', description: 'Also one file per stem bus (dialogue, music, effects, ambience)' },
+        normalize: { type: 'boolean', description: 'Normalize to the master target LUFS (default: off)' },
+        bitDepth: { type: 'number', description: '16, 24 (default) or 32 (float)' },
+        name: { type: 'string', description: 'File name without extension (default: Mixdown)' },
+        addToMediaPool: { type: 'boolean', description: 'Put the result in the media pool (default: yes)' },
       },
     },
     handler: async (args, ctx) => {
@@ -303,7 +303,7 @@ const readTools: StudioTool[] = [
       }
       return {
         start, end, sampleRate: ENGINE_SAMPLE_RATE, files,
-        ...(missing.length ? { warnings: missing.map((n) => `Audio von „${n}“ nicht ladbar, im Mixdown stumm.`) } : {}),
+        ...(missing.length ? { warnings: missing.map((n) => `Audio from “${n}” cannot be loaded, silent in the mixdown.`) } : {}),
       };
     },
   },

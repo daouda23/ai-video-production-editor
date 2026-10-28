@@ -1316,7 +1316,7 @@ const Timeline: React.FC<TimelineProps> = (props) => {
       {/* Header: trim modes · timecode · tools */}
       <div className="tl-header">
         {isPro && (
-          <div className="tl-header__group tl-header__tc-pro" title="Abspielposition">
+          <div className="tl-header__group tl-header__tc-pro" title="Playhead">
             <TimecodeField value={playheadPosition} onCommit={onPlayheadUpdate} automationId="pp.timeline.timecode" />
           </div>
         )}
@@ -1353,7 +1353,7 @@ const Timeline: React.FC<TimelineProps> = (props) => {
           <button
             type="button"
             className="edit-icon-btn"
-            title={isPro ? 'Clip an der Abspielposition teilen (Cmd/Ctrl+K)' : 'Split clip at playhead (C)'}
+            title={isPro ? 'Split the clip at the playhead (Cmd/Ctrl+K)' : 'Split clip at playhead (C)'}
             data-automation-id="pp.timeline.split"
             onClick={() => clipAtPlayhead && onSplitClip(clipAtPlayhead.id, playheadPosition)}
             disabled={!clipAtPlayhead}
@@ -1374,7 +1374,7 @@ const Timeline: React.FC<TimelineProps> = (props) => {
             <button
               type="button"
               className={`edit-icon-btn ${linkedSelection ? 'edit-icon-btn--accent' : ''}`}
-              title={`Verknüpfte Auswahl ${linkedSelection ? 'an' : 'aus'}: Bild- und Tonclip desselben Mediums gemeinsam verschieben`}
+              title={`Linked selection ${linkedSelection ? 'an' : 'aus'}: move the picture and sound clips of the same media together`}
               aria-pressed={linkedSelection}
               data-automation-id="pp.timeline.linked"
               onClick={onToggleLinkedSelection}
@@ -1386,7 +1386,7 @@ const Timeline: React.FC<TimelineProps> = (props) => {
             <button
               type="button"
               className="edit-icon-btn"
-              title="Marke an der Abspielposition hinzufügen (M)"
+              title="Add marker at the playhead (M)"
               data-automation-id="pp.timeline.add-marker"
               onClick={onAddMarker}
             >
@@ -1571,7 +1571,7 @@ const Timeline: React.FC<TimelineProps> = (props) => {
                             onToggleTrackVisibility(track.id);
                           }}
                           className={`tl-toggle ${isHiddenTrack ? 'tl-toggle--hidden' : ''}`}
-                          title={isHiddenTrack ? 'Spur im Programmmonitor einblenden' : 'Spur im Programmmonitor ausblenden (nur Vorschau, nicht Export)'}
+                          title={isHiddenTrack ? 'Show the track in the program monitor' : 'Hide the track in the program monitor (preview only, not export)'}
                           aria-pressed={!isHiddenTrack}
                           data-automation-id={`pp.timeline.track.${targetLabel}.eye`}
                         >
@@ -1633,7 +1633,7 @@ const Timeline: React.FC<TimelineProps> = (props) => {
                           return next;
                         });
                       }}
-                      title="Ziehen: Spurhöhe ändern · Doppelklick: minimieren / zurücksetzen"
+                      title="Drag: change track height · Double-click: minimize / reset"
                       data-automation-id={`pp.timeline.track.${targetLabel}.resize`}
                     />
                   </div>

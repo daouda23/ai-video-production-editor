@@ -20,7 +20,7 @@ const even = (value: number) => Math.max(2, Math.round(value / 2) * 2);
 const canvasToPngBytes = (canvas: HTMLCanvasElement) =>
   new Promise<Uint8Array>((resolve, reject) => {
     canvas.toBlob(async (blob) => {
-      if (!blob) return reject(new Error('PNG konnte nicht erzeugt werden'));
+      if (!blob) return reject(new Error('PNG could not be created'));
       resolve(new Uint8Array(await blob.arrayBuffer()));
     }, 'image/png');
   });
@@ -53,10 +53,10 @@ export async function renderCompToMedia(
       const t = animated ? options.time : options.range.start <= options.time && options.time <= options.range.end ? options.time : options.range.start;
       await media.prepare(t);
       const canvas = renderComposition(comp, t, media.resolve, { width, height });
-      options.onProgress?.({ frame: 1, frameCount: 1, note: 'Standbild' });
+      options.onProgress?.({ frame: 1, frameCount: 1, note: 'Still' });
       if (bridge && folderPath) {
         const saved = await bridge.bakeImage({ folderPath, name: resultId(comp), bytes: await canvasToPngBytes(canvas) });
-        if (!saved.ok || !saved.url) throw new Error(saved.error || 'PNG konnte nicht gespeichert werden');
+        if (!saved.ok || !saved.url) throw new Error(saved.error || 'PNG could not be saved');
         return { ...base, id: resultId(comp), type: 'image', url: saved.url };
       }
       return { ...base, id: resultId(comp), type: 'image', url: canvas.toDataURL('image/png') };
@@ -66,11 +66,11 @@ export async function renderCompToMedia(
     const last = timeToFrame(comp, options.range.end);
     const frameCount = Math.max(1, last - first + 1);
     const begin = await bridge.bakeVideoBegin({ folderPath, name: resultId(comp), width, height, fps: comp.fps });
-    if (!begin.ok || !begin.sessionId) throw new Error(begin.error || 'Render konnte nicht gestartet werden');
+    if (!begin.ok || !begin.sessionId) throw new Error(begin.error || 'Render could not be started');
     const sessionId = begin.sessionId;
     try {
       for (let index = 0; index < frameCount; index += 1) {
-        if (options.signal?.aborted) throw new DOMException('Render abgebrochen', 'AbortError');
+        if (options.signal?.aborted) throw new DOMException('Render cancelled', 'AbortError');
         const t = frameToTime(comp, first + index);
         await media.prepare(t);
         const canvas = renderComposition(comp, t, media.resolve, { width, height });
@@ -84,7 +84,7 @@ export async function renderCompToMedia(
       throw error;
     }
     const end = await bridge.bakeVideoEnd({ sessionId });
-    if (!end.ok || !end.url) throw new Error(end.error || 'Render fehlgeschlagen');
+    if (!end.ok || !end.url) throw new Error(end.error || 'Render failed');
     return { ...base, id: resultId(comp), type: 'video', url: end.url, duration: frameCount / Math.max(1, comp.fps) };
   } finally {
     media.dispose();

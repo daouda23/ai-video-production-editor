@@ -247,7 +247,7 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
     const img = new Image();
     if (cors && /^https?:/i.test(url)) img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('Bild konnte nicht geladen werden.'));
+    img.onerror = () => reject(new Error('Image could not be loaded.'));
     img.src = url;
   });
   return attempt(true).catch(() => attempt(false));

@@ -349,7 +349,7 @@ export const SoundTimeline: React.FC<{
                   className="snd-tl__lane snd-tl__lane--auto"
                   style={{ height: 40 }}
                   data-automation-id={`${id}-auto-${track.id}`}
-                  title="Volume-Automation · Klick: Punkt setzen · ⌥-Klick: Punkte im Umkreis löschen"
+                  title="Volume automation · Click: set a point · ⌥-click: delete points nearby"
                   onPointerDown={(e) => {
                     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                     const t = snap(timeAt(e.clientX));
@@ -375,7 +375,7 @@ export const SoundTimeline: React.FC<{
           </React.Fragment>
         );
       })}
-      {rows.length === 0 && <div className="snd-hint" style={{ gridColumn: '1 / -1', padding: 20 }}>Keine Audiospuren. „+ Spur“ oder im Studio-Browser Ton erzeugen.</div>}
+      {rows.length === 0 && <div className="snd-hint" style={{ gridColumn: '1 / -1', padding: 20 }}>No audio tracks. Use “+ Track” or generate sound in the Studio browser.</div>}
     </div>
   );
 };

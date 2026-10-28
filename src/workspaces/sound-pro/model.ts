@@ -126,7 +126,7 @@ export const MAX_SENDS = 5;
 export const MAX_FADE_SEC = 600;
 
 export const STEM_ROLES: StemRole[] = ['dialog', 'music', 'effects', 'ambience'];
-export const STEM_LABELS: Record<StemRole, string> = { dialog: 'Dialog', music: 'Musik', effects: 'Effekte', ambience: 'Atmo' };
+export const STEM_LABELS: Record<StemRole, string> = { dialog: 'Dialog', music: 'Music', effects: 'Effects', ambience: 'Atmo' };
 export const STEM_BUS_IDS: Record<StemRole, string> = { dialog: 'sub-dialog', music: 'sub-music', effects: 'sub-effects', ambience: 'sub-ambience' };
 
 /* ─── numbers ─── */

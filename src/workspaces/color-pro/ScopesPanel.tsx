@@ -6,8 +6,8 @@ export type ScopeMode = 'waveform' | 'parade' | 'vectorscope' | 'histogram';
 export const SCOPE_LABELS: Record<ScopeMode, string> = {
   waveform: 'Waveform',
   parade: 'RGB-Parade',
-  vectorscope: 'Vektorskop',
-  histogram: 'Histogramm',
+  vectorscope: 'Vectorscope',
+  histogram: 'Histogram',
 };
 
 const drawDensity = (

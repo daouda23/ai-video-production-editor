@@ -86,7 +86,7 @@ const Overview: React.FC<Pick<CutTimelineProps, 'clips' | 'tracks' | 'mediaItems
     for (let t = 0; t * pps <= width && ticks.length < 400; t += step) ticks.push(t);
     return (
         <div className="cutp-ov" data-automation-id="cut-timeline-overview">
-            <div className="cutp-ov__label">Gesamt</div>
+            <div className="cutp-ov__label">Total</div>
             <div
                 ref={ref}
                 className="cutp-ov__lanes"
@@ -290,7 +290,7 @@ const CutTimeline: React.FC<CutTimelineProps> = (props) => {
                             className={`cutp-dt__head cutp-dt__head--${track.type} ${track.id === activeTrackId ? 'cutp-dt__head--active' : ''} ${track.isLocked ? 'cutp-dt__head--locked' : ''}`}
                             style={{ height: rowHeights[row] }}
                             onClick={() => onSetActiveTrack(track.id)}
-                            title={`${labels[track.id]}${track.isLocked ? ' (gesperrt)' : ''} – als Zielspur setzen`}
+                            title={`${labels[track.id]}${track.isLocked ? ' (locked)' : ''} – set as target track`}
                             data-automation-id={`cut-track-${track.id}`}
                         >
                             {labels[track.id]}

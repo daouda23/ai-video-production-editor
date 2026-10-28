@@ -125,7 +125,7 @@ const PostWorkspace: React.FC<PostWorkspaceProps> = (props) => {
     const pageTabs = (
         <div className="cp-seg" role="tablist" aria-label="Color-Seite">
             <button type="button" role="tab" aria-selected={activeTab === 'color'} onClick={() => setActiveTab('color')} className={`cp-btn ${activeTab === 'color' ? 'cp-btn--on' : ''}`} data-automation-id="color.tab.color">
-                <ColorIcon className="w-4 h-4" /> Farbe
+                <ColorIcon className="w-4 h-4" />Color
             </button>
             <button type="button" role="tab" aria-selected={activeTab === 'audio'} onClick={() => setActiveTab('audio')} className={`cp-btn ${activeTab === 'audio' ? 'cp-btn--on' : ''}`} data-automation-id="color.tab.audio">
                 <AudioIcon className="w-4 h-4" /> Audio

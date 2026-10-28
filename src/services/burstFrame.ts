@@ -177,9 +177,9 @@ export function checkBurstFramePrompt(prompt: string): BurstCheck {
   const problems: string[] = [];
   const shotLines = prompt.split('\n').filter((line) => /^\s*\[\d{2}\]/.test(line));
   const numbers = shotLines.map((line) => Number(line.trim().slice(1, 3)));
-  if (shotLines.length !== 20 || numbers.some((n, i) => n !== i + 1)) problems.push(`Es müssen genau 20 nummerierte Shots [01]–[20] sein (gefunden: ${shotLines.length}).`);
+  if (shotLines.length !== 20 || numbers.some((n, i) => n !== i + 1)) problems.push(`There must be exactly 20 numbered shots [01]–[20] (found: ${shotLines.length}).`);
   const missingLock = shotLines.filter((line) => !/still, locked frame/i.test(line)).length;
-  if (missingLock) problems.push(`${missingLock} Shot-Zeile(n) ohne „still, locked frame“.`);
+  if (missingLock) problems.push(`${missingLock} shot line(s) without “still, locked frame”.`);
   const required: Array<[RegExp, string]> = [
     [/20 distinct static shots in 5 seconds, approximately 0\.25 seconds each/i, '20 distinct static shots … 0.25 seconds each'],
     [/instantaneous hard cuts; no transition frames/i, 'instantaneous hard cuts; no transition frames'],
@@ -188,9 +188,9 @@ export function checkBurstFramePrompt(prompt: string): BurstCheck {
     [/no morphing, cross-dissolves, double exposure,? (or )?blended viewpoints/i, 'no morphing … blended viewpoints'],
     [/continuity lock/i, 'CONTINUITY LOCK'],
   ];
-  for (const [pattern, label] of required) if (!pattern.test(prompt)) problems.push(`Pflichtregel fehlt: ${label}`);
+  for (const [pattern, label] of required) if (!pattern.test(prompt)) problems.push(`Required rule missing: ${label}`);
   const actionWords = shotLines.filter((line) => /\b(turns?|walks?|moves?|raises?|smiles?|speaks?|looks? up|nods?)\b/i.test(line));
-  if (actionWords.length) problems.push(`${actionWords.length} Shot(s) beschreiben eine Handlung über Zeit.`);
+  if (actionWords.length) problems.push(`${actionWords.length} shot(s) describe an action over time.`);
   return { ok: problems.length === 0, problems };
 }
 

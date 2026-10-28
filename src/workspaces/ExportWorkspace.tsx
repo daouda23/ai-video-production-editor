@@ -48,7 +48,7 @@ interface ExportWorkspaceProps {
     soundMix?: unknown;
 }
 
-const CANCELLED = 'Export abgebrochen.';
+const CANCELLED = 'Export cancelled.';
 type ElectronProject = {
     exportVideo?: (payload: { folderPath: string; project: unknown; settings: unknown }) => Promise<{ ok: boolean; outputPath?: string; error?: string }>;
     onExportProgress?: (callback: (progress: Record<string, unknown>) => void) => void;
@@ -117,7 +117,7 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
     );
     const timelineName = useMemo(() => {
         const base = projectPath ? projectPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '';
-        return base || 'Sequenz 01';
+        return base || 'Sequence 01';
     }, [projectPath]);
     const range = resolveRange(settings.range, timelineDuration);
     const fps = settings.video.fps;
@@ -209,35 +209,35 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
             ocioConfigId: s.interchange.ocioConfigId as OpenColorIOConfigId,
             ocioConfigPath: s.interchange.ocioConfigPath,
         };
-        if (job.interchangeFormat !== 'ocio-manifest' && clips.length === 0) throw new Error('Timeline ist leer.');
+        if (job.interchangeFormat !== 'ocio-manifest' && clips.length === 0) throw new Error('The timeline is empty.');
         const vfx = () => buildVfxHandoffManifest({ ...base, handleFrames: s.interchange.vfxHandleFrames, mediaItems: media, timelineClips: clips, timelineTracks: tracks });
         switch (job.interchangeFormat) {
             case 'otio':
                 downloadTextFile(job.fileName, buildOpenTimelineIOFromTimeline({ projectName, fps: video.fps, width: video.width, height: video.height, mediaItems: media, timelineClips: clips, timelineTracks: tracks }), 'application/vnd.opentimelineio+json');
-                return 'OpenTimelineIO für Schnitt- und VFX-Übergabe.';
+                return 'OpenTimelineIO for editorial and VFX handoff.';
             case 'nuke':
                 downloadTextFile(job.fileName, buildNukeScriptFromVfxHandoffManifest(vfx()), 'text/plain');
-                return 'Nuke-Skript mit Read-Nodes, Handles und OCIO-Hinweisen.';
+                return 'Nuke script with Read nodes, handles and OCIO notes.';
             case 'natron':
                 downloadTextFile(job.fileName, buildNatronPythonScriptFromVfxHandoffManifest(vfx()), 'text/x-python');
-                return 'Natron-Python-Skript mit Projekt-Einstellungen und Read-Nodes.';
+                return 'Natron Python script with project settings and Read nodes.';
             case 'vfx-manifest':
                 downloadTextFile(job.fileName, vfx(), 'application/json');
-                return 'VFX-Übergabe-Manifest (Resolve, Nuke, Natron, OpenRV, Blender).';
+                return 'VFX handoff manifest (Resolve, Nuke, Natron, OpenRV, Blender).';
             case 'ocio-manifest':
                 downloadTextFile(job.fileName, buildOpenColorIOManifest(base), 'application/json');
-                return 'OCIO-/ACES-Farbmanifest.';
+                return 'OCIO/ACES color manifest.';
             case 'fcpxml':
             default:
                 downloadTextFile(job.fileName, buildFcpxmlFromTimeline({ projectName, fps: video.fps, width: video.width, height: video.height, mediaItems: media, timelineClips: clips, timelineTracks: tracks }), 'application/xml');
-                return 'FCPXML für Premiere und Resolve.';
+                return 'FCPXML for Premiere and Resolve.';
         }
     };
 
     /** "Schnell (Browser)": real-time MediaRecorder capture of the preview canvas (WebM, no audio). */
     const recordInBrowser = async (job: ExportJob, onProgress: (percent: number, detail: string) => void) => {
         const quickFormat = getQuickExportFormat();
-        if (!quickFormat) throw new Error('Dieser Browser kann kein WebM aufnehmen. Bitte FFmpeg-Export in der Desktop-App nutzen.');
+        if (!quickFormat) throw new Error('This browser cannot record WebM. Please use the FFmpeg export in the desktop app.');
         const video = constrainVideo(job.settings.video);
         setPreviewPlaying(false);
         setRecordingSize({ width: video.width, height: video.height });
@@ -245,7 +245,7 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
         try {
             await wait(500);
             const canvas = playerRef.current?.getCanvas();
-            if (!canvas) throw new Error('Render-Canvas ist nicht verfügbar.');
+            if (!canvas) throw new Error('Render canvas is not available.');
             const stream = canvas.captureStream(Math.max(1, video.fps));
             const recorder = new MediaRecorder(new MediaStream([...stream.getTracks()]), {
                 mimeType: quickFormat.mimeType,
@@ -263,7 +263,7 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
                     const elapsed = (performance.now() - startedAt) / 1000;
                     if (cancelRef.current || elapsed >= total) { resolve(); return; }
                     setPreviewTime(job.range.start + elapsed);
-                    onProgress((elapsed / total) * 100, `Aufnahme ${Math.round(elapsed)} / ${Math.round(total)} s`);
+                    onProgress((elapsed / total) * 100, `Recording ${Math.round(elapsed)} / ${Math.round(total)} s`);
                     requestAnimationFrame(tick);
                 };
                 requestAnimationFrame(tick);
@@ -290,7 +290,7 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
 
     /** Browser fallback for Einzelbild: PNG straight from the preview canvas. */
     const snapshotInBrowser = async (job: ExportJob) => {
-        if (job.settings.still.format !== 'png') throw new Error('EXR, TIFF und DPX gibt es nur in der Desktop-App (FFmpeg).');
+        if (job.settings.still.format !== 'png') throw new Error('EXR, TIFF and DPX are only available in the desktop app (FFmpeg).');
         const video = constrainVideo(job.settings.video);
         setPreviewPlaying(false);
         setRecordingSize({ width: video.width, height: video.height });
@@ -298,9 +298,9 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
         try {
             await wait(600);
             const canvas = playerRef.current?.getCanvas();
-            if (!canvas) throw new Error('Render-Canvas ist nicht verfügbar.');
+            if (!canvas) throw new Error('Render canvas is not available.');
             const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
-            if (!blob) throw new Error('PNG konnte nicht erzeugt werden.');
+            if (!blob) throw new Error('PNG could not be created.');
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -318,9 +318,9 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
     /** FFmpeg render through project:exportVideo (renderTimeline with a `delivery` block). */
     const renderWithFfmpeg = async (job: ExportJob, onProgress: (percent: number, detail: string) => void) => {
         const ipc = electronProject();
-        if (!ipc?.exportVideo) throw new Error('Der FFmpeg-Export braucht die Desktop-App.');
+        if (!ipc?.exportVideo) throw new Error('The FFmpeg export needs the desktop app.');
         const { projectPath: folder, timelineClips: clips, timelineTracks: tracks, mediaItems: media, soundMix: mix } = live.current;
-        if (!folder) throw new Error('Projekt zuerst in einem Ordner speichern, dann exportieren.');
+        if (!folder) throw new Error('Save the project to a folder first, then export.');
         if (job.kind === 'interchange') throw new Error('Interchange jobs are not rendered.');
         const normalizedSettings = buildRenderPayload(job.kind, job.settings, job.range, job.id, job.stillTime);
         const setProgress = (percent: number) => onProgress(percent, '');
@@ -365,7 +365,7 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
                 project: mix ? { ...exportProject, soundMix: mix } : exportProject,
                 settings: normalizedSettings,
             });
-            if (!result.ok || !result.outputPath) throw new Error(result.error || 'Unbekannter Fehler.');
+            if (!result.ok || !result.outputPath) throw new Error(result.error || 'Unknown error.');
             return result.outputPath;
         } finally {
             ipc.removeExportProgressListener?.();
@@ -375,7 +375,7 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
     const executeJob = async (job: ExportJob) => {
         let lastPercent = 0;
         let lastDetail = '';
-        const task: TaskHandle = startTask({ label: `Export · ${job.fileName}`, kind: 'export', provider: job.kind === 'interchange' ? 'text' : job.settings.engine, message: 'Startet …', progress: 0 });
+        const task: TaskHandle = startTask({ label: `Export · ${job.fileName}`, kind: 'export', provider: job.kind === 'interchange' ? 'text' : job.settings.engine, message: 'Starting …', progress: 0 });
         const onProgress = (percent: number, detail: string) => {
             if (percent >= 0) lastPercent = Math.max(0, Math.min(100, percent));
             if (detail) lastDetail = detail;
@@ -390,17 +390,17 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
                 outputPath = job.fileName;
             } else if (job.kind === 'media' && job.settings.engine === 'browser') {
                 outputPath = await recordInBrowser(job, onProgress);
-                detail = 'WebM heruntergeladen.';
+                detail = 'WebM downloaded.';
             } else if (job.kind === 'still' && !electronProject()?.exportVideo) {
                 outputPath = await snapshotInBrowser(job);
-                detail = 'PNG aus der Vorschau heruntergeladen.';
+                detail = 'PNG downloaded from the preview.';
             } else {
                 outputPath = await renderWithFfmpeg(job, onProgress);
                 detail = 'Gespeichert.';
             }
             patchJob(job.id, { status: 'done', progress: 100, detail, outputPath });
-            task.complete(`Gespeichert: ${outputPath}`);
-            setMessage({ text: `Fertig: ${outputPath}`, tone: 'info' });
+            task.complete(`Saved: ${outputPath}`);
+            setMessage({ text: `Done: ${outputPath}`, tone: 'info' });
         } catch (error) {
             const text = error instanceof Error ? error.message : String(error);
             const cancelled = cancelRef.current || text === CANCELLED;
@@ -423,7 +423,7 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
         runningRef.current = true;
         cancelRef.current = false;
         currentJobRef.current = job;
-        patchJob(job.id, { status: 'running', progress: 0, detail: 'Startet …' });
+        patchJob(job.id, { status: 'running', progress: 0, detail: 'Starting …' });
         void executeJob(job).finally(() => {
             runningRef.current = false;
             currentJobRef.current = null;
@@ -493,10 +493,10 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
     };
     const relevantKinds = state.view === 'davinci' ? [state.davinciKind] : DESTINATION_KINDS.filter((kind) => state.enabledDestinations[kind]);
     const exportBlockReason = (() => {
-        if (timelineClips.length === 0) return 'Die Timeline ist leer.';
+        if (timelineClips.length === 0) return 'The timeline is empty.';
         const desktopKinds = relevantKinds.filter((kind) => needsDesktop(kind, settings));
-        if (desktopKinds.length > 0 && !hasElectron) return 'FFmpeg-Export nur in der Desktop-App – im Browser: Vorgabe „Schnell (Browser)“, Einzelbild PNG oder Austauschdateien.';
-        if (desktopKinds.length > 0 && !projectPath) return 'Projekt zuerst in einem Ordner speichern.';
+        if (desktopKinds.length > 0 && !hasElectron) return 'FFmpeg export only in the desktop app – in the browser: preset “Fast (browser)”, single PNG frame or interchange files.';
+        if (desktopKinds.length > 0 && !projectPath) return 'Save the project to a folder first.';
         return null;
     })();
 
@@ -574,10 +574,10 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
                 <span className="xp-topbar__title">Export</span>
                 <span className="xp-topbar__meta">
                     {timelineName} · {timelineClips.length} Clips · {outputFileName(state.view === 'davinci' ? state.davinciKind : state.selectedDestination, settings, settings.interchange.formats[0])}
-                    {summary.running > 0 ? ` · rendert (${summary.overallProgress} %)` : summary.pending > 0 ? ` · ${summary.pending} wartend` : ''}
+                    {summary.running > 0 ? ` · rendering (${summary.overallProgress} %)` : summary.pending > 0 ? ` · ${summary.pending} wartend` : ''}
                 </span>
                 <span className="xp-topbar__spacer" />
-                <div className="xp-seg" role="group" aria-label="Ansicht">
+                <div className="xp-seg" role="group" aria-label="View">
                     <button type="button" className="xp-seg__btn" aria-pressed={state.view === 'premiere'} data-automation-id="export.view.premiere" onClick={() => dispatch('export.view.set', { view: 'premiere' })}>Premiere</button>
                     <button type="button" className="xp-seg__btn" aria-pressed={state.view === 'davinci'} data-automation-id="export.view.davinci" onClick={() => dispatch('export.view.set', { view: 'davinci' })}>DaVinci</button>
                 </div>

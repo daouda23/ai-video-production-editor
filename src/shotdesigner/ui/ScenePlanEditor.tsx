@@ -63,7 +63,7 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
       setShotPrompts: (next: ShotPrompt[]) => propsRef.current.onShotPromptsChange?.(next),
       getReferences: () => propsRef.current.references,
       getSceneMap: () => propsRef.current.sceneMap,
-      getProjectName: () => propsRef.current.projectName || 'Kameraplan',
+      getProjectName: () => propsRef.current.projectName || 'Camera plan',
     };
     bindSceneMapBridge(bridge);
     return () => { if (getBridge() === bridge) bindSceneMapBridge(null); };
@@ -76,7 +76,7 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
   }, []);
   const run = useCallback((id: string, params: Record<string, unknown> = {}) => {
     const out = dispatch(id, params);
-    if (!out.ok) flash(out.error || 'Fehler', true);
+    if (!out.ok) flash(out.error || 'Error', true);
     return out;
   }, [flash]);
 
@@ -278,7 +278,7 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
       if (session.selectedKeyId) run('key.delete', { id: sel, keyId: session.selectedKeyId });
       else dispatchBatch(session.selection.map((id) => ({ command: 'object.delete', params: { id } })));
       updateSession({ selection: [], selectedKeyId: null });
-    } else if (key === 'k' && sel) { const out = run('key.add', { id: sel }); if (out.ok) flash(`Marke bei ${session.timeS.toFixed(1)} s`); }
+    } else if (key === 'k' && sel) { const out = run('key.add', { id: sel }); if (out.ok) flash(`Marker at ${session.timeS.toFixed(1)} s`); }
     else if (key === 'r' && sel) run('object.rotate', { id: sel, delta: e.shiftKey ? -15 : 15 });
     else if (key === 'l' && sel) {
       const cam = stage.cameras.find((c) => c.id === sel);
@@ -302,7 +302,7 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
   const doExport = async (format: SceneMapExportFormat) => {
     setMenu(null);
     try {
-      const out = await exportSceneMap(getHostSafe(), format, { title: projectName || 'Kameraplan', timeS: session.timeS });
+      const out = await exportSceneMap(getHostSafe(), format, { title: projectName || 'Camera plan', timeS: session.timeS });
       downloadBytes(out.data, out.fileName, out.mime);
       flash(`${out.fileName} exportiert${out.note ? ` – ${out.note}` : ''}`);
     } catch (err) {
@@ -312,9 +312,9 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
   const getHostSafe = () => ensureHost((getBridge()?.getSetDesign() ?? setDesign) as StageHost);
   const importOverview = () => {
     const scene = sceneMap?.scenes.find((s) => s.id === sceneMap.activeSceneId) ?? sceneMap?.scenes[0];
-    if (!scene || !scene.elements.length) { flash('Die Übersicht dieser Szene ist leer.', true); return; }
+    if (!scene || !scene.elements.length) { flash('The overview of this scene is empty.', true); return; }
     const out = dispatchBatch(importOverviewScene(scene));
-    if (out.ok) { flash(`${scene.elements.length} Elemente aus der Übersicht übernommen`); requestFit(); } else flash(out.error || 'Fehler', true);
+    if (out.ok) { flash(`${scene.elements.length} elements taken from the overview`); requestFit(); } else flash(out.error || 'Error', true);
   };
   const onBackgroundFile = (file: File | undefined) => {
     if (!file) return;
@@ -338,19 +338,19 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
   const s = view.s;
   const transform = `translate(${size.w / 2 - view.cx * s} ${size.h / 2 - view.cz * s}) scale(${s})`;
   const empty = stage.characters.length === 0 && stage.cameras.length === 0 && host.assets.length === 0;
-  const hint = session.tool === 'wall' ? (wallStart ? 'Klick setzt das Wandende, Doppelklick oder Esc beendet' : 'Klick setzt den Wandanfang (Shift = ohne Raster)')
-    : session.tool === 'character' ? 'Klick setzt eine Figur'
-      : session.tool === 'camera' ? 'Klick setzt eine Kamera – sie richtet sich auf die nächste Figur aus'
-        : session.tool === 'element' ? `Klick setzt: ${PLAN_LIBRARY.find((e) => e.category === session.elementCategory)?.label || 'Element'}` : null;
+  const hint = session.tool === 'wall' ? (wallStart ? 'Click sets the wall end, double-click or Esc finishes' : 'Click sets the wall start (Shift = no grid)')
+    : session.tool === 'character' ? 'Click places a character'
+      : session.tool === 'camera' ? 'Click places a camera – it aims at the nearest character'
+        : session.tool === 'element' ? `Click places: ${PLAN_LIBRARY.find((e) => e.category === session.elementCategory)?.label || 'Element'}` : null;
 
   return (
     <div className="sp-root" data-automation-id="scene-plan">
-      <div className="sp-toolbar" role="toolbar" aria-label="Kameraplan">
-        {toolBtn('select', 'Auswahl', MousePointer2, 'V')}
+      <div className="sp-toolbar" role="toolbar" aria-label="Camera plan">
+        {toolBtn('select', 'Selection', MousePointer2, 'V')}
         {toolBtn('pan', 'Hand', Hand, 'H')}
         {toolBtn('wall', 'Wand', BrickWall, 'W')}
         <div className="sp-menu">
-          <button type="button" className="sp-btn" aria-pressed={session.tool === 'element'} data-automation-id="scene-plan-tool-element" onClick={() => setMenu(menu === 'library' ? null : 'library')}><Square className="sp-icon" />Objekt ▾</button>
+          <button type="button" className="sp-btn" aria-pressed={session.tool === 'element'} data-automation-id="scene-plan-tool-element" onClick={() => setMenu(menu === 'library' ? null : 'library')}><Square className="sp-icon" />Object ▾</button>
           {menu === 'library' && (
             <div className="sp-menu__list" style={{ width: 260 }}>
               <div className="sp-lib">
@@ -363,23 +363,23 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
             </div>
           )}
         </div>
-        {toolBtn('character', 'Figur', User, 'F')}
-        {toolBtn('camera', 'Kamera', Camera, 'C')}
+        {toolBtn('character', 'Character', User, 'F')}
+        {toolBtn('camera', 'Camera', Camera, 'C')}
         <span className="sp-sep" />
-        <button type="button" className="sp-btn" disabled={!history.canUndo} title="Rückgängig (⌘Z)" data-automation-id="scene-plan-undo" onClick={() => undo()}><Undo2 className="sp-icon" /></button>
-        <button type="button" className="sp-btn" disabled={!history.canRedo} title="Wiederholen (⇧⌘Z)" data-automation-id="scene-plan-redo" onClick={() => redo()}><Redo2 className="sp-icon" /></button>
-        <button type="button" className="sp-btn" disabled={!session.selection.length} title="Duplizieren (⌘D)" data-automation-id="scene-plan-duplicate" onClick={() => session.selection[0] && run('object.duplicate', { id: session.selection[0] })}><Copy className="sp-icon" /></button>
-        <button type="button" className="sp-btn" disabled={!session.selection.length} title="Löschen (Entf)" data-automation-id="scene-plan-delete" onClick={() => { dispatchBatch(session.selection.map((id) => ({ command: 'object.delete', params: { id } }))); updateSession({ selection: [] }); }}><Trash2 className="sp-icon" /></button>
+        <button type="button" className="sp-btn" disabled={!history.canUndo} title="Undo (⌘Z)" data-automation-id="scene-plan-undo" onClick={() => undo()}><Undo2 className="sp-icon" /></button>
+        <button type="button" className="sp-btn" disabled={!history.canRedo} title="Redo (⇧⌘Z)" data-automation-id="scene-plan-redo" onClick={() => redo()}><Redo2 className="sp-icon" /></button>
+        <button type="button" className="sp-btn" disabled={!session.selection.length} title="Duplicate (⌘D)" data-automation-id="scene-plan-duplicate" onClick={() => session.selection[0] && run('object.duplicate', { id: session.selection[0] })}><Copy className="sp-icon" /></button>
+        <button type="button" className="sp-btn" disabled={!session.selection.length} title="Delete (Del)" data-automation-id="scene-plan-delete" onClick={() => { dispatchBatch(session.selection.map((id) => ({ command: 'object.delete', params: { id } }))); updateSession({ selection: [] }); }}><Trash2 className="sp-icon" /></button>
         <span className="sp-sep" />
-        {toggle('showCones', 'Sichtkegel', Eye)}
-        {toggle('showPaths', 'Bewegungspfade', Route)}
+        {toggle('showCones', 'View cones', Eye)}
+        {toggle('showPaths', 'Motion paths', Route)}
         {toggle('showGrid', 'Raster', Grid3x3)}
-        {toggle('showLabels', 'Beschriftungen', Tag)}
-        {toggle('showFrames', 'Storyboard-Frames im Plan', ImageIcon)}
-        <button type="button" className="sp-btn" title="Alles zeigen (0)" data-automation-id="scene-plan-fit" onClick={fit}><Maximize className="sp-icon" /></button>
+        {toggle('showLabels', 'Labels', Tag)}
+        {toggle('showFrames', 'Storyboard frames in the plan', ImageIcon)}
+        <button type="button" className="sp-btn" title="Show all (0)" data-automation-id="scene-plan-fit" onClick={fit}><Maximize className="sp-icon" /></button>
         <span className="sp-sep" />
         <div className="sp-menu">
-          <button type="button" className="sp-btn" data-automation-id="scene-plan-templates" onClick={() => setMenu(menu === 'template' ? null : 'template')}><LayoutTemplate className="sp-icon" />Vorlage ▾</button>
+          <button type="button" className="sp-btn" data-automation-id="scene-plan-templates" onClick={() => setMenu(menu === 'template' ? null : 'template')}><LayoutTemplate className="sp-icon" />Template ▾</button>
           {menu === 'template' && (
             <div className="sp-menu__list">
               {TEMPLATES.map((t) => (
@@ -390,19 +390,19 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
             </div>
           )}
         </div>
-        <button type="button" className="sp-btn" title="Elemente der klassischen Übersicht übernehmen" data-automation-id="scene-plan-import-overview" onClick={importOverview}><FileInput className="sp-icon" />Aus Übersicht</button>
-        <label className="sp-btn" title="Grundriss-Zeichnung als Hintergrund" data-automation-id="scene-plan-background">
-          <ImageIcon className="sp-icon" />Hintergrund
+        <button type="button" className="sp-btn" title="Take elements from the classic overview" data-automation-id="scene-plan-import-overview" onClick={importOverview}><FileInput className="sp-icon" />From overview</button>
+        <label className="sp-btn" title="Floor plan drawing as background" data-automation-id="scene-plan-background">
+          <ImageIcon className="sp-icon" />Background
           <input type="file" accept="image/*" hidden onChange={(e) => onBackgroundFile(e.target.files?.[0])} />
         </label>
-        <button type="button" className="sp-btn" title="Stand einfrieren" data-automation-id="scene-plan-freeze" onClick={() => { const out = run('scene.freeze', {}); if (out.ok) flash(`${String(out.result?.name)} gespeichert`); }}><Snowflake className="sp-icon" /></button>
+        <button type="button" className="sp-btn" title="Freeze snapshot" data-automation-id="scene-plan-freeze" onClick={() => { const out = run('scene.freeze', {}); if (out.ok) flash(`${String(out.result?.name)} gespeichert`); }}><Snowflake className="sp-icon" /></button>
         <span style={{ flex: 1 }} />
         <button type="button" className="sp-btn" data-automation-id="scene-plan-play" onClick={() => updateSession({ playing: !session.playing })}>{session.playing ? <Pause className="sp-icon" /> : <Play className="sp-icon" />}{session.timeS.toFixed(1).replace('.', ',')} s</button>
         <div className="sp-menu">
           <button type="button" className="sp-btn sp-btn--primary" data-automation-id="scene-plan-export" onClick={() => setMenu(menu === 'export' ? null : 'export')}><Download className="sp-icon" />Export ▾</button>
           {menu === 'export' && (
             <div className="sp-menu__list" style={{ right: 0, left: 'auto' }}>
-              {([['pdf', 'PDF', 'Grundriss, Shot-Liste und Storyboard'], ['png', 'PNG', 'Grundriss als Bild'], ['svg', 'SVG', 'Grundriss als Vektorgrafik'], ['xlsx', 'Excel', 'Shot-Liste'], ['csv', 'CSV', 'Shot-Liste'], ['json', 'JSON', 'Ganze Szene']] as Array<[SceneMapExportFormat, string, string]>).map(([f, label, sub]) => (
+              {([['pdf', 'PDF', 'Floor plan, shot list and storyboard'], ['png', 'PNG', 'Floor plan as image'], ['svg', 'SVG', 'Floor plan as vector graphic'], ['xlsx', 'Excel', 'Shot-Liste'], ['csv', 'CSV', 'Shot-Liste'], ['json', 'JSON', 'Whole scene']] as Array<[SceneMapExportFormat, string, string]>).map(([f, label, sub]) => (
                 <button key={f} type="button" className="sp-menu__item" data-automation-id={`scene-plan-export-${f}`} onClick={() => void doExport(f)}>{label}<small>{sub}</small></button>
               ))}
             </div>
@@ -413,7 +413,7 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
       <div className="sp-main">
         <ScenePlanLeft references={references} onPlace={(ref) => {
           const out = run('character.add', { name: ref.name, x: Math.round(view.cx * 4) / 4, z: Math.round(view.cz * 4) / 4, referenceId: ref.id });
-          if (out.ok) flash(`${ref.name} gesetzt – ziehen zum Platzieren`);
+          if (out.ok) flash(`${ref.name} set – drag to place`);
         }} stage={stage} />
         <div ref={wrapRef} className="sp-canvas" tabIndex={0} onKeyDown={onKeyDown} onWheel={onWheel} data-automation-id="scene-plan-canvas" onClick={() => setMenu(null)}>
           <svg
@@ -438,12 +438,12 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
           {empty && session.tool === 'select' && (
             <div className="sp-empty">
               <div className="sp-empty__card">
-                <strong>Kameraplan</strong>
-                <p>Grundriss zeichnen, Figuren und Kameras setzen, Bewegungen über die Zeit merken – die Shot-Liste entsteht dabei von selbst. Dasselbe Set erscheint im 3D-Set-Design.</p>
+                <strong>Camera plan</strong>
+                <p>Draw the floor plan, place characters and cameras, record movement over time – the shot list builds itself. The same set appears in 3D Set Design.</p>
                 <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button type="button" className="sp-btn sp-btn--primary" data-automation-id="scene-plan-empty-room" onClick={() => { run('plan.addRoom', { width: 7, depth: 5, openSide: 'south' }); requestFit(); }}>Raum anlegen</button>
-                  <button type="button" className="sp-btn" data-automation-id="scene-plan-empty-dialog" onClick={() => { dispatchBatch([{ command: 'plan.addRoom', params: { width: 7, depth: 5 } }, { command: 'scene.applyTemplate', params: { templateId: 'dialog-two' } }]); requestFit(); }}>Beispiel: Dialog zu zweit</button>
-                  {sceneMap?.scenes.some((sc) => sc.elements.length) && <button type="button" className="sp-btn" onClick={importOverview}>Aus Übersicht übernehmen</button>}
+                  <button type="button" className="sp-btn sp-btn--primary" data-automation-id="scene-plan-empty-room" onClick={() => { run('plan.addRoom', { width: 7, depth: 5, openSide: 'south' }); requestFit(); }}>Create room</button>
+                  <button type="button" className="sp-btn" data-automation-id="scene-plan-empty-dialog" onClick={() => { dispatchBatch([{ command: 'plan.addRoom', params: { width: 7, depth: 5 } }, { command: 'scene.applyTemplate', params: { templateId: 'dialog-two' } }]); requestFit(); }}>Example: two-person dialogue</button>
+                  {sceneMap?.scenes.some((sc) => sc.elements.length) && <button type="button" className="sp-btn" onClick={importOverview}>Take from overview</button>}
                 </div>
               </div>
             </div>
@@ -451,7 +451,7 @@ const ScenePlanEditor: React.FC<ScenePlanEditorProps> = (props) => {
           <div className="sp-hud">
             <span className="sp-hud__chip">{hover ? `x ${hover.x.toFixed(2).replace('.', ',')} · z ${hover.z.toFixed(2).replace('.', ',')} m` : 'Rad: Zoom · Leertaste: Abspielen'}</span>
             <span className="sp-hud__chip">{Math.round(view.s)} px/m</span>
-            <span className="sp-hud__chip">{stage.shots.length} Shots · {stage.cameras.length} Kameras</span>
+            <span className="sp-hud__chip">{stage.shots.length} Shots · {stage.cameras.length}Cameras</span>
           </div>
           {status && <div className={`sp-status ${status.error ? 'sp-status--error' : ''}`} role="status">{status.text}</div>}
         </div>
@@ -512,12 +512,12 @@ const ScenePlanLeft: React.FC<{ references: ReferenceItem[]; onPlace: (ref: Refe
         ))}
       </div>
       <div className="sp-h">Cast</div>
-      {cast.length === 0 && <div style={{ color: 'var(--sp-muted)' }}>Keine Figuren im Projekt. Mit „Figur“ (F) frei setzen.</div>}
+      {cast.length === 0 && <div style={{ color: 'var(--sp-muted)' }}>No characters in the project. Place one freely with “Character” (F).</div>}
       {cast.map((ref) => (
-        <button key={ref.id} type="button" className="sp-cast" data-automation-id={`scene-plan-cast-${ref.id}`} onClick={() => onPlace(ref)} title="In den Plan setzen">
+        <button key={ref.id} type="button" className="sp-cast" data-automation-id={`scene-plan-cast-${ref.id}`} onClick={() => onPlace(ref)} title="Place in the plan">
           {ref.imageUrl ? <img src={ref.imageUrl} alt="" /> : <span className="sp-cast__dot" />}
           <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{ref.name}</span>
-          {placed.has(ref.id) && <span className="sp-badge">im Plan</span>}
+          {placed.has(ref.id) && <span className="sp-badge">in the plan</span>}
         </button>
       ))}
     </div>

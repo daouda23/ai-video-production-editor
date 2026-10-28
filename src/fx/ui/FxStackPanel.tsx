@@ -12,13 +12,13 @@ import { TrackNavigator, TrackStopwatch, type KeyframeBinding } from './Keyframe
 import './fxPanel.css';
 
 const CATEGORY_LABELS: Record<FxCategory, string> = {
-  lens: 'Objektiv',
+  lens: 'Lens',
   film: 'Film',
-  grain: 'Korn',
-  color: 'Farbe',
-  repair: 'Reparatur',
+  grain: 'Grain',
+  color: 'Color',
+  repair: 'Repair',
   diagnostic: 'Diagnose',
-  stylize: 'Stil',
+  stylize: 'Style',
 };
 
 type Props = {
@@ -90,7 +90,7 @@ const ScrubValue: React.FC<{
       aria-valuemax={param.max}
       tabIndex={0}
       data-automation-id={automationId}
-      title="Ziehen zum Ändern, Klick zum Eintippen"
+      title="Drag to change, click to type"
       onPointerDown={(e) => {
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
         drag.current = { x: e.clientX, start: value, moved: false };
@@ -176,7 +176,7 @@ const ParamRow: React.FC<{
         <span className="fxp-label">{param.label}</span>
         <span className="fxp-control">{control}</span>
         {animatable ? <TrackNavigator binding={keyframing} trackKey={trackKey!} label={param.label} automationId={`${automationId}.keys`} /> : <span />}
-        <button type="button" className="fxp-reset" disabled={isDefault} onClick={reset} title="Zurücksetzen" aria-label={`${param.label} zurücksetzen`}>
+        <button type="button" className="fxp-reset" disabled={isDefault} onClick={reset} title="Reset" aria-label={`${param.label} reset`}>
           ↺
         </button>
       </div>
@@ -186,14 +186,14 @@ const ParamRow: React.FC<{
     <div className={`fxp-row ${param.type === 'float' || param.type === 'int' ? 'fxp-row--numeric' : ''}`} title={param.hint}>
       <span className="fxp-label">{param.label}</span>
       <span className="fxp-control">{control}</span>
-      <button type="button" className="fxp-reset" disabled={isDefault} onClick={reset} title="Zurücksetzen" aria-label={`${param.label} zurücksetzen`}>
+      <button type="button" className="fxp-reset" disabled={isDefault} onClick={reset} title="Reset" aria-label={`${param.label} reset`}>
         ↺
       </button>
     </div>
   );
 };
 
-const MIX_PARAM: Extract<FxParamDef, { type: 'float' }> = { id: 'mix', label: 'Deckkraft (Mix)', type: 'float', default: 1, min: 0, max: 1, step: 0.001 };
+const MIX_PARAM: Extract<FxParamDef, { type: 'float' }> = { id: 'mix', label: 'Opacity (mix)', type: 'float', default: 1, min: 0, max: 1, step: 0.001 };
 
 const EffectCard: React.FC<{
   instance: FxInstance;
@@ -215,9 +215,9 @@ const EffectCard: React.FC<{
       <div className="fxp-card fxp-card--missing">
         <div className="fxp-card__head">
           <span className="fxp-card__title">{instance.effectId}</span>
-          <button type="button" className="fxp-icon" onClick={onRemove} title="Entfernen">✕</button>
+          <button type="button" className="fxp-icon" onClick={onRemove} title="Remove">✕</button>
         </div>
-        <p className="fxp-hint">Effekt nicht verfügbar (z. B. OFX-Plugin nicht installiert). Einstellungen bleiben im Projekt erhalten.</p>
+        <p className="fxp-hint">Effect not available (e.g. OFX plugin not installed). Settings are kept in the project.</p>
       </div>
     );
   }
@@ -239,7 +239,7 @@ const EffectCard: React.FC<{
           type="button"
           className="fxp-toggle"
           aria-pressed={instance.enabled}
-          title={instance.enabled ? 'Effekt deaktivieren' : 'Effekt aktivieren'}
+          title={instance.enabled ? 'Disable effect' : 'Enable effect'}
           onClick={() => onUpdate({ ...instance, enabled: !instance.enabled })}
           data-automation-id={`${automation}.enabled`}
         >
@@ -251,8 +251,8 @@ const EffectCard: React.FC<{
           <span className="fxp-vendor">{definition.vendor}</span>
         </button>
         <span className="fxp-card__tools">
-          <button type="button" className="fxp-icon" disabled={index === 0} onClick={() => onMove(-1)} title="Nach oben">↑</button>
-          <button type="button" className="fxp-icon" disabled={index === count - 1} onClick={() => onMove(1)} title="Nach unten">↓</button>
+          <button type="button" className="fxp-icon" disabled={index === 0} onClick={() => onMove(-1)} title="Move up">↑</button>
+          <button type="button" className="fxp-icon" disabled={index === count - 1} onClick={() => onMove(1)} title="Move down">↓</button>
           <button
             type="button"
             className="fxp-icon"
@@ -260,12 +260,12 @@ const EffectCard: React.FC<{
               const { keyframes: _dropped, ...rest } = instance;
               onUpdate({ ...rest, params: defaultParams(definition), mix: 1 });
             }}
-            title={keyCount ? `Alle Werte zurücksetzen und ${keyCount} Keyframes löschen` : 'Alle Werte zurücksetzen'}
+            title={keyCount ? `Reset all values and ${keyCount} Delete keyframes` : 'Reset all values'}
             data-automation-id={`${automation}.reset`}
           >
             ↺
           </button>
-          <button type="button" className="fxp-icon" onClick={onRemove} title="Effekt entfernen" data-automation-id={`${automation}.remove`}>✕</button>
+          <button type="button" className="fxp-icon" onClick={onRemove} title="Remove effect" data-automation-id={`${automation}.remove`}>✕</button>
         </span>
       </div>
       {!instance.collapsed && (
@@ -283,7 +283,7 @@ const EffectCard: React.FC<{
                     if (preset) onUpdate({ ...instance, params: { ...defaultParams(definition), ...preset.values } });
                   }}
                 >
-                  <option value="">Preset wählen …</option>
+                  <option value="">Choose preset …</option>
                   {definition.presets.map((preset) => (
                     <option key={preset.id} value={preset.id} title={preset.description}>
                       {preset.name}
@@ -305,7 +305,7 @@ const EffectCard: React.FC<{
             />
           ) : (
           <div className="fxp-row fxp-row--numeric">
-            <span className="fxp-label">Deckkraft (Mix)</span>
+            <span className="fxp-label">Opacity (mix)</span>
             <span className="fxp-control">
               <ScrubValue
                 param={{ id: 'mix', label: 'Mix', type: 'float', default: 1, min: 0, max: 1 }}
@@ -401,7 +401,7 @@ const FxStackPanel: React.FC<Props> = ({ stack, onChange, extraDefinitions = [],
 
   return (
     <div className="fxp" data-automation-id="fx-stack">
-      {entries.length === 0 && <p className="fxp-hint">{emptyHint ?? 'Noch keine Effekte. Füge Optics Lab hinzu, um generierte Bilder fotografischer wirken zu lassen.'}</p>}
+      {entries.length === 0 && <p className="fxp-hint">{emptyHint ?? 'No effects yet. Add Optics Lab to make generated images look more photographic.'}</p>}
       {entries.map((instance, index) => (
         <EffectCard
           key={instance.id}
@@ -417,7 +417,7 @@ const FxStackPanel: React.FC<Props> = ({ stack, onChange, extraDefinitions = [],
       ))}
       {adding ? (
         <div className="fxp-picker" data-automation-id="fx-picker">
-          <input className="fxp-search" autoFocus placeholder="Effekt suchen …" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && setAdding(false)} />
+          <input className="fxp-search" autoFocus placeholder="Search effects …" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && setAdding(false)} />
           {Object.entries(byCategory).map(([category, defs]) => (
             <div key={category}>
               <div className="fxp-picker__cat">{CATEGORY_LABELS[category as FxCategory] ?? category}</div>
@@ -429,17 +429,15 @@ const FxStackPanel: React.FC<Props> = ({ stack, onChange, extraDefinitions = [],
               ))}
             </div>
           ))}
-          {scanning && <p className="fxp-hint">Suche installierte OFX-Plugins …</p>}
+          {scanning && <p className="fxp-hint">Searching installed OFX plugins …</p>}
           {ofxBridge() && !scanning && (
-            <button type="button" className="fxp-link" onClick={() => { setScanning(true); void loadOfxDefinitions(true).finally(() => setScanning(false)); }} data-automation-id="fx-picker.rescan">
-              OFX-Plugins neu einlesen
+            <button type="button" className="fxp-link" onClick={() => { setScanning(true); void loadOfxDefinitions(true).finally(() => setScanning(false)); }} data-automation-id="fx-picker.rescan">Rescan OFX plugins
             </button>
           )}
-          <button type="button" className="fxp-link" onClick={() => setAdding(false)}>Abbrechen</button>
+          <button type="button" className="fxp-link" onClick={() => setAdding(false)}>Cancel</button>
         </div>
       ) : (
-        <button type="button" className="fxp-add" onClick={() => setAdding(true)} data-automation-id="fx-add">
-          + Effekt hinzufügen
+        <button type="button" className="fxp-add" onClick={() => setAdding(true)} data-automation-id="fx-add">+ Add effect
         </button>
       )}
     </div>

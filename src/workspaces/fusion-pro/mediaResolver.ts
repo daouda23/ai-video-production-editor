@@ -117,7 +117,7 @@ const waitFor = (target: EventTarget, events: string[], timeoutMs: number) =>
       events.forEach((name) => target.removeEventListener(name, onOk));
       target.removeEventListener('error', onErr);
       if (ok) resolve();
-      else reject(new Error('Medium konnte nicht geladen werden'));
+      else reject(new Error('Media could not be loaded'));
     };
     const onOk = done(true);
     const onErr = done(false);

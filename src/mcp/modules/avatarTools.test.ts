@@ -20,12 +20,12 @@ test('avatar CRUD, voiceover and video generation (fake providers)', async () =>
     const names = mcp.list().map((tool) => tool.name);
     for (const name of ['avatar_list', 'avatar_create', 'avatar_rename', 'avatar_delete', 'avatar_list_voices', 'avatar_generate_voiceover', 'avatar_generate_video']) assert.ok(names.includes(name), name);
     assert.match(mcp.list().find((tool) => tool.name === 'avatar_generate_video')!.description, /KOSTET CREDITS/);
-    assert.match(mcp.list().find((tool) => tool.name === 'avatar_delete')!.description, /LÖSCHT/);
+    assert.match(mcp.list().find((tool) => tool.name === 'avatar_delete')!.description, /DELETES/);
 
     const created = await mcp.call('avatar_create', { name: 'Host', imageUrl: PNG });
     const id = (created.avatar as { id: string }).id;
     assert.equal((state.extras.avatars as AvatarProfile[])[0].imageUrl, PNG);
-    await mcp.call('avatar_rename', { avatarId: id, name: 'Moderatorin' });
+    await mcp.call('avatar_rename', { avatarId: id, name: 'Presenter' });
     assert.equal((await mcp.call('avatar_list')).avatars instanceof Array, true);
     assert.equal(((await mcp.call('avatar_list_voices')).voices as Array<{ voiceId: string }>)[0].voiceId, 'v1');
 
@@ -33,13 +33,13 @@ test('avatar CRUD, voiceover and video generation (fake providers)', async () =>
     assert.equal(missing.ok, false);
     assert.equal(calls.length, 0, 'nothing spent when inputs are missing');
 
-    const talking = await mcp.call('avatar_generate_video', { confirm: true,  avatarId: 'Moderatorin', mode: 'omni-human', voiceText: 'Willkommen', settings: { klingDuration: 10 } });
+    const talking = await mcp.call('avatar_generate_video', { confirm: true,  avatarId: 'Presenter', mode: 'omni-human', voiceText: 'Welcome', settings: { klingDuration: 10 } });
     assert.equal((talking.mediaItem as { id: string }).id, 'vid1');
     assert.equal((talking.voiceover as { id: string }).id, 'a1');
     assert.deepEqual(calls.map((call) => call.fn), ['tts', 'video']);
     assert.deepEqual(state.mediaItems.map((item) => item.id), ['a1', 'vid1']);
 
-    const vo = await mcp.call('avatar_generate_voiceover', { confirm: true,  text: 'Hallo' });
+    const vo = await mcp.call('avatar_generate_voiceover', { confirm: true,  text: 'Hello' });
     assert.equal((vo.mediaItem as { type: string }).type, 'audio');
 
     await mcp.call('avatar_delete', { avatarId: id });
@@ -58,7 +58,7 @@ test('paid avatar tools refuse without confirm and spend nothing', async () => {
   try {
     const tool = mcp.list().find((entry) => entry.name === 'avatar_generate_voiceover')!;
     assert.ok((tool.inputSchema as { properties: Record<string, unknown> }).properties.confirm);
-    const refused = await mcp.call('avatar_generate_voiceover', { text: 'Hallo' });
+    const refused = await mcp.call('avatar_generate_voiceover', { text: 'Hello' });
     assert.equal(refused.ok, false);
     assert.match(String(refused.message), /confirm: true/);
     assert.equal(called, 0);

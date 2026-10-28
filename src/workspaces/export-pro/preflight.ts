@@ -16,14 +16,14 @@ export const ffmpegPreflight = (clips: TimelineClip[], media: MediaItem[], track
         const item = byId.get(clip.mediaId);
         const name = item?.name || clip.id;
         const add = (message: string) => issues.push({ clipId: clip.id, message: `${name}: ${message}` });
-        if (clip.textConfig) { add('Text-Clips rendert der FFmpeg-Export noch nicht.'); continue; }
-        if (!item) { add('Medium fehlt.'); continue; }
+        if (clip.textConfig) { add('The FFmpeg export does not render text clips yet.'); continue; }
+        if (!item) { add('Media missing.'); continue; }
         if (item.type === 'audio') continue;
-        if (clip.transitionOut?.type && Number(clip.transitionOut.duration) > 0) add('Übergänge rendert der FFmpeg-Export noch nicht.');
-        if (clip.chromaKey) add('Chroma Key rendert der FFmpeg-Export noch nicht.');
-        if (clip.blendMode && clip.blendMode !== 'normal') add(`Mischmodus „${clip.blendMode}“ rendert der FFmpeg-Export noch nicht.`);
-        if (clip.filters?.lut === 'custom' && Number(clip.filters?.lutIntensity) > 0) add('Eigene Clip-LUTs rendert der FFmpeg-Export noch nicht (Ausgabe-LUT unter „Effekte“ geht).');
-        if ((clip.keyframes || []).some((frame) => frame.property === 'opacity')) add('Deckkraft-Keyframes rendert der FFmpeg-Export noch nicht.');
+        if (clip.transitionOut?.type && Number(clip.transitionOut.duration) > 0) add('The FFmpeg export does not render transitions yet.');
+        if (clip.chromaKey) add('The FFmpeg export does not render chroma key yet.');
+        if (clip.blendMode && clip.blendMode !== 'normal') add(`Blend mode “${clip.blendMode}” – the FFmpeg export does not render it yet.`);
+        if (clip.filters?.lut === 'custom' && Number(clip.filters?.lutIntensity) > 0) add('The FFmpeg export does not render custom clip LUTs yet (the output LUT under “Effects” works).');
+        if ((clip.keyframes || []).some((frame) => frame.property === 'opacity')) add('The FFmpeg export does not render opacity keyframes yet.');
     }
     return issues;
 };

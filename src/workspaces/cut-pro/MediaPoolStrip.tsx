@@ -11,8 +11,8 @@ import type { PoolView, SourceMarks } from './cutState';
 import { ListViewIcon, SourceTapeIcon, ThumbViewIcon } from './CutIcons';
 import { FileAudio, ImagePlus, Upload } from 'lucide-react';
 
-const SORT_LABELS: Record<PoolSort, string> = { added: 'Hinzugefügt', name: 'Name', type: 'Typ', duration: 'Dauer' };
-const TYPE_LABEL: Record<MediaItem['type'], string> = { video: 'Video', image: 'Standbild', audio: 'Audio' };
+const SORT_LABELS: Record<PoolSort, string> = { added: 'Added', name: 'Name', type: 'Type', duration: 'Duration' };
+const TYPE_LABEL: Record<MediaItem['type'], string> = { video: 'Video', image: 'Still', audio: 'Audio' };
 
 export interface MediaPoolStripProps {
     items: MediaItem[];
@@ -54,27 +54,27 @@ const MediaPoolStrip: React.FC<MediaPoolStripProps> = ({
     };
 
     return (
-        <section className="cutp-pool" data-automation-id="cut-media-pool" aria-label="Mediapool">
+        <section className="cutp-pool" data-automation-id="cut-media-pool" aria-label="Media pool">
             <header className="cutp-pool__head">
-                <strong>Mediapool</strong>
+                <strong>Media pool</strong>
                 <small>{items.length}</small>
                 <span className="cutp-spacer" />
-                <button type="button" className={`cutp-btn cutp-btn--icon ${tapeActive ? 'cutp-btn--on' : ''}`} onClick={onToggleTape} title="Quellband: alle Clips als ein durchgehendes Band im Viewer" data-automation-id="cut-pool-source-tape">
+                <button type="button" className={`cutp-btn cutp-btn--icon ${tapeActive ? 'cutp-btn--on' : ''}`} onClick={onToggleTape} title="Source tape: all clips as one continuous tape in the viewer" data-automation-id="cut-pool-source-tape">
                     <SourceTapeIcon />
                 </button>
-                <div className="cutp-seg" role="group" aria-label="Ansicht">
-                    <button type="button" className={`cutp-btn cutp-btn--icon ${view === 'thumbs' ? 'cutp-btn--on' : ''}`} onClick={() => onViewChange('thumbs')} title="Miniaturen" data-automation-id="cut-pool-view-thumbs"><ThumbViewIcon /></button>
-                    <button type="button" className={`cutp-btn cutp-btn--icon ${view === 'list' ? 'cutp-btn--on' : ''}`} onClick={() => onViewChange('list')} title="Liste" data-automation-id="cut-pool-view-list"><ListViewIcon /></button>
+                <div className="cutp-seg" role="group" aria-label="View">
+                    <button type="button" className={`cutp-btn cutp-btn--icon ${view === 'thumbs' ? 'cutp-btn--on' : ''}`} onClick={() => onViewChange('thumbs')} title="Thumbnails" data-automation-id="cut-pool-view-thumbs"><ThumbViewIcon /></button>
+                    <button type="button" className={`cutp-btn cutp-btn--icon ${view === 'list' ? 'cutp-btn--on' : ''}`} onClick={() => onViewChange('list')} title="List" data-automation-id="cut-pool-view-list"><ListViewIcon /></button>
                 </div>
-                <select className="cutp-select" value={sort} onChange={(event) => onSortChange(event.target.value as PoolSort, sortDesc)} title="Sortieren nach" data-automation-id="cut-pool-sort">
+                <select className="cutp-select" value={sort} onChange={(event) => onSortChange(event.target.value as PoolSort, sortDesc)} title="Sort by" data-automation-id="cut-pool-sort">
                     {(Object.keys(SORT_LABELS) as PoolSort[]).map((key) => <option key={key} value={key}>{SORT_LABELS[key]}</option>)}
                 </select>
-                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => onSortChange(sort, !sortDesc)} title={sortDesc ? 'Absteigend' : 'Aufsteigend'} data-automation-id="cut-pool-sort-direction">
+                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => onSortChange(sort, !sortDesc)} title={sortDesc ? 'Descending' : 'Ascending'} data-automation-id="cut-pool-sort-direction">
                     <span aria-hidden>{sortDesc ? '↓' : '↑'}</span>
                 </button>
                 {onImport && (
                     <>
-                        <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => fileRef.current?.click()} title="Medien importieren" data-automation-id="cut-pool-import"><Upload className="w-4 h-4" /></button>
+                        <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => fileRef.current?.click()} title="Import media" data-automation-id="cut-pool-import"><Upload className="w-4 h-4" /></button>
                         <input ref={fileRef} type="file" multiple accept="video/*,image/*,audio/*" hidden onChange={(event) => {
                             const picked = event.target.files;
                             if (picked?.length) {
@@ -87,8 +87,8 @@ const MediaPoolStrip: React.FC<MediaPoolStripProps> = ({
                 )}
             </header>
 
-            <div className={`cutp-pool__body cutp-pool__body--${view}`} role="listbox" aria-label="Medien">
-                {items.length === 0 && <p className="cutp-empty">Noch keine Medien. Importiere Clips oder lege sie auf der Media-Seite an.</p>}
+            <div className={`cutp-pool__body cutp-pool__body--${view}`} role="listbox" aria-label="Media">
+                {items.length === 0 && <p className="cutp-empty">No media yet. Import clips or add them on the Media page.</p>}
                 {items.map((item) => {
                     const active = item.id === activeMediaId;
                     const mark = marks[item.id];
@@ -115,7 +115,7 @@ const MediaPoolStrip: React.FC<MediaPoolStripProps> = ({
                                     {mark && (mark.in !== null || mark.out !== null) ? ' · I/O' : ''}
                                 </span>
                             </span>
-                            {usedMediaIds.has(item.id) && <span className="cutp-pool__used" title="Im Schnitt verwendet" />}
+                            {usedMediaIds.has(item.id) && <span className="cutp-pool__used" title="Used in the edit" />}
                         </button>
                     );
                 })}

@@ -269,10 +269,10 @@ export function clipExportWarnings(clip: TimelineClip): string[] {
   const warnings: string[] = [];
   const keyframes = clip.keyframes ?? [];
   if (Math.abs(clip.transform?.rotation ?? 0) > 1e-6 || keyframes.some((frame) => frame.property === 'rotation')) {
-    warnings.push('Drehung wird im HQ-Export noch nicht angewendet (nur Vorschau).');
+    warnings.push('Rotation is not applied in the HQ export yet (preview only).');
   }
   if (keyframes.some((frame) => frame.easing === 'hold' && frame.property !== 'effectIntensity')) {
-    warnings.push('Halten-Keyframes werden im HQ-Export linear interpoliert.');
+    warnings.push('Hold keyframes are interpolated linearly in the HQ export.');
   }
   return warnings;
 }

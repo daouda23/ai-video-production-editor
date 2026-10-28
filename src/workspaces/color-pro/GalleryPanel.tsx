@@ -20,15 +20,15 @@ const GalleryPanel: React.FC<Props> = ({ stills, canGrab, canApply, onGrab, onAp
   return (
     <div className="cp-panel" data-automation-id="color.gallery">
       <div className="cp-panel__head">
-        <span className="cp-panel__title">Galerie</span>
+        <span className="cp-panel__title">Gallery</span>
         <span className="cp-bar__spacer" />
-        <button type="button" className="cp-btn cp-btn--icon" onClick={onGrab} disabled={!canGrab} title="Still aufnehmen (Grade + Standbild speichern)" data-automation-id="color.gallery.grab"><Camera /></button>
-        <button type="button" className="cp-btn cp-btn--icon" onClick={() => current && onApply(current)} disabled={!current || !canApply} title="Grade des Stills auf ausgewählte Clips anwenden" data-automation-id="color.gallery.apply"><Check /></button>
-        <button type="button" className="cp-btn cp-btn--icon" onClick={() => current && onRemove(current.id)} disabled={!current} title="Still löschen" data-automation-id="color.gallery.remove"><Trash2 /></button>
+        <button type="button" className="cp-btn cp-btn--icon" onClick={onGrab} disabled={!canGrab} title="Grab still (save grade + frame)" data-automation-id="color.gallery.grab"><Camera /></button>
+        <button type="button" className="cp-btn cp-btn--icon" onClick={() => current && onApply(current)} disabled={!current || !canApply} title="Apply the still grade to the selected clips" data-automation-id="color.gallery.apply"><Check /></button>
+        <button type="button" className="cp-btn cp-btn--icon" onClick={() => current && onRemove(current.id)} disabled={!current} title="Delete still" data-automation-id="color.gallery.remove"><Trash2 /></button>
       </div>
       <div className="cp-panel__body">
         {stills.length === 0 ? (
-          <div className="cp-empty">Noch keine Stills.<br />Kamera-Symbol oder Rechtsklick im Viewer „Still aufnehmen“.</div>
+          <div className="cp-empty">No stills yet.<br />Camera icon or right-click in the viewer, “Grab still”.</div>
         ) : (
           <div className="cp-gallery">
             {stills.map((still) => (
@@ -39,7 +39,7 @@ const GalleryPanel: React.FC<Props> = ({ stills, canGrab, canApply, onGrab, onAp
                 onClick={() => setActive(still.id)}
                 onDoubleClick={() => canApply && onApply(still)}
                 onAuxClick={(event) => { if (event.button === 1 && canApply) onApply(still); }}
-                title={`${still.name}${still.sourceClipName ? ` · ${still.sourceClipName}` : ''} · ${still.grade.fxStack.length} Node(s) – Doppelklick wendet an`}
+                title={`${still.name}${still.sourceClipName ? ` · ${still.sourceClipName}` : ''} · ${still.grade.fxStack.length} node(s) – double-click applies`}
                 data-automation-id={`color.gallery.still.${still.id}`}
               >
                 <span className="cp-still__thumb" style={still.thumbnail ? { backgroundImage: `url(${still.thumbnail})` } : undefined} />

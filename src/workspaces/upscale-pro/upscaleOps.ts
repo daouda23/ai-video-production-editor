@@ -135,7 +135,7 @@ export const computeTargetSize = (source: Size, output: OutputSettings, limits?:
       width *= f;
       height *= f;
       limited = true;
-      notes.push(`Modell erlaubt höchstens ${maxByScale}× – Ausgabe verkleinert.`);
+      notes.push(`The model allows at most ${maxByScale}× – output scaled down.`);
     }
     const longEdge = Math.max(width, height);
     if (longEdge > limits.maxLongEdge + 1e-9) {
@@ -143,14 +143,14 @@ export const computeTargetSize = (source: Size, output: OutputSettings, limits?:
       width *= f;
       height *= f;
       limited = true;
-      notes.push(`Modell-Grenze ${limits.maxLongEdge} px Kantenlänge – Ausgabe verkleinert.`);
+      notes.push(`Modell-Grenze ${limits.maxLongEdge} px edge length – output scaled down.`);
     }
   }
 
   const outWidth = limited ? floorEven(width) : toEven(width);
   const outHeight = limited ? floorEven(height) : toEven(height);
   const scale = Math.round((outWidth / crop.width) * 1000) / 1000;
-  if (scale < 1) notes.push('Ziel ist kleiner als die Quelle (Verkleinerung).');
+  if (scale < 1) notes.push('The target is smaller than the source (downscaling).');
   return { width: outWidth, height: outHeight, scale, crop, limited, notes };
 };
 
@@ -310,10 +310,10 @@ export const planPipeline = (settings: UpscaleSettings, input: PipelineInput): P
   let outputFps = isVideo ? Math.max(1, finite(input.fps, 24)) : 0;
   let target: TargetSize | null = null;
 
-  if (isVideo && seconds <= 0) errors.push('Der Exportbereich ist leer (In/Out prüfen).');
+  if (isVideo && seconds <= 0) errors.push('The export range is empty (check In/Out).');
 
   if (isVideo && input.partialRange) {
-    steps.push({ id: 'capture', label: 'Bereich ausschneiden (Echtzeit, WebM)', paid: false, estimatedMs: Math.round(seconds * 1000) + 1500 });
+    steps.push({ id: 'capture', label: 'Capture region (real time, WebM)', paid: false, estimatedMs: Math.round(seconds * 1000) + 1500 });
   }
 
   if (settings.enhance.enabled) {
@@ -334,14 +334,14 @@ export const planPipeline = (settings: UpscaleSettings, input: PipelineInput): P
 
   if (settings.interpolation.enabled) {
     if (!isVideo) {
-      warnings.push('Bildinterpolation gilt nur für Videos.');
+      warnings.push('Frame interpolation applies to videos only.');
     } else {
       outputFps *= INTERPOLATION_MODEL.factor;
       const maxFps = model.limits.maxFps ?? 120;
-      if (outputFps > maxFps * 2) warnings.push(`Sehr hohe Bildrate (${formatFps(outputFps)} fps).`);
+      if (outputFps > maxFps * 2) warnings.push(`Very high frame rate (${formatFps(outputFps)} fps).`);
       steps.push({
         id: 'interpolate',
-        label: `Bildinterpolation · ${INTERPOLATION_MODEL.label} ${INTERPOLATION_MODEL.factor}×`,
+        label: `Frame interpolation · ${INTERPOLATION_MODEL.label} ${INTERPOLATION_MODEL.factor}×`,
         paid: true,
         provider: 'replicate',
         providerModel: INTERPOLATION_MODEL.providerModel,
@@ -356,16 +356,16 @@ export const planPipeline = (settings: UpscaleSettings, input: PipelineInput): P
   if (settings.hdr.enabled) {
     const engine = getHdrEngine(settings.hdr.engine)!;
     if (!isVideo) {
-      errors.push('SDR→HDR ist nur für Videos verfügbar.');
+      errors.push('SDR→HDR is only available for videos.');
     } else {
       const size = target ?? { ...input.source };
       const longEdge = Math.max(size.width, size.height);
-      if (longEdge > engine.maxLongEdge) errors.push(`${engine.label}: höchstens ${engine.maxLongEdge} px Kantenlänge.`);
+      if (longEdge > engine.maxLongEdge) errors.push(`${engine.label}: at most ${engine.maxLongEdge} px edge length.`);
       const shortEdge = Math.min(size.width, size.height);
       const maxSeconds = engine.id === 'ltx'
         ? (shortEdge > 1440 ? 2 : shortEdge > 1080 ? 4 : engine.maxSeconds)
         : engine.maxSeconds;
-      if (seconds > maxSeconds) errors.push(`${engine.label}: höchstens ca. ${maxSeconds} s bei dieser Auflösung (In/Out verkürzen).`);
+      if (seconds > maxSeconds) errors.push(`${engine.label}: at most about ${maxSeconds} s at this resolution (shorten In/Out).`);
       steps.push({
         id: 'hdr',
         label: `SDR→HDR · ${engine.label}`,
@@ -383,16 +383,16 @@ export const planPipeline = (settings: UpscaleSettings, input: PipelineInput): P
   const hasPost = settings.post.sharpen > 0 || settings.post.grain > 0;
   if (!isVideo) {
     // Images: local resize to the exact target (+ crop), sharpen, grain, encode.
-    steps.push({ id: 'post', label: hasPost ? 'Lokal: Zielgröße, Schärfen, Körnung' : 'Lokal: Zielgröße & Format', paid: false, estimatedMs: 1500 });
+    steps.push({ id: 'post', label: hasPost ? 'Local: target size, sharpening, grain' : 'Local: target size & format', paid: false, estimatedMs: 1500 });
   } else if (hasPost) {
-    warnings.push('Schärfen/Körnung werden bei Videos nur in der Vorschau gezeigt, nicht eingerechnet.');
+    warnings.push('Sharpening/grain are only shown in the preview for videos, not baked in.');
   }
   if (isVideo && settings.export.videoCodec !== 'h264') {
-    warnings.push('H.265/ProRes: Cloud-Ergebnis ist MP4 (H.264); Umkodieren im Export-Arbeitsbereich.');
+    warnings.push('H.265/ProRes: the cloud result is MP4 (H.264); transcode in the Export workspace.');
   }
 
-  if (!steps.some((step) => step.paid)) errors.push('Kein KI-Modell aktiv.');
-  if (settings.export.outputFolder) steps.push({ id: 'save', label: 'In Ausgabeordner speichern', paid: false, estimatedMs: 800 });
+  if (!steps.some((step) => step.paid)) errors.push('No AI model active.');
+  if (settings.export.outputFolder) steps.push({ id: 'save', label: 'Save to output folder', paid: false, estimatedMs: 800 });
 
   return { steps, target, outputFps, errors, warnings };
 };
@@ -648,15 +648,15 @@ export const jobsReducer = (jobs: UpscaleJob[], action: JobAction): UpscaleJob[]
         : null));
     case 'done':
       return patch(action.id, (job) => (job.status === 'running'
-        ? { ...job, status: 'done', progress: 1, resultUrl: action.resultUrl, resultMediaId: action.resultMediaId, savedPath: action.savedPath, finishedAt: action.at, stepLabel: 'Fertig' }
+        ? { ...job, status: 'done', progress: 1, resultUrl: action.resultUrl, resultMediaId: action.resultMediaId, savedPath: action.savedPath, finishedAt: action.at, stepLabel: 'Done' }
         : null));
     case 'fail':
       return patch(action.id, (job) => (isActive(job.status)
-        ? { ...job, status: 'failed', error: action.error, finishedAt: action.at, stepLabel: 'Fehler' }
+        ? { ...job, status: 'failed', error: action.error, finishedAt: action.at, stepLabel: 'Error' }
         : null));
     case 'cancel':
       return patch(action.id, (job) => (isActive(job.status)
-        ? { ...job, status: 'cancelled', finishedAt: action.at, stepLabel: 'Abgebrochen' }
+        ? { ...job, status: 'cancelled', finishedAt: action.at, stepLabel: 'Cancelled' }
         : null));
     case 'remove':
       return jobs.filter((job) => job.id !== action.id || isActive(job.status));

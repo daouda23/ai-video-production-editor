@@ -40,7 +40,7 @@ test('Scene Map edits share the set design undo history', () => {
     const before = getHost();
     const moved = { ...before, output: { width: 1234, height: 567 } };
     commitHost(moved);
-    assert.deepEqual(bus.history().undo, ['Kameraplan'], '2D edit lands in the 3D history');
+    assert.deepEqual(bus.history().undo, ['Camera plan'], '2D edit lands in the 3D history');
     assert.equal(scene.output?.width, 1234);
     assert.equal(historyState().canUndo, true);
 

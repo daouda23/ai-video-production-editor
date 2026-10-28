@@ -59,7 +59,7 @@ const nukeLook = (node: CompNode): GraphNodeLook => {
   });
   const className = nukeClassName(node);
   const sub = node.type === 'merge' ? `(${blendToNukeOp(node.params.blend)})` : node.name.startsWith(className) ? undefined : className;
-  return { w: W, h: H, label: node.name, sub, color: nukeColor(node), shape: 'rect', inputs, output: node.type === 'output' ? null : { x: W / 2, y: H }, title: `${node.name} · ${className}${node.enabled ? '' : ' (deaktiviert)'}` };
+  return { w: W, h: H, label: node.name, sub, color: nukeColor(node), shape: 'rect', inputs, output: node.type === 'output' ? null : { x: W / 2, y: H }, title: `${node.name} · ${className}${node.enabled ? '' : ' (disabled)'}` };
 };
 
 const MAX_PANELS = 6;
@@ -257,11 +257,11 @@ const NukeView: React.FC<FusionViewProps> = (props) => {
           </button>
           <span className="nk-spacer" />
           {VIEWER_CHANNELS.map((entry) => (
-            <button key={entry.id} type="button" className={`nk-btn nk-btn--ch nk-btn--${entry.id} ${channel === entry.id ? 'nk-btn--on' : ''}`} onClick={() => setChannel(entry.id)} data-automation-id={`nuke-viewer-channel-${entry.id}`} title={`Kanal ${entry.label}`}>
+            <button key={entry.id} type="button" className={`nk-btn nk-btn--ch nk-btn--${entry.id} ${channel === entry.id ? 'nk-btn--on' : ''}`} onClick={() => setChannel(entry.id)} data-automation-id={`nuke-viewer-channel-${entry.id}`} title={`Channel ${entry.label}`}>
               {entry.label}
             </button>
           ))}
-          <button type="button" className={`nk-btn ${checker ? 'nk-btn--on' : ''}`} onClick={() => setChecker(!checker)} title="Schachbrett" data-automation-id="nuke-viewer-checker">
+          <button type="button" className={`nk-btn ${checker ? 'nk-btn--on' : ''}`} onClick={() => setChecker(!checker)} title="Checkerboard" data-automation-id="nuke-viewer-checker">
             <LayoutGrid size={12} />
           </button>
         </div>
@@ -274,7 +274,7 @@ const NukeView: React.FC<FusionViewProps> = (props) => {
           checker={checker}
           wipe={wipe && viewerB ? { nodeId: viewerB, position: wipePos, onPosition: setWipePos } : null}
           automationId="nuke-viewer-stage"
-          emptyHint="Knoten wählen und 1 drücken"
+          emptyHint="Select a node and press 1"
         />
         <div className="nk-viewer__foot">
           <span>{getNode(comp, viewerA)?.name ?? '—'}{wipe && viewerB ? ` | ${getNode(comp, viewerB)?.name ?? ''}` : ''}</span>
@@ -286,7 +286,7 @@ const NukeView: React.FC<FusionViewProps> = (props) => {
       <div className="nk-dag">
         <div className="nk-dag__bar">
           <span className="nk-tag">Node Graph</span>
-          <button type="button" className="nk-btn" onClick={() => setMenu({ query: '', index: 0 })} title="Knoten erstellen (Tab)" data-automation-id="nuke-tab-menu-open">
+          <button type="button" className="nk-btn" onClick={() => setMenu({ query: '', index: 0 })} title="Create node (Tab)" data-automation-id="nuke-tab-menu-open">
             Tab …
           </button>
           {NUKE_TOOLS.filter((def) => ['Read', 'Merge', 'Transform', 'Grade', 'Blur', 'Dot'].includes(def.id)).map((def) => (
@@ -296,9 +296,9 @@ const NukeView: React.FC<FusionViewProps> = (props) => {
           ))}
           <span className="nk-spacer" />
           <button type="button" className="nk-btn" onClick={swapAB} disabled={active?.type !== 'merge'} title="A/B tauschen (Shift+X)" data-automation-id="nuke-swap-ab">A↔B</button>
-          <button type="button" className="nk-btn" onClick={disable} disabled={!selectedNodeIds.length} title="Deaktivieren (D)" data-automation-id="nuke-disable">D</button>
-          <button type="button" className="nk-btn" onClick={arrange} title="Automatisch anordnen" data-automation-id="nuke-arrange">Anordnen</button>
-          <button type="button" className="nk-btn" onClick={() => graphRef.current?.fit()} title="Einpassen (F)" data-automation-id="nuke-fit">
+          <button type="button" className="nk-btn" onClick={disable} disabled={!selectedNodeIds.length} title="Disable (D)" data-automation-id="nuke-disable">D</button>
+          <button type="button" className="nk-btn" onClick={arrange} title="Arrange automatically" data-automation-id="nuke-arrange">Arrange</button>
+          <button type="button" className="nk-btn" onClick={() => graphRef.current?.fit()} title="Fit (F)" data-automation-id="nuke-fit">
             <Maximize2 size={12} />
           </button>
         </div>
@@ -328,15 +328,15 @@ const NukeView: React.FC<FusionViewProps> = (props) => {
               </div>
             }
             automationId="nuke-dag"
-            emptyHint="Tab drücken, um einen Knoten zu erstellen"
+            emptyHint="Press Tab to create a node"
           />
           {menu && (
-            <div className="nk-menu" role="dialog" aria-label="Knoten erstellen" data-automation-id="nuke-tab-menu">
+            <div className="nk-menu" role="dialog" aria-label="Create node" data-automation-id="nuke-tab-menu">
               <input
                 autoFocus
                 className="nk-menu__input"
                 value={menu.query}
-                placeholder="Knoten …"
+                placeholder="Node …"
                 onChange={(event) => setMenu({ query: event.target.value, index: 0 })}
                 onKeyDown={(event) => {
                   if (event.key === 'Escape' || event.key === 'Tab') setMenu(null);
@@ -378,12 +378,12 @@ const NukeView: React.FC<FusionViewProps> = (props) => {
           <span className="nk-tag">Properties</span>
           <span className="nk-spacer" />
           <span className="nk-bin__count" title="Maximal offene Panels">{panels.length}/{MAX_PANELS}</span>
-          <button type="button" className="nk-btn" onClick={() => setPanels([])} title="Alle Panels schließen" data-automation-id="nuke-properties-clear">
+          <button type="button" className="nk-btn" onClick={() => setPanels([])} title="Close all panels" data-automation-id="nuke-properties-clear">
             <X size={12} />
           </button>
         </div>
         <div className="nk-bin__body">
-          {panels.length === 0 && <p className="pe-hint">Knoten doppelklicken oder auswählen, um seine Eigenschaften zu öffnen.</p>}
+          {panels.length === 0 && <p className="pe-hint">Double-click or select a node to open its properties.</p>}
           {panels.map((id) => {
             const node = getNode(comp, id);
             if (!node) return null;
@@ -391,7 +391,7 @@ const NukeView: React.FC<FusionViewProps> = (props) => {
             return (
               <section key={id} className={`nk-panel ${selectedNodeIds.includes(id) ? 'nk-panel--selected' : ''}`} data-automation-id={`nuke-panel-${node.name}`}>
                 <header className="nk-panel__head" style={{ borderLeftColor: nukeColor(node) }}>
-                  <button type="button" className="nk-panel__toggle" onClick={() => setCollapsed((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; })} data-automation-id={`nuke-panel-${node.name}-collapse`} title="Ein-/Ausklappen">
+                  <button type="button" className="nk-panel__toggle" onClick={() => setCollapsed((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; })} data-automation-id={`nuke-panel-${node.name}-collapse`} title="Expand/collapse">
                     {isCollapsed ? '▸' : '▾'}
                   </button>
                   <input className="nk-panel__name" value={node.name} onChange={(event) => onChange({ ...comp, nodes: comp.nodes.map((entry) => (entry.id === id ? { ...entry, name: event.target.value } : entry)) })} data-automation-id={`nuke-panel-${node.name}-name`} />
@@ -402,7 +402,7 @@ const NukeView: React.FC<FusionViewProps> = (props) => {
                       disable
                     </label>
                   )}
-                  <button type="button" className="nk-panel__close" onClick={() => setPanels((prev) => prev.filter((entry) => entry !== id))} title="Panel schließen" data-automation-id={`nuke-panel-${node.name}-close`}>
+                  <button type="button" className="nk-panel__close" onClick={() => setPanels((prev) => prev.filter((entry) => entry !== id))} title="Close panel" data-automation-id={`nuke-panel-${node.name}-close`}>
                     <X size={11} />
                   </button>
                 </header>

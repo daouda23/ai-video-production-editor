@@ -52,14 +52,14 @@ import type { MenuItem } from './aeWidgets';
 
 export const BLEND_LABELS: Record<CompBlendMode, string> = {
   normal: 'Normal',
-  darken: 'Abdunkeln',
-  multiply: 'Multiplizieren',
-  lighten: 'Aufhellen',
-  screen: 'Negativ multiplizieren',
-  add: 'Addieren',
-  overlay: 'Ineinanderkopieren',
-  'soft-light': 'Weiches Licht',
-  difference: 'Differenz',
+  darken: 'Darken',
+  multiply: 'Multiply',
+  lighten: 'Lighten',
+  screen: 'Screen',
+  add: 'Add',
+  overlay: 'Overlay',
+  'soft-light': 'Soft light',
+  difference: 'Difference',
 };
 
 const ROW_H = 22;
@@ -124,7 +124,7 @@ export default function AeTimeline(props: Props) {
       if (isOpen(id)) {
         if (layer.maskNodes.length) {
           const key = `${id}:mask`;
-          out.push({ kind: 'group', layer, key, label: 'Masken', open: isOpen(key), depth: 1 });
+          out.push({ kind: 'group', layer, key, label: 'Masks', open: isOpen(key), depth: 1 });
           if (isOpen(key))
             for (const node of layer.maskNodes) {
               const mk = `${id}:mask:${node.id}`;
@@ -138,7 +138,7 @@ export default function AeTimeline(props: Props) {
         const stacks = layer.fxNodes.flatMap((node) => (node.fxStack ?? []).map((inst) => ({ node, inst })));
         if (stacks.length) {
           const key = `${id}:fx`;
-          out.push({ kind: 'group', layer, key, label: 'Effekte', open: isOpen(key), depth: 1 });
+          out.push({ kind: 'group', layer, key, label: 'Effects', open: isOpen(key), depth: 1 });
           if (isOpen(key))
             for (const { node, inst } of stacks) {
               const fk = `${id}:fx:${inst.id}`;
@@ -147,7 +147,7 @@ export default function AeTimeline(props: Props) {
             }
         }
         const tk = `${id}:tr`;
-        out.push({ kind: 'group', layer, key: tk, label: 'Transformieren', open: isOpen(tk), depth: 1, reset: true });
+        out.push({ kind: 'group', layer, key: tk, label: 'Transform', open: isOpen(tk), depth: 1, reset: true });
         if (isOpen(tk)) for (const p of AE_PROPS) out.push({ kind: 'prop', layer, prop: p.id, depth: 2 });
       } else {
         for (const prop of ui.reveal[id] ?? []) out.push({ kind: 'prop', layer, prop, depth: 1 });
@@ -173,7 +173,7 @@ export default function AeTimeline(props: Props) {
       return;
     }
     if (phase === 'end') {
-      props.gesture.end(`${propDef(prop).label} ändern`);
+      props.gesture.end(`${propDef(prop).label} change`);
       return;
     }
     const ensured = ensureTransform(props.comp, layer.sourceId);
@@ -181,7 +181,7 @@ export default function AeTimeline(props: Props) {
     if (!node) return;
     const next = replaceNode(ensured.comp, setPropValue(node, prop, fromDisplay(prop, display, comp), time));
     if (phase === 'move') props.gesture.update(next);
-    else props.commit(next, `${propDef(prop).label} ändern`);
+    else props.commit(next, `${propDef(prop).label} change`);
   };
 
   const withTransform = (layer: AeLayer, fn: (node: CompNode) => CompNode, label: string) => {
@@ -197,7 +197,7 @@ export default function AeTimeline(props: Props) {
       return;
     }
     if (phase === 'end') {
-      props.gesture.end('Effektwert ändern');
+      props.gesture.end('Change effect value');
       return;
     }
     const current = getNode(props.comp, node.id);
@@ -205,7 +205,7 @@ export default function AeTimeline(props: Props) {
     const stack = (current.fxStack ?? []).map((entry) => (entry.id === inst.id ? { ...entry, params: { ...entry.params, [paramId]: value } } : entry));
     const next = replaceNode(props.comp, { ...current, fxStack: stack });
     if (phase === 'move') props.gesture.update(next);
-    else props.commit(next, 'Effektwert ändern');
+    else props.commit(next, 'Change effect value');
   };
 
   const setMaskParams = (node: CompNode, params: Record<string, number | boolean>, phase: 'start' | 'move' | 'end' | 'set') => {
@@ -214,12 +214,12 @@ export default function AeTimeline(props: Props) {
       return;
     }
     if (phase === 'end') {
-      props.gesture.end('Maske ändern');
+      props.gesture.end('Change mask');
       return;
     }
     const next = patchParams(props.comp, node.id, params);
     if (phase === 'move') props.gesture.update(next);
-    else props.commit(next, 'Maske ändern');
+    else props.commit(next, 'Change mask');
   };
 
   // -------------------------------------------------------------- pointer: ruler, bars, keys
@@ -325,10 +325,10 @@ export default function AeTimeline(props: Props) {
     const d = drag.current;
     drag.current = null;
     if (!d) return;
-    if (d.kind === 'bar-move') props.gesture.end('Ebene zeitlich verschieben');
-    else if (d.kind === 'bar-in' || d.kind === 'bar-out') props.gesture.end('Ebene trimmen');
+    if (d.kind === 'bar-move') props.gesture.end('Shift layer in time');
+    else if (d.kind === 'bar-in' || d.kind === 'bar-out') props.gesture.end('Trim layer');
     else if (d.kind === 'keys') {
-      props.gesture.end('Keyframes verschieben');
+      props.gesture.end('Move keyframes');
       const info = d.data as { selection: string[]; moved: number };
       if (Math.abs(info.moved) > 1e-9)
         props.onSelectKeys(
@@ -385,9 +385,9 @@ export default function AeTimeline(props: Props) {
         { id: 'ease.out', label: 'Easy Ease Out', shortcut: '⇧⌘ F9' },
         { id: 'sep1', label: '', separator: true },
         { id: 'ease.linear', label: 'Linear' },
-        { id: 'ease.hold', label: 'Halten umschalten', shortcut: '⌥⌘ H' },
+        { id: 'ease.hold', label: 'Toggle hold', shortcut: '⌥⌘ H' },
         { id: 'sep2', label: '', separator: true },
-        { id: 'edit.delete', label: 'Keyframe löschen', shortcut: '⌫' },
+        { id: 'edit.delete', label: 'Delete keyframe', shortcut: '⌫' },
       ],
       onPick: (cmd) => props.run(cmd),
     });
@@ -399,7 +399,7 @@ export default function AeTimeline(props: Props) {
       x: e.clientX,
       y: e.clientY,
       items: LABEL_COLORS.map((c) => ({ id: c.color, label: `● ${c.name}`, checked: layerColor(layer) === c.color })),
-      onPick: (color) => props.commit(setLayerLabel(props.comp, layer.sourceId, color), 'Beschriftung ändern'),
+      onPick: (color) => props.commit(setLayerLabel(props.comp, layer.sourceId, color), 'Change label'),
     });
   };
 
@@ -419,7 +419,7 @@ export default function AeTimeline(props: Props) {
     if (prop === 'scale')
       return (
         <>
-          <span className="aev-link-icon" title="Proportional (nur einheitliche Skalierung)">⛓</span>
+          <span className="aev-link-icon" title="Proportional (uniform scale only)">⛓</span>
           <ScrubNumber {...common} value={display[0]} step={0.5} digits={1} automationId={`${aid}.x`} onChange={(v, ph) => editProp(layer, prop, [v], ph)} />
           <span className="aev-dim">,</span>
           <ScrubNumber {...common} value={display[0]} step={0.5} digits={1} suffix=" %" automationId={`${aid}.y`} onChange={(v, ph) => editProp(layer, prop, [v], ph)} />
@@ -439,20 +439,20 @@ export default function AeTimeline(props: Props) {
         return (
           <>
             <span className="aev-sw">
-              <button type="button" className={`aev-sw-btn${layer.visible ? ' is-on' : ''}`} title="Video (Ebene ein-/ausblenden)" data-automation-id={`${aid}.visible`} onClick={(e) => { e.stopPropagation(); props.commit(setLayerSwitch(props.comp, layer.sourceId, 'visible', !layer.visible), 'Sichtbarkeit'); }}>
+              <button type="button" className={`aev-sw-btn${layer.visible ? ' is-on' : ''}`} title="Video (show/hide layer)" data-automation-id={`${aid}.visible`} onClick={(e) => { e.stopPropagation(); props.commit(setLayerSwitch(props.comp, layer.sourceId, 'visible', !layer.visible), 'Visibility'); }}>
                 {layer.visible ? <Eye size={12} /> : null}
               </button>
               <button type="button" className={`aev-sw-btn${layer.solo ? ' is-on' : ''}`} title="Solo" data-automation-id={`${aid}.solo`} onClick={(e) => { e.stopPropagation(); props.commit(setLayerSwitch(props.comp, layer.sourceId, 'solo', !layer.solo), 'Solo'); }}>
                 {layer.solo ? <SoloIcon /> : null}
               </button>
-              <button type="button" className={`aev-sw-btn${layer.locked ? ' is-on' : ''}`} title="Sperren" data-automation-id={`${aid}.lock`} onClick={(e) => { e.stopPropagation(); props.commit(setLayerSwitch(props.comp, layer.sourceId, 'lock', !layer.locked), 'Sperren'); }}>
+              <button type="button" className={`aev-sw-btn${layer.locked ? ' is-on' : ''}`} title="Lock" data-automation-id={`${aid}.lock`} onClick={(e) => { e.stopPropagation(); props.commit(setLayerSwitch(props.comp, layer.sourceId, 'lock', !layer.locked), 'Lock'); }}>
                 {layer.locked ? <Lock size={11} /> : null}
               </button>
             </span>
             <button type="button" className="aev-twirl" data-automation-id={`${aid}.twirl`} onClick={(e) => { e.stopPropagation(); props.setUi({ expanded: { ...ui.expanded, [layer.sourceId]: !isOpen(layer.sourceId) }, reveal: { ...ui.reveal, [layer.sourceId]: [] } }); }}>
               {isOpen(layer.sourceId) ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
             </button>
-            <button type="button" className="aev-label" style={{ background: layerColor(layer) }} title="Beschriftung" data-automation-id={`${aid}.label`} onClick={(e) => labelMenu(e, layer)} />
+            <button type="button" className="aev-label" style={{ background: layerColor(layer) }} title="Label" data-automation-id={`${aid}.label`} onClick={(e) => labelMenu(e, layer)} />
             <span className="aev-col-nr">{layer.index}</span>
             <span
               className={`aev-col-name${sel ? ' is-sel' : ''}`}
@@ -480,7 +480,7 @@ export default function AeTimeline(props: Props) {
                     if (e.key === 'Escape') setRename(null);
                   }}
                   onBlur={() => {
-                    if (rename) props.commit(renameLayer(props.comp, layer.sourceId, rename.value), 'Ebene umbenennen');
+                    if (rename) props.commit(renameLayer(props.comp, layer.sourceId, rename.value), 'Rename layer');
                     setRename(null);
                   }}
                 />
@@ -490,7 +490,7 @@ export default function AeTimeline(props: Props) {
             </span>
             <span className="aev-col-switch">
               {layer.fxNodes.length > 0 && (
-                <button type="button" className={`aev-fx-btn${layer.fxEnabled ? ' is-on' : ''}`} title="Effekte ein/aus" data-automation-id={`${aid}.fx`} onClick={(e) => { e.stopPropagation(); props.commit(setLayerSwitch(props.comp, layer.sourceId, 'fx', !layer.fxEnabled), 'Effekte umschalten'); }}>
+                <button type="button" className={`aev-fx-btn${layer.fxEnabled ? ' is-on' : ''}`} title="Effects on/off" data-automation-id={`${aid}.fx`} onClick={(e) => { e.stopPropagation(); props.commit(setLayerSwitch(props.comp, layer.sourceId, 'fx', !layer.fxEnabled), 'Toggle effects'); }}>
                   fx
                 </button>
               )}
@@ -502,7 +502,7 @@ export default function AeTimeline(props: Props) {
                 disabled={layer.locked}
                 data-automation-id={`${aid}.mode`}
                 onClick={(e) => e.stopPropagation()}
-                onChange={(e) => props.commit(setLayerBlend(props.comp, layer.sourceId, e.target.value as CompBlendMode), 'Ebenenmodus')}
+                onChange={(e) => props.commit(setLayerBlend(props.comp, layer.sourceId, e.target.value as CompBlendMode), 'Layer mode')}
               >
                 {(Object.keys(BLEND_LABELS) as CompBlendMode[]).map((b) => (
                   <option key={b} value={b}>
@@ -513,8 +513,8 @@ export default function AeTimeline(props: Props) {
             </span>
             {ui.showParentColumn && (
               <span className="aev-col-parent">
-                <select className="aev-select aev-select-sm" disabled value="none" title="Übergeordnete Ebenen werden noch nicht unterstützt" data-automation-id={`${aid}.parent`}>
-                  <option value="none">Ohne</option>
+                <select className="aev-select aev-select-sm" disabled value="none" title="Parent layers are not supported yet" data-automation-id={`${aid}.parent`}>
+                  <option value="none">None</option>
                 </select>
               </span>
             )}
@@ -534,10 +534,9 @@ export default function AeTimeline(props: Props) {
                 className="aev-link"
                 data-automation-id={`ae.tl.layer.${layer.index}.reset`}
                 onClick={() =>
-                  withTransform(layer, (node) => ({ ...node, keyframes: undefined, params: { ...node.params, x: 0, y: 0, scale: 1, rotation: 0, anchorX: 0, anchorY: 0, opacity: 1 } }), 'Transformation zurücksetzen')
+                  withTransform(layer, (node) => ({ ...node, keyframes: undefined, params: { ...node.params, x: 0, y: 0, scale: 1, rotation: 0, anchorX: 0, anchorY: 0, opacity: 1 } }), 'Reset transform')
                 }
-              >
-                Zurück
+              >Back
               </button>
             )}
           </span>
@@ -552,19 +551,19 @@ export default function AeTimeline(props: Props) {
             <span className="aev-kfnav">
               {animated && (
                 <>
-                  <button type="button" title="Zum vorherigen Keyframe" data-automation-id={`${aid}.prevKey`} disabled={adjacentTime(times, time, -1) === null} onClick={() => { const t = adjacentTime(times, time, -1); if (t !== null) props.onTimeChange(t); }}>
+                  <button type="button" title="Go to previous keyframe" data-automation-id={`${aid}.prevKey`} disabled={adjacentTime(times, time, -1) === null} onClick={() => { const t = adjacentTime(times, time, -1); if (t !== null) props.onTimeChange(t); }}>
                     ‹
                   </button>
-                  <button type="button" title="Keyframe hinzufügen/entfernen" data-automation-id={`${aid}.toggleKey`} onClick={() => withTransform(layer, (node) => toggleKeyframeAt(node, row.prop, snapToFrame(time, comp.fps)), 'Keyframe')}>
+                  <button type="button" title="Add/remove keyframe" data-automation-id={`${aid}.toggleKey`} onClick={() => withTransform(layer, (node) => toggleKeyframeAt(node, row.prop, snapToFrame(time, comp.fps)), 'Keyframe')}>
                     <KeyGlyph shape="linear" selected={onKey} size={9} />
                   </button>
-                  <button type="button" title="Zum nächsten Keyframe" data-automation-id={`${aid}.nextKey`} disabled={adjacentTime(times, time, 1) === null} onClick={() => { const t = adjacentTime(times, time, 1); if (t !== null) props.onTimeChange(t); }}>
+                  <button type="button" title="Go to next keyframe" data-automation-id={`${aid}.nextKey`} disabled={adjacentTime(times, time, 1) === null} onClick={() => { const t = adjacentTime(times, time, 1); if (t !== null) props.onTimeChange(t); }}>
                     ›
                   </button>
                 </>
               )}
             </span>
-            <button type="button" className={`aev-stopwatch${animated ? ' is-on' : ''}`} title="Stoppuhr (Zeitabhängige Änderung)" data-automation-id={`${aid}.stopwatch`} onClick={() => withTransform(layer, (node) => toggleStopwatch(node, row.prop, snapToFrame(time, comp.fps)), 'Stoppuhr')}>
+            <button type="button" className={`aev-stopwatch${animated ? ' is-on' : ''}`} title="Stopwatch (time-varying change)" data-automation-id={`${aid}.stopwatch`} onClick={() => withTransform(layer, (node) => toggleStopwatch(node, row.prop, snapToFrame(time, comp.fps)), 'Stopwatch')}>
               <StopwatchIcon on={animated} />
             </button>
             <span className="aev-prop-label">{propDef(row.prop).label}</span>
@@ -583,11 +582,11 @@ export default function AeTimeline(props: Props) {
             <button
               type="button"
               className={`aev-fx-btn${row.inst.enabled ? ' is-on' : ''}`}
-              title="Effekt ein/aus"
+              title="Effect on/off"
               data-automation-id={`ae.tl.layer.${layer.index}.fx.${row.inst.id}.enabled`}
               onClick={() => {
                 const node = getNode(props.comp, row.node.id);
-                if (node) props.commit(replaceNode(props.comp, { ...node, fxStack: (node.fxStack ?? []).map((f) => (f.id === row.inst.id ? { ...f, enabled: !f.enabled } : f)) }), 'Effekt umschalten');
+                if (node) props.commit(replaceNode(props.comp, { ...node, fxStack: (node.fxStack ?? []).map((f) => (f.id === row.inst.id ? { ...f, enabled: !f.enabled } : f)) }), 'Toggle effect');
               }}
             >
               fx
@@ -633,8 +632,8 @@ export default function AeTimeline(props: Props) {
             </button>
             <span className="aev-mask-swatch" />
             <span className="aev-group-label">{row.node.name}</span>
-            <label className="aev-check" title="Umgekehrt">
-              <input type="checkbox" checked={p.invert === true} data-automation-id={`ae.tl.layer.${layer.index}.mask.${row.node.id}.invert`} onChange={(e) => setMaskParams(row.node, { invert: e.target.checked }, 'set')} /> Umgekehrt
+            <label className="aev-check" title="Reversed">
+              <input type="checkbox" checked={p.invert === true} data-automation-id={`ae.tl.layer.${layer.index}.mask.${row.node.id}.invert`} onChange={(e) => setMaskParams(row.node, { invert: e.target.checked }, 'set')} />Reversed
             </label>
           </span>
         );
@@ -646,7 +645,7 @@ export default function AeTimeline(props: Props) {
           const px = Number(p.feather ?? 0) * Math.max(comp.width, comp.height);
           return (
             <span className="aev-prop-left" style={indent(3)}>
-              <span className="aev-prop-label">Weiche Maskenkante</span>
+              <span className="aev-prop-label">Soft mask edge</span>
               <span className="aev-prop-values">
                 <ScrubNumber value={px} min={0} digits={1} suffix=" px" automationId={aid} onChange={(v, ph) => setMaskParams(row.node, { feather: v / Math.max(comp.width, comp.height) }, ph)} />
               </span>
@@ -663,10 +662,10 @@ export default function AeTimeline(props: Props) {
         };
         return (
           <span className="aev-prop-left" style={indent(3)}>
-            <span className="aev-prop-label">Maskenpfad</span>
+            <span className="aev-prop-label">Mask path</span>
             <span className="aev-prop-values">
               {vals.map((v, i) => (
-                <ScrubNumber key={i} value={v} digits={0} title={['Mitte X', 'Mitte Y', 'Breite', 'Höhe'][i]} automationId={`${aid}.${i}`} onChange={(nv, ph) => set(i, nv, ph)} />
+                <ScrubNumber key={i} value={v} digits={0} title={['Center X', 'Center Y', 'Width', 'Height'][i]} automationId={`${aid}.${i}`} onChange={(nv, ph) => set(i, nv, ph)} />
               ))}
             </span>
           </span>
@@ -728,7 +727,7 @@ export default function AeTimeline(props: Props) {
     <div className="aev-timeline" data-automation-id="ae.timeline">
       <div className="aev-panel-head">
         <span className="aev-panel-title">{comp.name}</span>
-        <span className="aev-dim">Zeitleiste</span>
+        <span className="aev-dim">Timeline</span>
       </div>
       <div className="aev-tl-top">
         <div className="aev-tl-tc" style={{ width: left }}>
@@ -751,7 +750,7 @@ export default function AeTimeline(props: Props) {
               }}
             />
           ) : (
-            <button type="button" className="aev-tc" title="Aktuelle Zeit (klicken zum Eingeben)" data-automation-id="ae.tl.timecode" onClick={() => setTcEdit(formatTimecode(time, comp.fps))}>
+            <button type="button" className="aev-tc" title="Current time (click to type)" data-automation-id="ae.tl.timecode" onClick={() => setTcEdit(formatTimecode(time, comp.fps))}>
               {formatTimecode(time, comp.fps)}
             </button>
           )}
@@ -759,8 +758,7 @@ export default function AeTimeline(props: Props) {
             {String(Math.round(time * comp.fps)).padStart(5, '0')} ({comp.fps.toFixed(2).replace('.', ',')} fps)
           </span>
           <span className="aev-spacer" />
-          <button type="button" className={`aev-chip${ui.showParentColumn ? ' is-on' : ''}`} data-automation-id="ae.tl.parentColumn" onClick={() => props.setUi({ showParentColumn: !ui.showParentColumn })} title="Spalte „Übergeordnet“ ein/aus">
-            Übergeordnet
+          <button type="button" className={`aev-chip${ui.showParentColumn ? ' is-on' : ''}`} data-automation-id="ae.tl.parentColumn" onClick={() => props.setUi({ showParentColumn: !ui.showParentColumn })} title="“Parent” column on/off">Parent
           </button>
         </div>
       </div>
@@ -768,7 +766,7 @@ export default function AeTimeline(props: Props) {
         <div className="aev-tl-grid" style={{ width: left + width + 40, ['--left' as string]: `${left}px` }}>
           <div className="aev-tl-row aev-tl-head">
             <div className="aev-tl-left aev-tl-colheads" style={{ width: left }}>
-              <span className="aev-sw aev-colhead" title="Video / Solo / Sperren">
+              <span className="aev-sw aev-colhead" title="Video / Solo / Lock">
                 <Eye size={11} />
                 <SoloIcon />
                 <Lock size={10} />
@@ -776,10 +774,10 @@ export default function AeTimeline(props: Props) {
               <span className="aev-twirl-space" />
               <span className="aev-label-space" />
               <span className="aev-col-nr aev-colhead">Nr.</span>
-              <span className="aev-col-name aev-colhead">Quellenname</span>
+              <span className="aev-col-name aev-colhead">Source name</span>
               <span className="aev-col-switch aev-colhead">fx</span>
-              <span className="aev-col-mode aev-colhead">Modus</span>
-              {ui.showParentColumn && <span className="aev-col-parent aev-colhead">Übergeordnet</span>}
+              <span className="aev-col-mode aev-colhead">Mode</span>
+              {ui.showParentColumn && <span className="aev-col-parent aev-colhead">Parent</span>}
             </div>
             <div className="aev-tl-right aev-ruler" style={{ width }} onPointerDown={startScrub} data-automation-id="ae.tl.ruler">
               <div className="aev-workarea" style={{ left: wa.start * pps, width: Math.max(2, (wa.end - wa.start) * pps) }} onPointerDown={(e) => startWorkArea(e, 'move')} data-automation-id="ae.tl.workArea">
@@ -824,8 +822,7 @@ export default function AeTimeline(props: Props) {
             );
           })}
           {!layers.length && (
-            <div className="aev-tl-empty" style={{ width: left + width }}>
-              Footage aus dem Projekt hierher ziehen oder Ebene › Neu › Farbfläche (⌘ Y) wählen.
+            <div className="aev-tl-empty" style={{ width: left + width }}>Drag footage from the project here or choose Layer › New › Solid (⌘ Y).
             </div>
           )}
           <div className="aev-cti-line" style={{ left: left + time * pps }} />
@@ -834,11 +831,10 @@ export default function AeTimeline(props: Props) {
         </div>
       </div>
       <div className="aev-tl-foot">
-        <span className="aev-dim" data-automation-id="ae.tl.renderTime">
-          Zeit für das Frame-Rendering: {Math.round(props.renderMs)} ms
+        <span className="aev-dim" data-automation-id="ae.tl.renderTime">Frame rendering time: {Math.round(props.renderMs)} ms
         </span>
         <span className="aev-spacer" />
-        <button type="button" className="aev-icon-btn" title="Auszoomen (-)" data-automation-id="ae.tl.zoomOut" onClick={() => props.run('timeline.zoomOut')}>
+        <button type="button" className="aev-icon-btn" title="Zoom out (-)" data-automation-id="ae.tl.zoomOut" onClick={() => props.run('timeline.zoomOut')}>
           −
         </button>
         <input
@@ -862,8 +858,7 @@ export default function AeTimeline(props: Props) {
             const w = (scrollRef.current?.clientWidth ?? 800) - left - 40;
             props.setUi({ pxPerSecond: Math.max(5, w / Math.max(0.1, comp.durationSeconds)) });
           }}
-        >
-          Einpassen
+        >Fit
         </button>
       </div>
       {menu && <ContextMenu x={menu.x} y={menu.y} items={menu.items} onPick={menu.onPick} onClose={() => setMenu(null)} automationId="ae.tl.menu" />}

@@ -94,23 +94,23 @@ const TimeBar: React.FC<TimeBarProps> = ({ comp, time, onTimeChange, range, onRa
         ))}
         {onRangeChange && (
           <>
-            <span className="tb-handle tb-handle--start" style={{ left: pct(rs) }} onPointerDown={(event) => drag(event, 'start')} title="Render-Start ziehen" data-automation-id={`${automationId}-handle-start`} />
-            <span className="tb-handle tb-handle--end" style={{ left: pct(re) }} onPointerDown={(event) => drag(event, 'end')} title="Render-Ende ziehen" data-automation-id={`${automationId}-handle-end`} />
+            <span className="tb-handle tb-handle--start" style={{ left: pct(rs) }} onPointerDown={(event) => drag(event, 'start')} title="Drag render start" data-automation-id={`${automationId}-handle-start`} />
+            <span className="tb-handle tb-handle--end" style={{ left: pct(re) }} onPointerDown={(event) => drag(event, 'end')} title="Drag render end" data-automation-id={`${automationId}-handle-end`} />
           </>
         )}
         <span className="tb-playhead" style={{ left: pct(current) }} />
       </div>
       {onRangeChange && frameInput(re, (frame) => onRangeChange({ start: r.start, end: frameToTime(comp, Math.max(frame, rs)) }), 'range-end', variant === 'nuke' ? 'Out-Frame' : 'Render-Ende')}
       <div className="tb-transport">
-        <button type="button" onClick={() => setFrame(rs)} title="Zum Anfang" data-automation-id={`${automationId}-to-start`}><SkipBack size={13} /></button>
-        <button type="button" onClick={() => setFrame(current - 1)} title="Ein Frame zurück (←)" data-automation-id={`${automationId}-prev-frame`}><ChevronLeft size={14} /></button>
-        <button type="button" className={playing ? 'tb-on' : ''} onClick={() => onPlayingChange?.(!playing)} title="Wiedergabe (Leertaste)" data-automation-id={`${automationId}-play`}>
+        <button type="button" onClick={() => setFrame(rs)} title="Go to start" data-automation-id={`${automationId}-to-start`}><SkipBack size={13} /></button>
+        <button type="button" onClick={() => setFrame(current - 1)} title="Previous frame (←)" data-automation-id={`${automationId}-prev-frame`}><ChevronLeft size={14} /></button>
+        <button type="button" className={playing ? 'tb-on' : ''} onClick={() => onPlayingChange?.(!playing)} title="Play (Space)" data-automation-id={`${automationId}-play`}>
           {playing ? <Pause size={13} /> : <Play size={13} />}
         </button>
-        <button type="button" onClick={() => setFrame(current + 1)} title="Ein Frame vor (→)" data-automation-id={`${automationId}-next-frame`}><ChevronRight size={14} /></button>
-        <button type="button" onClick={() => setFrame(re)} title="Zum Ende" data-automation-id={`${automationId}-to-end`}><SkipForward size={13} /></button>
+        <button type="button" onClick={() => setFrame(current + 1)} title="Next frame (→)" data-automation-id={`${automationId}-next-frame`}><ChevronRight size={14} /></button>
+        <button type="button" onClick={() => setFrame(re)} title="Go to end" data-automation-id={`${automationId}-to-end`}><SkipForward size={13} /></button>
       </div>
-      {frameInput(current, setFrame, 'current', 'Aktueller Frame')}
+      {frameInput(current, setFrame, 'current', 'Current frame')}
       <span className="tb-fps">{comp.fps} fps</span>
     </div>
   );

@@ -89,7 +89,7 @@ test('custom size and downscale note', () => {
   const t = computeTargetSize({ width: 4000, height: 3000 }, out({ mode: 'custom', customWidth: 1001, customHeight: 999 }));
   assert.equal(t.width % 2, 0);
   assert.ok(t.scale < 1);
-  assert.ok(t.notes.some((n) => n.includes('Verkleinerung')));
+  assert.ok(t.notes.some((n) => n.includes('downscaling')));
 });
 
 test('resolution label and service options', () => {
@@ -147,10 +147,10 @@ test('planPipeline: nothing enabled is an error, HDR on image is an error', () =
   const s = settings();
   s.enhance.enabled = false;
   const plan = planPipeline(s, { kind: 'image', source: { width: 10, height: 10 }, fps: 0, rangeSeconds: 0, partialRange: false });
-  assert.ok(plan.errors.some((e) => e.includes('Kein KI-Modell')));
+  assert.ok(plan.errors.some((e) => e.includes('No AI model')));
   s.hdr.enabled = true;
   const hdr = planPipeline(s, { kind: 'image', source: { width: 10, height: 10 }, fps: 0, rangeSeconds: 0, partialRange: false });
-  assert.ok(hdr.errors.some((e) => e.includes('nur für Videos')));
+  assert.ok(hdr.errors.some((e) => e.includes('only available for videos')));
 });
 
 test('sumPipelineCost uses the injected lookup and lists unknown rates', () => {

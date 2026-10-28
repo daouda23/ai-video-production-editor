@@ -62,17 +62,17 @@ import type { MenuItem } from './aeWidgets';
 import './aeView.css';
 
 const UI_KEY = 'avpe.fusionAe.ui.v1';
-const MENUS = ['Bearbeiten', 'Komposition', 'Ebene', 'Animation', 'Ansicht'];
+const MENUS = ['Edit', 'Composition', 'Layer', 'Animation', 'View'];
 const STRUCTURAL: AeCommandId[] = ['layer.duplicate', 'layer.split', 'layer.forward', 'layer.backward', 'layer.front', 'layer.back', 'edit.delete'];
 
 const TOOLS: { id: AeToolId; label: string; key: string; icon: React.ReactNode }[] = [
-  { id: 'selection', label: 'Auswahl-Werkzeug', key: 'V', icon: <MousePointer2 size={14} /> },
-  { id: 'hand', label: 'Hand-Werkzeug', key: 'H', icon: <Hand size={14} /> },
-  { id: 'zoom', label: 'Zoom-Werkzeug', key: 'Z', icon: <Search size={14} /> },
-  { id: 'rotate', label: 'Drehen-Werkzeug', key: 'W', icon: <RotateCw size={14} /> },
-  { id: 'anchor', label: 'Ausschnitt-dahinter-Werkzeug (Ankerpunkt)', key: 'Y', icon: <Move size={14} /> },
-  { id: 'mask', label: 'Form-/Masken-Werkzeug', key: 'Q', icon: <PenTool size={14} /> },
-  { id: 'text', label: 'Text-Werkzeug', key: '⌘T', icon: <Type size={14} /> },
+  { id: 'selection', label: 'Selection tool', key: 'V', icon: <MousePointer2 size={14} /> },
+  { id: 'hand', label: 'Hand tool', key: 'H', icon: <Hand size={14} /> },
+  { id: 'zoom', label: 'Zoom tool', key: 'Z', icon: <Search size={14} /> },
+  { id: 'rotate', label: 'Rotate tool', key: 'W', icon: <RotateCw size={14} /> },
+  { id: 'anchor', label: 'Pan behind tool (anchor point)', key: 'Y', icon: <Move size={14} /> },
+  { id: 'mask', label: 'Shape/mask tool', key: 'Q', icon: <PenTool size={14} /> },
+  { id: 'text', label: 'Text tool', key: '⌘T', icon: <Type size={14} /> },
 ];
 
 function loadUi(): AeUiState {
@@ -234,15 +234,15 @@ export default function AfterEffectsView(props: FusionViewProps) {
   const addMedia = useCallback(
     (item: MediaItem, at = 0, index?: number) => {
       if (item.type === 'audio') {
-        flash('Audio-Ebenen werden in der Komposition nicht unterstützt.');
+        flash('Audio layers are not supported in the composition.');
         return;
       }
       const r = newMediaLayer(compRef.current, item, { at });
       let next = r.comp;
       if (index && index > 1) next = moveLayersToIndex(next, [r.layerId], index);
-      commit(next, 'Footage hinzufügen');
+      commit(next, 'Add footage');
       selectLayers([r.layerId]);
-      flash(`„${item.name}“ als Ebene hinzugefügt.`);
+      flash(`”${item.name}” added as a layer.`);
     },
     [commit, flash, selectLayers],
   );
@@ -250,7 +250,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
   const createText = useCallback(
     (position?: { x: number; y: number }, text = 'Text') => {
       const r = newTextLayer(compRef.current, { text, at: 0, position });
-      commit(r.comp, 'Neue Textebene');
+      commit(r.comp, 'New text layer');
       selectLayers([r.layerId]);
       return r.layerId;
     },
@@ -261,7 +261,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
     (layerId: string, shape: 'ellipse' | 'rectangle', rect?: MaskRect) => {
       const r = addMaskToLayer(compRef.current, layerId, shape, rect);
       if (!r.maskId) return;
-      commit(r.comp, 'Neue Maske');
+      commit(r.comp, 'New mask');
       setUi({ expanded: { ...ui.expanded, [layerId]: true, [`${layerId}:mask`]: true } });
     },
     [commit, setUi, ui.expanded],
@@ -280,11 +280,11 @@ export default function AfterEffectsView(props: FusionViewProps) {
       const target = layerId ?? selRef.current[0] ?? null;
       const layer = aeLayers(compRef.current).find((l) => l.sourceId === target);
       if (!layer) {
-        flash('Zuerst eine Ebene auswählen.');
+        flash('Select a layer first.');
         return;
       }
       if (layer.locked) {
-        flash('Die Ebene ist gesperrt.');
+        flash('The layer is locked.');
         return;
       }
       if (effectId === 'builtin:mask-ellipse' || effectId === 'builtin:mask-rect') {
@@ -292,11 +292,11 @@ export default function AfterEffectsView(props: FusionViewProps) {
         return;
       }
       if (!getFxDefinition(effectId)) {
-        flash(`Unbekannter Effekt: ${effectId}`);
+        flash(`Unknown effect: ${effectId}`);
         return;
       }
       const r = addFxInstanceToLayer(compRef.current, layer.sourceId, createFxInstance(effectId));
-      commit(r.comp, 'Effekt anwenden');
+      commit(r.comp, 'Apply effect');
       selectLayers([layer.sourceId]);
       setUi({ leftTab: 'effectControls' });
       flash(`${getFxDefinition(effectId)?.name ?? effectId} → ${layer.source.name}`);
@@ -312,7 +312,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
     (fn: (node: NonNullable<ReturnType<typeof getNode>>, refs: { prop: AePropId; time: number }[]) => NonNullable<ReturnType<typeof getNode>>, label: string) => {
       const refs = keyRefs();
       if (!refs.length) {
-        flash('Keine Keyframes ausgewählt.');
+        flash('No keyframes selected.');
         return false;
       }
       let next = compRef.current;
@@ -339,11 +339,11 @@ export default function AfterEffectsView(props: FusionViewProps) {
       const fps = c.fps;
       const setT = (v: number) => props.onTimeChange(Math.max(0, Math.min(c.durationSeconds, snapToFrame(v, fps))));
       const needSel = () => {
-        if (!editable.length) flash(sel.length ? 'Die ausgewählten Ebenen sind gesperrt.' : 'Keine Ebene ausgewählt.');
+        if (!editable.length) flash(sel.length ? 'The selected layers are locked.' : 'No layer selected.');
         return editable.length > 0;
       };
       if (STRUCTURAL.includes(command as AeCommandId) && !(command === 'edit.delete' && selectedKeys.length) && !isLayerGraph(c)) {
-        flash('Diese Komposition enthält Knoten außerhalb der Ebenenstruktur (z. B. verschachtelte Merges) – bitte in der Fusion-Ansicht bearbeiten.');
+        flash('This composition contains nodes outside the layer structure (e.g. nested merges) – please edit it in the Fusion view.');
         return;
       }
       const forEach = (label: string, fn: (comp: Composition, id: string) => Composition) => {
@@ -380,14 +380,14 @@ export default function AfterEffectsView(props: FusionViewProps) {
         case 'time.nextKeyframe': {
           const nodes = all.filter((l) => targets.includes(l.sourceId)).map((l) => l.transform);
           const next = adjacentTime(collectKeyTimes(nodes), t, command === 'time.prevKeyframe' ? -1 : 1);
-          if (next === null) flash('Kein weiterer Keyframe.');
+          if (next === null) flash('No further keyframe.');
           else setT(next);
           return;
         }
         case 'time.layerIn':
         case 'time.layerOut': {
           const layer = all.find((l) => l.sourceId === sel[0]);
-          if (!layer) return flash('Keine Ebene ausgewählt.');
+          if (!layer) return flash('No layer selected.');
           return setT(command === 'time.layerIn' ? layer.inPoint : layer.outPoint - frameDuration(fps));
         }
         case 'workArea.start':
@@ -395,11 +395,11 @@ export default function AfterEffectsView(props: FusionViewProps) {
         case 'workArea.end':
           return setRange(setWorkArea(workArea, 'end', t + frameDuration(fps), c));
         case 'layer.inToTime':
-          return forEach('In-Point verschieben', (n, id) => moveLayerInTo(n, id, t));
+          return forEach('Move In point', (n, id) => moveLayerInTo(n, id, t));
         case 'layer.outToTime':
-          return forEach('Out-Point verschieben', (n, id) => moveLayerOutTo(n, id, t));
+          return forEach('Move Out point', (n, id) => moveLayerOutTo(n, id, t));
         case 'layer.trimIn':
-          return forEach('In-Point trimmen', (n, id) => trimLayerIn(n, id, t));
+          return forEach('Trim In point', (n, id) => trimLayerIn(n, id, t));
         case 'layer.trimOut':
           return forEach('Out-Point trimmen', (n, id) => {
             const layer = all.find((l) => l.sourceId === id);
@@ -422,7 +422,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
             next = r.comp;
             if (r.layerId) created.push(r.layerId);
           }
-          commit(next, 'Duplizieren');
+          commit(next, 'Duplicate');
           if (created.length) selectLayers(created);
           return;
         }
@@ -435,8 +435,8 @@ export default function AfterEffectsView(props: FusionViewProps) {
             next = r.comp;
             if (r.layerId) created.push(r.layerId);
           }
-          if (!created.length) return flash('Die aktuelle Zeit liegt nicht innerhalb der ausgewählten Ebenen.');
-          commit(next, 'Ebene teilen');
+          if (!created.length) return flash('The current time is not inside the selected layers.');
+          commit(next, 'Split layer');
           selectLayers(created);
           return;
         }
@@ -446,11 +446,11 @@ export default function AfterEffectsView(props: FusionViewProps) {
         case 'layer.back': {
           if (!needSel()) return;
           const mode = command.split('.')[1] as 'forward';
-          commit(reorderLayers(c, editable, mode), 'Ebenenreihenfolge');
+          commit(reorderLayers(c, editable, mode), 'Layer order');
           return;
         }
         case 'layer.precompose':
-          return flash('Vorkomponieren ist in dieser Version nicht verfügbar (verschachtelte Kompositionen fehlen im gemeinsamen Modell).');
+          return flash('Precompose is not available in this version (nested compositions are missing from the shared model).');
         case 'layer.maskEllipse':
         case 'layer.maskRect':
           if (!needSel()) return;
@@ -458,11 +458,11 @@ export default function AfterEffectsView(props: FusionViewProps) {
           return;
         case 'edit.delete':
           if (selectedKeys.length) {
-            if (editKeys((node, refs) => deleteKeyframes(node, refs), 'Keyframes löschen')) setSelectedKeys([]);
+            if (editKeys((node, refs) => deleteKeyframes(node, refs), 'Delete keyframes')) setSelectedKeys([]);
             return;
           }
           if (!needSel()) return;
-          commit(deleteLayers(c, editable), 'Ebenen löschen');
+          commit(deleteLayers(c, editable), 'Delete layers');
           selectLayers([]);
           return;
         case 'edit.undo':
@@ -474,19 +474,19 @@ export default function AfterEffectsView(props: FusionViewProps) {
           }
           if (command === 'edit.redo') {
             const next = redo.current.pop();
-            if (!next) return flash('Nichts zu wiederholen.');
-            undo.current.push({ comp: c, label: 'Wiederholen', at: 0 });
+            if (!next) return flash('Nothing to redo.');
+            undo.current.push({ comp: c, label: 'Redo', at: 0 });
             compRef.current = next;
             props.onChange(next);
             return;
           }
           {
           const entry = undo.current.pop();
-          if (!entry) return flash('Nichts rückgängig zu machen.');
+          if (!entry) return flash('Nothing to undo.');
           redo.current.push(c);
           compRef.current = entry.comp;
           props.onChange(entry.comp);
-          return flash(`Rückgängig: ${entry.label}`);
+          return flash(`Undo: ${entry.label}`);
           }
         case 'select.all':
           return selectLayers(all.filter((l) => !l.locked).map((l) => l.sourceId));
@@ -532,7 +532,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
             const node = ensured.transformId ? getNode(ensured.comp, ensured.transformId) : null;
             next = node ? replaceNode(ensured.comp, addKeyframeAt(node, prop, snapToFrame(t, fps))) : ensured.comp;
           }
-          commit(next, 'Keyframe hinzufügen');
+          commit(next, 'Add keyframe');
           const nextReveal = { ...ui.reveal };
           for (const id of editable) if (!(nextReveal[id] ?? []).includes(prop)) nextReveal[id] = [...(nextReveal[id] ?? []), prop];
           setUi({ reveal: nextReveal });
@@ -547,7 +547,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
         case 'ease.linear':
           return void ease('linear', 'Linear');
         case 'ease.hold':
-          return void ease('hold', 'Halten');
+          return void ease('hold', 'Hold');
         case 'tool.selection':
         case 'tool.hand':
         case 'tool.zoom':
@@ -570,10 +570,10 @@ export default function AfterEffectsView(props: FusionViewProps) {
           return setUi({ pxPerSecond: Math.max(5, ui.pxPerSecond / 1.5) });
         case 'comp.render':
           if (props.onRenderToMedia) props.onRenderToMedia();
-          else flash('Rendern ist in dieser Umgebung nicht verfügbar.');
+          else flash('Rendering is not available in this environment.');
           return;
         default:
-          flash(`Unbekannter Befehl: ${command}`);
+          flash(`Unknown command: ${command}`);
       }
     },
     [addMask, commit, createText, editKeys, flash, mediaItems, props, selectLayers, selectedKeys.length, setRange, setUi, shellPlays, ui, workArea],
@@ -667,15 +667,15 @@ export default function AfterEffectsView(props: FusionViewProps) {
       shortcut: c.shortcut,
       disabled: c.id === 'layer.precompose' || (c.id === 'comp.render' && !props.onRenderToMedia),
     }));
-    if (menu === 'Ansicht') {
+    if (menu === 'View') {
       items.push({ id: 'sep', label: '', separator: true });
-      items.push({ id: 'ui.grid', label: 'Raster einblenden', checked: ui.showGrid });
-      items.push({ id: 'ui.safe', label: 'Titel-/aktionssichere Ränder', checked: ui.showSafe });
-      items.push({ id: 'ui.transparency', label: 'Transparenzraster', checked: ui.transparency });
+      items.push({ id: 'ui.grid', label: 'Show grid', checked: ui.showGrid });
+      items.push({ id: 'ui.safe', label: 'Title/action safe areas', checked: ui.showSafe });
+      items.push({ id: 'ui.transparency', label: 'Transparency grid', checked: ui.transparency });
     }
-    if (menu === 'Komposition') {
+    if (menu === 'Composition') {
       items.push({ id: 'sep', label: '', separator: true });
-      for (const r of [1, 2, 3, 4] as const) items.push({ id: `ui.res.${r}`, label: `Auflösung: ${['Voll', 'Halb', 'Drittel', 'Viertel'][r - 1]}`, checked: ui.resolution === r });
+      for (const r of [1, 2, 3, 4] as const) items.push({ id: `ui.res.${r}`, label: `Resolution: ${['Full', 'Half', 'Thirds', 'Viertel'][r - 1]}`, checked: ui.resolution === r });
     }
     return items;
   };
@@ -732,8 +732,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
         <span className="aev-tool-sep" />
         {ui.tool === 'mask' && (
           <span className="aev-seg" data-automation-id="ae.tool.maskShape">
-            <button type="button" className={ui.maskShape === 'rectangle' ? 'is-on' : ''} onClick={() => setUi({ maskShape: 'rectangle' })} data-automation-id="ae.tool.maskShape.rectangle">
-              Rechteck
+            <button type="button" className={ui.maskShape === 'rectangle' ? 'is-on' : ''} onClick={() => setUi({ maskShape: 'rectangle' })} data-automation-id="ae.tool.maskShape.rectangle">Rectangle
             </button>
             <button type="button" className={ui.maskShape === 'ellipse' ? 'is-on' : ''} onClick={() => setUi({ maskShape: 'ellipse' })} data-automation-id="ae.tool.maskShape.ellipse">
               Ellipse
@@ -744,18 +743,15 @@ export default function AfterEffectsView(props: FusionViewProps) {
         <span className="aev-dim">Standard</span>
       </div>
       {!layerGraph && (
-        <div className="aev-banner" data-automation-id="ae.banner.nonLayer">
-          Diese Komposition enthält Knoten, die nicht als einfache Ebenen darstellbar sind (z. B. verschachtelte Merges). Reihenfolge, Löschen, Duplizieren und Teilen sind hier gesperrt – bitte in der Fusion-Ansicht bearbeiten.
+        <div className="aev-banner" data-automation-id="ae.banner.nonLayer">This composition contains nodes that cannot be shown as simple layers (e.g. nested merges). Reorder, delete, duplicate and split are locked here – please edit it in the Fusion view.
         </div>
       )}
       <div className="aev-main">
         <div className="aev-col aev-left">
           <div className="aev-tabs">
-            <button type="button" className={ui.leftTab === 'project' ? 'is-on' : ''} data-automation-id="ae.tab.project" onClick={() => setUi({ leftTab: 'project' })}>
-              Projekt
+            <button type="button" className={ui.leftTab === 'project' ? 'is-on' : ''} data-automation-id="ae.tab.project" onClick={() => setUi({ leftTab: 'project' })}>Project
             </button>
-            <button type="button" className={ui.leftTab === 'effectControls' ? 'is-on' : ''} data-automation-id="ae.tab.effectControls" onClick={() => setUi({ leftTab: 'effectControls' })}>
-              Effekteinstellungen{primary ? `: ${primary.source.name}` : ''}
+            <button type="button" className={ui.leftTab === 'effectControls' ? 'is-on' : ''} data-automation-id="ae.tab.effectControls" onClick={() => setUi({ leftTab: 'effectControls' })}>Effect controls{primary ? `: ${primary.source.name}` : ''}
             </button>
           </div>
           <div className="aev-col-body">
@@ -781,7 +777,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
             onCreateText={(pos) => createText(pos)}
             onTextCommit={(id, text) => {
               window.setTimeout(() => rootRef.current?.focus({ preventScroll: true }), 0);
-              commit(patchParams({ ...compRef.current, nodes: compRef.current.nodes.map((n) => (n.id === id ? { ...n, name: text } : n)) }, id, { text }), 'Text ändern');
+              commit(patchParams({ ...compRef.current, nodes: compRef.current.nodes.map((n) => (n.id === id ? { ...n, name: text } : n)) }, id, { text }), 'Change text');
             }}
             onCreateMask={(id, rect, shape) => addMask(id, shape, rect)}
             onDropMedia={(mediaId) => {
@@ -799,7 +795,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
         </div>
         <div className="aev-col aev-right">
           <div className="aev-panel-head">
-            <span className="aev-panel-title">Vorschau</span>
+            <span className="aev-panel-title">Preview</span>
           </div>
           <PreviewPanel playing={playing} run={run} loop={loop} onLoop={setLoop} />
           <div className="aev-panel-head">
@@ -807,7 +803,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
           </div>
           <InfoPanel pixel={pixel} layer={primary} comp={comp} time={time} />
           <div className="aev-panel-head aev-head-sep">
-            <span className="aev-panel-title">Effekte und Vorgaben</span>
+            <span className="aev-panel-title">Effects and presets</span>
           </div>
           <div className="aev-col-body">
             <EffectsPresetsPanel onApply={(id) => applyEffect(id, null)} hasSelection={selectedIds.length > 0} />
@@ -856,33 +852,32 @@ export default function AfterEffectsView(props: FusionViewProps) {
           }}
           onDropEffect={(effectId, layerId) => applyEffect(effectId, layerId)}
           onReorder={(ids, index) => {
-            if (!isLayerGraph(compRef.current)) return flash('Reihenfolge ist für diese Komposition gesperrt.');
-            commit(moveLayersToIndex(compRef.current, ids, index), 'Ebenenreihenfolge');
+            if (!isLayerGraph(compRef.current)) return flash('Reordering is locked for this composition.');
+            commit(moveLayersToIndex(compRef.current, ids, index), 'Layer order');
           }}
           renderMs={renderMs}
         />
       </div>
       {solidDialog && (
-        <div className="aev-modal" role="dialog" aria-label="Einstellungen für Farbfläche" data-automation-id="ae.solidDialog">
+        <div className="aev-modal" role="dialog" aria-label="Solid settings" data-automation-id="ae.solidDialog">
           <div className="aev-modal-box">
-            <div className="aev-modal-title">Einstellungen für Farbfläche</div>
+            <div className="aev-modal-title">Solid settings</div>
             <label className="aev-ec-row">
               <span>Name</span>
-              <input className="aev-input" autoFocus value={solidDialog.name} placeholder={`Farbfläche ${comp.nodes.filter((n) => n.type === 'solid').length + 1}`} data-automation-id="ae.solidDialog.name" onKeyDown={(e) => e.stopPropagation()} onChange={(e) => setSolidDialog({ ...solidDialog, name: e.target.value })} />
+              <input className="aev-input" autoFocus value={solidDialog.name} placeholder={`Solid ${comp.nodes.filter((n) => n.type === 'solid').length + 1}`} data-automation-id="ae.solidDialog.name" onKeyDown={(e) => e.stopPropagation()} onChange={(e) => setSolidDialog({ ...solidDialog, name: e.target.value })} />
             </label>
             <label className="aev-ec-row">
-              <span>Größe</span>
+              <span>Size</span>
               <span className="aev-dim">
-                {comp.width} × {comp.height} (Kompositionsgröße)
+                {comp.width} × {comp.height}(composition size)
               </span>
             </label>
             <label className="aev-ec-row">
-              <span>Farbe</span>
+              <span>Color</span>
               <input type="color" value={solidDialog.color} data-automation-id="ae.solidDialog.color" onChange={(e) => setSolidDialog({ ...solidDialog, color: e.target.value })} />
             </label>
             <div className="aev-modal-actions">
-              <button type="button" className="aev-chip" data-automation-id="ae.solidDialog.cancel" onClick={() => setSolidDialog(null)}>
-                Abbrechen
+              <button type="button" className="aev-chip" data-automation-id="ae.solidDialog.cancel" onClick={() => setSolidDialog(null)}>Cancel
               </button>
               <button
                 type="button"
@@ -890,7 +885,7 @@ export default function AfterEffectsView(props: FusionViewProps) {
                 data-automation-id="ae.solidDialog.ok"
                 onClick={() => {
                   const r = newSolidLayer(compRef.current, { name: solidDialog.name.trim() || undefined, color: solidDialog.color, at: 0 });
-                  commit(r.comp, 'Neue Farbfläche');
+                  commit(r.comp, 'New solid');
                   selectLayers([r.layerId]);
                   setSolidDialog(null);
                 }}

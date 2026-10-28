@@ -125,7 +125,7 @@ export const EntryThumb: React.FC<{ entry: BrowserEntry; onMeta: CardProps['onMe
     );
 };
 
-const kindLabel: Record<BrowserEntry['kind'], string> = { video: 'Video', image: 'Bild', audio: 'Audio', folder: 'Ordner', other: 'Datei' };
+const kindLabel: Record<BrowserEntry['kind'], string> = { video: 'Video', image: 'Image', audio: 'Audio', folder: 'Folder', other: 'File' };
 export const entryKindLabel = (entry: BrowserEntry) => kindLabel[entry.kind];
 
 export const MediaCard: React.FC<CardProps> = ({ entry, meta, selected, focused, imported, size, onActivate, onToggle, onOpen, onMeta }) => {
@@ -149,7 +149,7 @@ export const MediaCard: React.FC<CardProps> = ({ entry, meta, selected, focused,
                     <button
                         type="button"
                         className={`mpx-check ${selected ? 'mpx-check--on' : ''}`}
-                        aria-label={selected ? 'Auswahl aufheben' : 'Auswählen'}
+                        aria-label={selected ? 'Deselect' : 'Select'}
                         data-automation-id="media.card.check"
                         onClick={(event) => { event.stopPropagation(); onToggle(entry); }}
                     >
@@ -157,12 +157,12 @@ export const MediaCard: React.FC<CardProps> = ({ entry, meta, selected, focused,
                     </button>
                 )}
                 {duration && <span className="mpx-card__badge">{duration}</span>}
-                {imported && <span className="mpx-card__flag" title="Bereits im Projekt">Im Projekt</span>}
+                {imported && <span className="mpx-card__flag" title="Already in the project">In project</span>}
             </div>
             <div className="mpx-card__name">{entry.name}</div>
             {size >= 150 && (
                 <div className="mpx-card__sub">
-                    {entry.isDir ? 'Ordner' : [kindLabel[entry.kind], meta?.width ? `${meta.width}×${meta.height}` : '', formatBytes(entry.size)].filter(Boolean).join(' · ')}
+                    {entry.isDir ? 'Folder' : [kindLabel[entry.kind], meta?.width ? `${meta.width}×${meta.height}` : '', formatBytes(entry.size)].filter(Boolean).join(' · ')}
                 </div>
             )}
         </div>
@@ -187,7 +187,7 @@ export const MediaRow: React.FC<CardProps> = ({ entry, meta, selected, focused, 
                     <button
                         type="button"
                         className={`mpx-check mpx-check--inline ${selected ? 'mpx-check--on' : ''}`}
-                        aria-label={selected ? 'Auswahl aufheben' : 'Auswählen'}
+                        aria-label={selected ? 'Deselect' : 'Select'}
                         onClick={(event) => { event.stopPropagation(); onToggle(entry); }}
                     >
                         {selected && <Check className="w-3 h-3" strokeWidth={3} />}
@@ -195,7 +195,7 @@ export const MediaRow: React.FC<CardProps> = ({ entry, meta, selected, focused, 
                 )}
             </span>
             <span className="mpx-row__thumb"><EntryThumb entry={entry} onMeta={onMeta} scrub={false} /></span>
-            <span className="mpx-row__name">{entry.name}{imported && <em className="mpx-row__flag">im Projekt</em>}</span>
+            <span className="mpx-row__name">{entry.name}{imported && <em className="mpx-row__flag">in the project</em>}</span>
             <span>{kindLabel[entry.kind]}</span>
             <span className="mpx-mono">{formatDuration(meta?.duration ?? entry.duration)}</span>
             <span className="mpx-mono">{meta?.width ? `${meta.width}×${meta.height}` : ''}</span>

@@ -1674,14 +1674,13 @@ const CompositingWorkspace: React.FC<CompositingWorkspaceProps> = (props) => {
   const toolbar = (
     <div className="edit-toolbar__group">
       <span style={{ color: 'var(--app-accent-strong)' }}><LayersIcon className="w-4 h-4" /></span>
-      <span className="text-sm font-semibold">Fusion · Werkzeuge</span>
+      <span className="text-sm font-semibold">Fusion · Tools</span>
       <span className="edit-toolbar__hint">{activeTool.label} · {activeTool.hint}</span>
     </div>
   );
 
   const toolbarEnd = (
-    <button type="button" className="edit-text-btn edit-text-btn--primary" onClick={() => setPageMode('comp')} data-automation-id="fusion-back-to-comp" title="Zurück zur Komposition (Fusion / After Effects / Nuke)">
-      Zur Komposition
+    <button type="button" className="edit-text-btn edit-text-btn--primary" onClick={() => setPageMode('comp')} data-automation-id="fusion-back-to-comp" title="Back to the composition (Fusion / After Effects / Nuke)">To composition
     </button>
   );
 

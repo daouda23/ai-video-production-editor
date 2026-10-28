@@ -14,7 +14,7 @@ test('export_ai: options, interchange to project, preflight, retry, seek', async
   resetExportStoreForTests();
   const opened: string[] = [];
   exportLib.override({
-    buildInterchangeFile: (format) => ({ fileName: `Sequenz.${format === 'fcpxml' ? 'fcpxml' : 'otio'}`, mimeType: 'application/xml', text: `<${format}/>`, note: 'n' }),
+    buildInterchangeFile: (format) => ({ fileName: `Sequence.${format === 'fcpxml' ? 'fcpxml' : 'otio'}`, mimeType: 'application/xml', text: `<${format}/>`, note: 'n' }),
     ffmpegPreflight: () => [{ clipId: 'c1', message: 'unsupported effect' }],
     ocioConfigs: [{ id: 'aces-2.0-studio', label: 'ACES 2.0 Studio' }],
     openFolder: async (path) => { opened.push(path); },
@@ -33,9 +33,9 @@ test('export_ai: options, interchange to project, preflight, retry, seek', async
     assert.deepEqual(options.styleTransferPresets, STYLE_TRANSFER_PRESETS);
 
     const fcp = await mcp.call('export_ai_interchange', { format: 'fcpxml' });
-    assert.equal(fcp.path, '/proj/exports/Sequenz.fcpxml');
+    assert.equal(fcp.path, '/proj/exports/Sequence.fcpxml');
     assert.equal(fcp.text, undefined);
-    assert.deepEqual(written[0], ['exports/Sequenz.fcpxml', '<fcpxml/>']);
+    assert.deepEqual(written[0], ['exports/Sequence.fcpxml', '<fcpxml/>']);
     const preview = await mcp.call('export_ai_interchange', { format: 'otio', write: false });
     assert.equal(preview.text, '<otio/>');
     assert.equal((await mcp.call('export_ai_interchange', { format: 'pdf' })).ok, false);

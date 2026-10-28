@@ -21,7 +21,7 @@ test('nodes tools: offline graph read, page actions, run marked paid', async () 
       assert.ok(byName.has(name), `${name} missing`);
     }
     assert.match(byName.get('nodes_run')!.description, /KOSTET CREDITS/);
-    assert.match(byName.get('nodes_delete_node')!.description, /LÖSCHT/);
+    assert.match(byName.get('nodes_delete_node')!.description, /DELETES/);
 
     const read = await mcp.call('nodes_get_graph');
     assert.equal(((read.graph as typeof graph).nodes[0]).id, 'prompt-1');

@@ -306,8 +306,8 @@ export const cleanBinName = (raw: string, existing: string[]) => {
     const trimmed = raw.replace(/\s+/g, ' ').trim().slice(0, 60);
     if (trimmed) return trimmed;
     let n = existing.length + 1;
-    while (existing.includes(`Ablage ${n}`)) n += 1;
-    return `Ablage ${n}`;
+    while (existing.includes(`Bin ${n}`)) n += 1;
+    return `Bin ${n}`;
 };
 
 export const assignToBin = (bins: BinAssignments, binName: string, mediaIds: string[]): BinAssignments => {

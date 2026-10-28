@@ -114,7 +114,7 @@ export type ParamSpec = {
 export type SetDesignCommand = {
   id: string;
   label: string;
-  /** Menu path in the viewport header, e.g. ['Hinzufügen', 'Mesh']. */
+  /** Menu path in the viewport header, e.g. ['Add', 'Mesh']. */
   menu?: string[];
   /** Blender-style key, e.g. 'Shift+D'. Display only; keymap.ts binds keys. */
   shortcut?: string;
@@ -352,8 +352,8 @@ export const frameBounds = (scene: SetDesignState, bounds: Bounds) => {
 export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   {
     id: 'object.add_primitive',
-    label: 'Grundkörper hinzufügen',
-    menu: ['Hinzufügen', 'Mesh'],
+    label: 'Add primitive',
+    menu: ['Add', 'Mesh'],
     shortcut: 'Shift+A',
     description: 'Add a primitive: box, plane, sphere, cylinder, cone, torus, wall (4 × 2.6 m) or person (1.75 m stand-in). It stands on the floor unless a location is given.',
     params: {
@@ -391,8 +391,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'object.add_model',
-    label: '3D-Modell importieren',
-    menu: ['Hinzufügen', 'Importieren'],
+    label: 'Import 3D model',
+    menu: ['Add', 'Import'],
     description: 'Import a 3D model (GLB, glTF, OBJ or FBX) from an https/file URL or a local file path (filePath).',
     params: {
       url: { type: 'string', description: 'https://, file:// or data: URL of the model.' },
@@ -410,10 +410,10 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
       if (!url) throw new Error('Pass url or filePath.');
       const extension = (asString(args.format) || url.split('?')[0].split('#')[0].split('.').pop() || '').toLowerCase();
       if (!['glb', 'gltf', 'obj', 'fbx'].includes(extension)) throw new Error('Supported formats: glb, gltf, obj, fbx. Pass format when the URL has no extension.');
-      const fileName = decodeURIComponent(url.split('?')[0].split('/').pop() || 'Modell').replace(/\.[a-z0-9]+$/i, '');
+      const fileName = decodeURIComponent(url.split('?')[0].split('/').pop() || 'Model').replace(/\.[a-z0-9]+$/i, '');
       const asset: SetDesignAsset = {
         id: ctx.makeId('obj'),
-        name: uniqueName(ctx.scene, asString(args.name) || fileName || 'Modell'),
+        name: uniqueName(ctx.scene, asString(args.name) || fileName || 'Model'),
         kind: 'model',
         format: extension as SetDesignAsset['format'],
         url,
@@ -432,8 +432,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'object.add_camera',
-    label: 'Kamera hinzufügen',
-    menu: ['Hinzufügen', 'Kamera'],
+    label: 'Add camera',
+    menu: ['Add', 'Camera'],
     description: 'Add a scene camera with focal length and sensor. Aim it with lookAt (a point or an object name) or rotation. By default it becomes the active camera.',
     params: {
       name: { type: 'string', description: 'Camera name.' },
@@ -448,10 +448,10 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
     },
     run: (ctx, args) => {
       const location = asVec(args.location);
-      const base = cameraObjectFromView(ctx.scene.camera, ctx.makeId('cam'), 'Kamera');
+      const base = cameraObjectFromView(ctx.scene.camera, ctx.makeId('cam'), 'Camera');
       let camera: SetDesignCameraObject = {
         ...base,
-        name: uniqueName(ctx.scene, asString(args.name) || 'Kamera'),
+        name: uniqueName(ctx.scene, asString(args.name) || 'Camera'),
         position: location ? fromBlenderLocation(location) : base.position,
         lensMm: 35,
         sensorWidthMm: 24.89,
@@ -473,8 +473,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'object.add_light',
-    label: 'Licht hinzufügen',
-    menu: ['Hinzufügen', 'Licht'],
+    label: 'Add light',
+    menu: ['Add', 'Light'],
     description: 'Add a light: point, sun, spot or area. Power in watts like Blender (sun: W/m², about 3–10 for daylight). Aim spot/area/sun with lookAt or rotation.',
     params: {
       lightType: { type: 'string', description: 'Light type.', enum: ['point', 'sun', 'spot', 'area'] },
@@ -524,8 +524,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'object.transform',
-    label: 'Transformieren',
-    menu: ['Objekt', 'Transformieren'],
+    label: 'Transform',
+    menu: ['Object', 'Transform'],
     shortcut: 'G / R / S',
     description: 'Set location, rotation and/or scale of an object (Blender convention: Z up, metres, degrees). With relative=true the values are added (location, rotation) or multiplied (scale).',
     params: {
@@ -561,8 +561,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'object.update',
-    label: 'Eigenschaften ändern',
-    menu: ['Objekt'],
+    label: 'Change properties',
+    menu: ['Object'],
     description: 'Change object properties: name, hidden, locked; meshes: color, roughness, metalness, opacity; cameras: lensMm, sensorPreset, sensorWidthMm, sensorHeightMm, sensorFit, shiftX, shiftY, clipStart, clipEnd, focusDistance, fStop; lights: lightType, power, color, temperature, spotSize, spotBlend, size, sizeY, castShadow.',
     params: {
       object: OBJECT_PARAM,
@@ -609,8 +609,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'object.duplicate',
-    label: 'Duplizieren',
-    menu: ['Objekt'],
+    label: 'Duplicate',
+    menu: ['Object'],
     shortcut: 'Shift+D',
     description: 'Duplicate objects (default: the selection). The copies are offset by `offset` (Blender convention, default [0.5, 0.5, 0]) and become the selection.',
     params: {
@@ -627,7 +627,7 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
         const ref = findSceneObject(scene, id)!;
         const copyId = ctx.makeId(ref.kind === 'asset' ? 'obj' : ref.kind === 'camera' ? 'cam' : 'light');
         const position = ref.object.position || { x: 0, y: 0, z: 0 };
-        const copy = { ...ref.object, id: copyId, name: uniqueName(scene, ref.object.name || 'Objekt'), position: { x: position.x + offset.x, y: position.y + offset.y, z: position.z + offset.z } };
+        const copy = { ...ref.object, id: copyId, name: uniqueName(scene, ref.object.name || 'Object'), position: { x: position.x + offset.x, y: position.y + offset.y, z: position.z + offset.z } };
         if (ref.kind === 'asset') scene = { ...scene, assets: [...scene.assets, copy as SetDesignAsset] };
         else if (ref.kind === 'camera') scene = { ...scene, cameras: [...(scene.cameras || []), copy as SetDesignCameraObject] };
         else scene = { ...scene, lights: [...scene.lights, copy as SetDesignLight] };
@@ -638,9 +638,9 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'object.delete',
-    label: 'Löschen',
-    menu: ['Objekt'],
-    shortcut: 'X / Entf',
+    label: 'Delete',
+    menu: ['Object'],
+    shortcut: 'X / Del',
     description: 'Delete objects (default: the selection). The last camera cannot be deleted.',
     params: { objects: { type: 'array', description: 'Object ids or names.', items: { type: 'string' } } },
     run: (ctx, args) => {
@@ -654,8 +654,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'select.set',
-    label: 'Auswählen',
-    menu: ['Auswahl'],
+    label: 'Select',
+    menu: ['Selection'],
     description: 'Select objects. mode: replace (default), add, remove or toggle. An empty list with mode replace deselects all.',
     params: {
       objects: { type: 'array', description: 'Object ids or names.', items: { type: 'string' } },
@@ -680,8 +680,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'select.all',
-    label: 'Alles auswählen / abwählen',
-    menu: ['Auswahl'],
+    label: 'Select all / none',
+    menu: ['Selection'],
     shortcut: 'A / Alt+A',
     description: 'Select all visible, unlocked objects, or deselect all with deselect=true.',
     params: { deselect: { type: 'boolean', description: 'Deselect everything.' } },
@@ -693,8 +693,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'object.hide',
-    label: 'Ausblenden / Einblenden',
-    menu: ['Objekt', 'Sichtbarkeit'],
+    label: 'Hide / Show',
+    menu: ['Object', 'Visibility'],
     shortcut: 'H / Alt+H',
     description: 'Hide objects (default: the selection), or with unhideAll=true show every hidden object again.',
     params: {
@@ -727,8 +727,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'object.aim',
-    label: 'Ausrichten auf …',
-    menu: ['Objekt'],
+    label: 'Align to …',
+    menu: ['Object'],
     description: 'Point a camera or light at a point or another object (no roll).',
     params: {
       object: OBJECT_PARAM,
@@ -746,9 +746,9 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'camera.set_active',
-    label: 'Als aktive Kamera setzen',
-    menu: ['Ansicht', 'Kameras'],
-    shortcut: 'Strg+Num0',
+    label: 'Set as active camera',
+    menu: ['View', 'Cameras'],
+    shortcut: 'Ctrl+Num0',
     description: 'Make a camera the active scene camera (used for camera view and reference frames).',
     params: { object: OBJECT_PARAM },
     run: (ctx, args) => {
@@ -759,9 +759,9 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'camera.from_view',
-    label: 'Aktive Kamera an Ansicht ausrichten',
-    menu: ['Ansicht', 'Kameras'],
-    shortcut: 'Strg+Alt+Num0',
+    label: 'Align active camera to view',
+    menu: ['View', 'Cameras'],
+    shortcut: 'Ctrl+Alt+Num0',
     description: 'Move and aim the active camera so it sees what the viewport sees.',
     run: (ctx) => {
       const camera = getActiveCamera(ctx.scene);
@@ -774,8 +774,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'view.camera',
-    label: 'Durch Kamera schauen',
-    menu: ['Ansicht'],
+    label: 'Look through camera',
+    menu: ['View'],
     shortcut: 'Num0',
     description: 'Look through the active camera (on=true), back to the free viewport (on=false), or toggle. Optionally pick the camera.',
     params: { on: { type: 'boolean', description: 'true = camera view, false = free view; omit to toggle.' }, object: { type: 'string', description: 'Camera id/name to activate first.' } },
@@ -792,9 +792,9 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'view.preset',
-    label: 'Ansicht wählen',
-    menu: ['Ansicht', 'Blickpunkt'],
-    shortcut: 'Num1 / Num3 / Num7 (+Strg)',
+    label: 'Choose view',
+    menu: ['View', 'Point of view'],
+    shortcut: 'Num1 / Num3 / Num7 (+Ctrl)',
     description: 'Viewport angle like Blender numpad views: front, back, right, left, top, bottom. Leaves camera view.',
     params: { view: { type: 'string', description: 'View.', enum: ['front', 'back', 'right', 'left', 'top', 'bottom'] }, ortho: { type: 'boolean', description: 'Orthographic (default true for these views, like Blender auto-perspective).' } },
     required: ['view'],
@@ -810,8 +810,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'view.toggle_ortho',
-    label: 'Perspektive / Orthografisch',
-    menu: ['Ansicht'],
+    label: 'Perspective / Orthographic',
+    menu: ['View'],
     shortcut: 'Num5',
     description: 'Switch the viewport between perspective and orthographic.',
     params: { ortho: { type: 'boolean', description: 'Set explicitly instead of toggling.' } },
@@ -822,9 +822,9 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'view.frame',
-    label: 'Ansicht einpassen',
-    menu: ['Ansicht'],
-    shortcut: 'Pos1 / Num,',
+    label: 'Fit view',
+    menu: ['View'],
+    shortcut: 'Home / Num,',
     description: 'Frame all objects (what=all) or the selection (what=selected) in the viewport.',
     params: { what: { type: 'string', description: 'all or selected.', enum: ['all', 'selected'] } },
     run: (ctx, args) => {
@@ -837,8 +837,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'view.set',
-    label: 'Ansicht setzen',
-    menu: ['Ansicht'],
+    label: 'Set view',
+    menu: ['View'],
     description: 'Place the free viewport camera: eye location, target point (Blender convention) and vertical field of view.',
     params: { location: vecParam('Eye location.'), target: vecParam('Point to look at.'), fov: { type: 'number', description: 'Vertical field of view in degrees.' } },
     run: (ctx, args) => {
@@ -855,8 +855,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'view.options',
-    label: 'Ansichtsoptionen',
-    menu: ['Ansicht'],
+    label: 'View options',
+    menu: ['View'],
     description: 'Viewport options: lockCameraToView (navigating in camera view moves the camera), emulateNumpad (digit row = numpad), orientation (global/local gizmo), snap (moves snap to the grid step).',
     params: {
       lockCameraToView: { type: 'boolean', description: 'Navigating in camera view moves the active camera.' },
@@ -881,7 +881,7 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   {
     id: 'view.shading',
     label: 'Shading',
-    menu: ['Ansicht', 'Shading'],
+    menu: ['View', 'Shading'],
     shortcut: 'Z',
     description: 'Viewport shading: wireframe, solid (clay, no scene lights), material (materials + environment) or rendered (scene lights and shadows). Also used for reference frames.',
     params: { mode: { type: 'string', description: 'Shading mode.', enum: ['wireframe', 'solid', 'material', 'rendered'] } },
@@ -894,8 +894,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'view.overlays',
-    label: 'Überlagerungen',
-    menu: ['Ansicht', 'Überlagerungen'],
+    label: 'Overlays',
+    menu: ['View', 'Overlays'],
     description: 'Viewport overlays: grid, rule-of-thirds guides and safe areas in camera view, passepartout darkness (0..1) outside the camera frame, camera frustums.',
     params: {
       grid: { type: 'boolean', description: 'Floor grid.' },
@@ -917,8 +917,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'scene.output',
-    label: 'Ausgabeformat',
-    menu: ['Ansicht', 'Ausgabe'],
+    label: 'Output format',
+    menu: ['View', 'Output'],
     description: 'Size of the camera frame and reference frames in pixels, e.g. 1920×1080 (16:9), 2048×858 (2.39:1), 1080×1920 (9:16).',
     params: { width: { type: 'number', description: 'Width in px.' }, height: { type: 'number', description: 'Height in px.' } },
     required: ['width', 'height'],
@@ -931,8 +931,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'scene.world',
-    label: 'Welt / Umgebung',
-    menu: ['Ansicht', 'Welt'],
+    label: 'World / environment',
+    menu: ['View', 'Welt'],
     description: 'World background colour and ambient strength.',
     params: { color: { type: 'string', description: 'Background colour.' }, strength: { type: 'number', description: 'Ambient strength 0..5.' } },
     run: (ctx, args) => {
@@ -944,8 +944,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'cameraPath.add_keyframe',
-    label: 'Kamerafahrt: Keyframe setzen',
-    menu: ['Ansicht', 'Kamerafahrt'],
+    label: 'Camera move: set keyframe',
+    menu: ['View', 'Camera move'],
     shortcut: 'I',
     description: 'Add a keyframe to the camera move (viewport camera path). from=view (default) takes the free view, from=camera the active scene camera; or pass location/target/fov. time defaults to 2 s after the last keyframe.',
     params: {
@@ -968,8 +968,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'cameraPath.update_keyframe',
-    label: 'Kamerafahrt: Keyframe ändern',
-    menu: ['Ansicht', 'Kamerafahrt'],
+    label: 'Camera move: change keyframe',
+    menu: ['View', 'Camera move'],
     description: 'Change a camera move keyframe: time, label, location/target (Blender convention) or fov.',
     params: {
       id: { type: 'string', description: 'Keyframe id (see setdesign_get_camera_path).' },
@@ -1002,8 +1002,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'cameraPath.remove_keyframes',
-    label: 'Kamerafahrt: Keyframes löschen',
-    menu: ['Ansicht', 'Kamerafahrt'],
+    label: 'Camera move: delete keyframes',
+    menu: ['View', 'Camera move'],
     description: 'Remove camera move keyframes by id, or all with all=true.',
     params: { ids: { type: 'array', description: 'Keyframe ids.', items: { type: 'string' } }, all: { type: 'boolean', description: 'Remove every keyframe.' } },
     run: (ctx, args) => {
@@ -1019,8 +1019,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'cameraPath.settings',
-    label: 'Kamerafahrt: Einstellungen',
-    menu: ['Ansicht', 'Kamerafahrt'],
+    label: 'Camera move: settings',
+    menu: ['View', 'Camera move'],
     description: 'Camera move settings: durationSeconds, fps, loop, easing (smooth or linear). With preset (push-in, orbit, crane-up, dolly-left) the keyframes are replaced by that move, starting from the free view (from=view) or the active camera (from=camera).',
     params: {
       durationSeconds: { type: 'number', description: 'Length in seconds.' },
@@ -1047,8 +1047,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'cameraPath.seek',
-    label: 'Kamerafahrt: Zeitpunkt zeigen',
-    menu: ['Ansicht', 'Kamerafahrt'],
+    label: 'Camera move: show time',
+    menu: ['View', 'Camera move'],
     description: 'Show the camera move at a time: the free viewport jumps to the pose at that second (leaves camera view).',
     params: { time: { type: 'number', description: 'Time in seconds.' } },
     required: ['time'],
@@ -1062,8 +1062,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'camera.from_shot',
-    label: 'Kamera aus Storyboard-Shot',
-    menu: ['Ansicht', 'Kameras'],
+    label: 'Camera from storyboard shot',
+    menu: ['View', 'Cameras'],
     description: 'Set up the view from a storyboard shot (its lens preset, camera yaw and pitch). apply=view moves the free view (as the classic page did), apply=camera also moves the active camera and sets its focal length.',
     params: { shotNumber: { type: 'number', description: 'Storyboard shot number.' }, apply: { type: 'string', description: 'What to move.', enum: ['view', 'camera'] } },
     required: ['shotNumber'],
@@ -1090,7 +1090,7 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   {
     id: 'material.preset',
     label: 'Material-Preset anwenden',
-    menu: ['Objekt', 'Material'],
+    menu: ['Object', 'Material'],
     description: 'Apply a material preset from the built-in packs (see setdesign_list_presets) to meshes (default: the selection).',
     params: { preset: { type: 'string', description: 'Material preset id.' }, objects: { type: 'array', description: 'Object ids or names.', items: { type: 'string' } } },
     required: ['preset'],
@@ -1108,7 +1108,7 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   {
     id: 'scene.hdri',
     label: 'Umgebungs-HDRI',
-    menu: ['Ansicht', 'Welt'],
+    menu: ['View', 'Welt'],
     description: 'Environment map for lighting (material preview, rendered, reference frames and the classic page): a .hdr/.exr URL or local file (filePath), shown as background or not; clear=true removes it.',
     params: {
       url: { type: 'string', description: 'https:// or file:// URL of a .hdr/.exr file.' },
@@ -1136,8 +1136,8 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'tool.set',
-    label: 'Werkzeug wählen',
-    menu: ['Werkzeuge'],
+    label: 'Choose tool',
+    menu: ['Tools'],
     shortcut: 'W / G / R / S / T',
     description: 'Active viewport tool: select, move, rotate, scale or transform (gizmos).',
     params: { tool: { type: 'string', description: 'Tool.', enum: ['select', 'move', 'rotate', 'scale', 'transform'] } },
@@ -1150,7 +1150,7 @@ export const SET_DESIGN_COMMANDS: SetDesignCommand[] = [
   },
   {
     id: 'workspace.tab',
-    label: 'Arbeitsbereich wechseln',
+    label: 'Switch workspace',
     description: 'Switch the set design tab: layout, camera, lighting, assets (AI and library imports) or classic (the previous page).',
     params: { tab: { type: 'string', description: 'Tab.', enum: ['layout', 'camera', 'lighting', 'assets', 'classic'] } },
     required: ['tab'],

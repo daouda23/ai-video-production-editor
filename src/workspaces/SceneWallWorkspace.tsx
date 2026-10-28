@@ -226,7 +226,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
       color: ['#1d4ed8', '#0f766e', '#6d28d9', '#9f1239', '#854d0e', '#155e75'][(nextIndex - 1) % 6],
     };
     normalizeAndUpdate({ reels: [...orderedReels, nextReel] });
-    setScriptStatus(`${nextReel.name} hinzugefügt.`);
+    setScriptStatus(`${nextReel.name} added.`);
   };
 
   const updateReel = (reelId: string, patch: Partial<SceneWallState['reels'][number]>) => {
@@ -356,7 +356,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
       scriptSourceName: state.scriptSourceName || 'Story Bible',
     });
     onChange(next);
-    setScriptStatus('Scene Wall aus Story Bible + Storyboard + Concept synchronisiert.');
+    setScriptStatus('Scene Wall synced from Story Bible + Storyboard + Concept.');
   };
 
   const handleSyncFromProjectContext = () => {
@@ -371,7 +371,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
       scriptSourceName: state.scriptSourceName || 'Project Context',
     });
     onChange(next);
-    setScriptStatus('Scene Wall mit Projektkontext synchronisiert.');
+    setScriptStatus('Scene Wall synced with the project context.');
   };
 
   const linkShotNumber = (sceneId: string, shotNumber: number) => {
@@ -421,13 +421,13 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
   const handleGenerateVfxCodes = () => {
     const next = generateSceneWallVfxCodes(state, state.vfxPrefix);
     onChange(next);
-    setScriptStatus('VFX Shot Codes neu generiert.');
+    setScriptStatus('VFX shot codes regenerated.');
   };
 
   const resetBoard = () => {
-    if (!window.confirm('Scene Wall auf Standard (6 Reels / 120 Szenen) zurücksetzen?')) return;
+    if (!window.confirm('Reset the Scene Wall to the default (6 reels / 120 scenes)?')) return;
     onChange(createDefaultSceneWallState());
-    setScriptStatus('Scene Wall zurückgesetzt.');
+    setScriptStatus('Scene Wall reset.');
   };
 
   return (
@@ -435,14 +435,13 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
       <div className="flex items-center justify-between gap-3 border-b border-gray-800 px-4 py-3">
         <div>
           <h2 className="text-lg font-semibold tracking-wide">Scene Wall Pro</h2>
-          <p className="text-xs text-gray-400">Digitale Szenenwand für Reels, Story Flow und Editorial-Diskussion.</p>
+          <p className="text-xs text-gray-400">Digital scene wall for reels, story flow and editorial discussion.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleApplyFromStoryBible}
             className="rounded border border-indigo-500/40 bg-indigo-600/20 px-3 py-1.5 text-xs text-indigo-200 hover:bg-indigo-600/30"
-          >
-            Sluglines aus Story Bible
+          >Sluglines from the Story Bible
           </button>
           <button
             onClick={handleSyncFromProjectContext}
@@ -453,8 +452,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
           <button
             onClick={renumberByBoardOrder}
             className="rounded border border-gray-700 bg-gray-900 px-3 py-1.5 text-xs text-gray-200 hover:border-gray-500"
-          >
-            Neu nummerieren
+          >Renumber
           </button>
           <button
             onClick={addReel}
@@ -475,11 +473,11 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Szenen suchen (Slugline, Code, Nummer, VFX Label)"
+          placeholder="Search scenes (slugline, code, number, VFX label)"
           className="w-[420px] max-w-full rounded border border-gray-700 bg-gray-900 px-3 py-1.5 text-xs text-gray-100 outline-none focus:border-indigo-500"
         />
         <span className="text-xs text-gray-500">
-          {state.scenes.filter((scene) => !scene.parked).length} aktive Szenen · {state.scenes.filter((scene) => scene.parked).length} geparkt
+          {state.scenes.filter((scene) => !scene.parked).length}active scenes · {state.scenes.filter((scene) => scene.parked).length} geparkt
         </span>
         <label className="text-xs text-gray-500 flex items-center gap-2">
           VFX Prefix
@@ -549,16 +547,14 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
                       <button
                         onClick={() => addScene(reel.id)}
                         className="rounded border border-gray-700 bg-gray-900 px-2 py-0.5 text-[11px] text-gray-300 hover:border-indigo-500"
-                      >
-                        + Szene
+                      >+ Scene
                       </button>
                     </div>
                   </div>
 
                   <div className="p-2 space-y-2">
                     {reelScenes.length === 0 && (
-                      <div className="rounded border border-dashed border-gray-700 bg-gray-900/30 p-3 text-center text-xs text-gray-600">
-                        Drop Szene hier
+                      <div className="rounded border border-dashed border-gray-700 bg-gray-900/30 p-3 text-center text-xs text-gray-600">Drop scene here
                       </div>
                     )}
                     {reelScenes.map((scene) => (
@@ -593,7 +589,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
                         </div>
                         <div className="mt-1 flex items-center justify-between text-[10px] text-gray-500">
                           <span>{scene.shotCards.length} Shots</span>
-                          <span>{(scene.linkedShotNumbers || []).length} Links</span>
+                          <span>{(scene.linkedShotNumbers || []).length}Left</span>
                         </div>
                       </div>
                     ))}
@@ -609,12 +605,11 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
             >
               <div className="border-b border-gray-800 px-3 py-2">
                 <p className="text-xs uppercase tracking-widest text-gray-400">Parked / Omitted</p>
-                <p className="text-[11px] text-gray-500">Szenen aus der Struktur gezogen</p>
+                <p className="text-[11px] text-gray-500">Scenes pulled from the structure</p>
               </div>
               <div className="p-2 space-y-2">
                 {parkedScenes.length === 0 && (
-                  <div className="rounded border border-dashed border-gray-700 bg-gray-900/30 p-3 text-center text-xs text-gray-600">
-                    Entfernte Szenen hier parken
+                  <div className="rounded border border-dashed border-gray-700 bg-gray-900/30 p-3 text-center text-xs text-gray-600">Park removed scenes here
                   </div>
                 )}
                 {parkedScenes.map((scene) => (
@@ -645,7 +640,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
 
         <div className="w-[380px] max-w-[42vw] border-l border-gray-800 bg-gray-900/70 p-3 overflow-y-auto">
           {!selectedScene ? (
-            <div className="text-xs text-gray-500">Keine Szene ausgewählt.</div>
+            <div className="text-xs text-gray-500">No scene selected.</div>
           ) : (
             <div className="space-y-4">
               <div>
@@ -660,7 +655,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
                     </button>
                   )}
                 </div>
-                <p className="text-xs text-gray-500">Storyboards, Shots und Metadaten pro Szene.</p>
+                <p className="text-xs text-gray-500">Storyboards, shots and metadata per scene.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -755,7 +750,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
                   <span className="text-[10px] text-gray-500">{(selectedScene.linkedShotNumbers || []).length}</span>
                 </div>
                 <div className="mt-2 max-h-24 overflow-auto flex flex-wrap gap-1">
-                  {shotPrompts.length === 0 && <span className="text-[10px] text-gray-600">Keine ShotPrompts im Projekt.</span>}
+                  {shotPrompts.length === 0 && <span className="text-[10px] text-gray-600">No shot prompts in the project.</span>}
                   {shotPrompts.map((shot) => {
                     const linked = (selectedScene.linkedShotNumbers || []).includes(shot.shot);
                     return (
@@ -778,7 +773,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
                   <span className="text-[10px] text-gray-500">{(selectedScene.linkedReferenceIds || []).length}</span>
                 </div>
                 <div className="mt-2 max-h-28 overflow-auto flex flex-wrap gap-1">
-                  {references.length === 0 && <span className="text-[10px] text-gray-600">Keine Concept-References im Projekt.</span>}
+                  {references.length === 0 && <span className="text-[10px] text-gray-600">No concept references in the project.</span>}
                   {references.map((reference) => {
                     const linked = (selectedScene.linkedReferenceIds || []).includes(reference.id);
                     return (
@@ -815,7 +810,7 @@ const SceneWallWorkspace: React.FC<SceneWallWorkspaceProps> = ({
                 </div>
 
                 {selectedScene.shotCards.length === 0 && (
-                  <p className="text-[10px] text-gray-600">Noch keine Shot Cards.</p>
+                  <p className="text-[10px] text-gray-600">No shot cards yet.</p>
                 )}
 
                 {selectedScene.shotCards.map((shot) => (

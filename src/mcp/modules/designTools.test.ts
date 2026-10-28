@@ -18,8 +18,8 @@ test('design tools are published; paid and destructive tools are marked', async 
       assert.ok(byName.has(name), `${name} missing`);
     }
     assert.match(byName.get('design_generate_layer')!.description, /KOSTET CREDITS/);
-    assert.match(byName.get('design_delete_layer')!.description, /LÖSCHT/);
-    assert.match(byName.get('design_apply_template')!.description, /LÖSCHT/);
+    assert.match(byName.get('design_delete_layer')!.description, /DELETES/);
+    assert.match(byName.get('design_apply_template')!.description, /DELETES/);
   } finally {
     mcp.dispose();
   }

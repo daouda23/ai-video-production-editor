@@ -39,11 +39,11 @@ type Props = { scene: SetDesignState; ui: SetDesignUiState; onError: (message: s
 const PropertiesEditor: React.FC<Props> = ({ scene, ui, onError, preferredTab }) => {
   const ref = ui.activeId ? findSceneObject(scene, ui.activeId) : null;
   const tabs: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
-    { id: 'output', label: 'Ausgabe', icon: <Monitor size={15} /> },
-    { id: 'scene', label: 'Szene', icon: <Clapperboard size={15} /> },
+    { id: 'output', label: 'Output', icon: <Monitor size={15} /> },
+    { id: 'scene', label: 'Scene', icon: <Clapperboard size={15} /> },
     { id: 'world', label: 'Welt', icon: <Globe size={15} /> },
-    ...(ref ? [{ id: 'object' as Tab, label: 'Objekt', icon: <Box size={15} /> }] : []),
-    ...(ref && ref.kind !== 'asset' ? [{ id: 'data' as Tab, label: ref.kind === 'camera' ? 'Kameradaten' : 'Lichtdaten', icon: ref.kind === 'camera' ? <Video size={15} /> : <Lightbulb size={15} /> }] : []),
+    ...(ref ? [{ id: 'object' as Tab, label: 'Object', icon: <Box size={15} /> }] : []),
+    ...(ref && ref.kind !== 'asset' ? [{ id: 'data' as Tab, label: ref.kind === 'camera' ? 'Camera data' : 'Light data', icon: ref.kind === 'camera' ? <Video size={15} /> : <Lightbulb size={15} /> }] : []),
     ...(ref && ref.kind === 'asset' ? [{ id: 'material' as Tab, label: 'Material', icon: <Paintbrush size={15} /> }] : []),
   ];
   const [chosen, setChosen] = useState<Tab>('object');
@@ -79,7 +79,7 @@ const OutputTab: React.FC<{ scene: SetDesignState; onError: (m: string) => void 
   return (
     <>
       <Panel title="Format" automationId="setdesign-props-output">
-        <Prop label="Voreinstellung">
+        <Prop label="Preset">
           <select
             className="sdx-select"
             style={{ width: '100%' }}
@@ -90,15 +90,15 @@ const OutputTab: React.FC<{ scene: SetDesignState; onError: (m: string) => void 
             }}
             data-automation-id="setdesign-output-preset"
           >
-            <option value="">Eigene Größe</option>
+            <option value="">Custom size</option>
             {OUTPUT_PRESETS.map((p) => <option key={p.label} value={p.label}>{p.label}</option>)}
           </select>
         </Prop>
-        <Prop label="Auflösung" stack>
-          <NumberField label="X" position="first" value={output.width} digits={0} step={10} unit="px" min={16} max={8192} {...edit('Auflösung')} onChange={(v) => runCommand('scene.output', { width: Math.round(v), height: output.height }, onError)} automationId="setdesign-output-width" />
-          <NumberField label="Y" position="last" value={output.height} digits={0} step={10} unit="px" min={16} max={8192} {...edit('Auflösung')} onChange={(v) => runCommand('scene.output', { width: output.width, height: Math.round(v) }, onError)} automationId="setdesign-output-height" />
+        <Prop label="Resolution" stack>
+          <NumberField label="X" position="first" value={output.width} digits={0} step={10} unit="px" min={16} max={8192} {...edit('Resolution')} onChange={(v) => runCommand('scene.output', { width: Math.round(v), height: output.height }, onError)} automationId="setdesign-output-width" />
+          <NumberField label="Y" position="last" value={output.height} digits={0} step={10} unit="px" min={16} max={8192} {...edit('Resolution')} onChange={(v) => runCommand('scene.output', { width: output.width, height: Math.round(v) }, onError)} automationId="setdesign-output-height" />
         </Prop>
-        <div className="sdx-note">Seitenverhältnis {(output.width / output.height).toFixed(2).replace('.', ',')}:1 – bestimmt den Kamerarahmen und die Größe der Referenzframes.</div>
+        <div className="sdx-note">Aspect ratio {(output.width / output.height).toFixed(2).replace('.', ',')}:1 – sets the camera frame and the size of the reference frames.</div>
       </Panel>
     </>
   );
@@ -106,18 +106,18 @@ const OutputTab: React.FC<{ scene: SetDesignState; onError: (m: string) => void 
 
 const SceneTab: React.FC<{ scene: SetDesignState; ui: SetDesignUiState; onError: (m: string) => void }> = ({ scene, ui, onError }) => (
   <>
-    <Panel title="Szene" automationId="setdesign-props-scene">
-      <Prop label="Kamera">
+    <Panel title="Scene" automationId="setdesign-props-scene">
+      <Prop label="Camera">
         <select className="sdx-select" style={{ width: '100%' }} value={scene.activeCameraId || ''} onChange={(event) => runCommand('camera.set_active', { object: event.target.value }, onError)} data-automation-id="setdesign-scene-camera">
           {(scene.cameras || []).map((camera) => <option key={camera.id} value={camera.id}>{camera.name}</option>)}
         </select>
       </Prop>
-      <Prop label="Einheiten"><span className="sdx-note">Meter, Z oben (wie Blender)</span></Prop>
+      <Prop label="Units"><span className="sdx-note">Meters, Z up (as in Blender)</span></Prop>
     </Panel>
-    <Panel title="Ansicht">
-      <label className="sdx-check"><input type="checkbox" checked={ui.lockCameraToView} onChange={(event) => runCommand('view.options', { lockCameraToView: event.target.checked }, onError)} /> Kamera an Ansicht sperren</label>
-      <label className="sdx-check"><input type="checkbox" checked={ui.emulateNumpad} onChange={(event) => runCommand('view.options', { emulateNumpad: event.target.checked }, onError)} /> Ziffernreihe als Numpad</label>
-      <label className="sdx-check"><input type="checkbox" checked={ui.snap} onChange={(event) => runCommand('view.options', { snap: event.target.checked }, onError)} /> Einrasten ({String(scene.grid?.snap ?? 0.5).replace('.', ',')} m, 5°)</label>
+    <Panel title="View">
+      <label className="sdx-check"><input type="checkbox" checked={ui.lockCameraToView} onChange={(event) => runCommand('view.options', { lockCameraToView: event.target.checked }, onError)} />Lock camera to view</label>
+      <label className="sdx-check"><input type="checkbox" checked={ui.emulateNumpad} onChange={(event) => runCommand('view.options', { emulateNumpad: event.target.checked }, onError)} />Number row as numpad</label>
+      <label className="sdx-check"><input type="checkbox" checked={ui.snap} onChange={(event) => runCommand('view.options', { snap: event.target.checked }, onError)} />Snapping ({String(scene.grid?.snap ?? 0.5).replace('.', ',')} m, 5°)</label>
     </Panel>
   </>
 );
@@ -126,16 +126,16 @@ const WorldTab: React.FC<{ scene: SetDesignState; onError: (m: string) => void }
   const world = scene.world || { color: '#3d3d40', strength: 0.6 };
   return (
     <Panel title="Welt" automationId="setdesign-props-world">
-      <Prop label="Farbe"><input type="color" value={world.color} onChange={(event) => runCommand('scene.world', { color: event.target.value }, onError)} style={{ width: '100%', height: 22 }} /></Prop>
-      <Prop label="Stärke"><NumberField value={world.strength} digits={2} step={0.05} min={0} max={5} {...edit('Welt')} onChange={(v) => runCommand('scene.world', { strength: v }, onError)} automationId="setdesign-world-strength" /></Prop>
-      <div className="sdx-note">Hintergrund und Umgebungslicht in den Shading-Modi „Gerendert“, Clay und Tiefe.</div>
+      <Prop label="Color"><input type="color" value={world.color} onChange={(event) => runCommand('scene.world', { color: event.target.value }, onError)} style={{ width: '100%', height: 22 }} /></Prop>
+      <Prop label="Strength"><NumberField value={world.strength} digits={2} step={0.05} min={0} max={5} {...edit('Welt')} onChange={(v) => runCommand('scene.world', { strength: v }, onError)} automationId="setdesign-world-strength" /></Prop>
+      <div className="sdx-note">Background and ambient light in the “Rendered”, Clay and Depth shading modes.</div>
       <Prop label="HDRI">
         <input className="sdx-input" style={{ width: '100%' }} placeholder="https://…/studio.hdr" defaultValue={world.hdriUrl || ''} key={world.hdriUrl || 'none'} onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Enter') (event.target as HTMLInputElement).blur(); }} onBlur={(event) => { const value = event.target.value.trim(); if (value !== (world.hdriUrl || '')) runCommand('scene.hdri', value ? { url: value } : { clear: true }, onError); }} data-automation-id="setdesign-world-hdri" />
       </Prop>
       {world.hdriUrl && (
         <>
-          <label className="sdx-check"><input type="checkbox" checked={!!world.hdriBackground} onChange={(event) => runCommand('scene.hdri', { background: event.target.checked }, onError)} /> HDRI als Hintergrund</label>
-          <Prop label="HDRI-Stärke"><NumberField value={world.hdriStrength ?? 1} digits={2} step={0.05} min={0} max={10} {...edit('HDRI')} onChange={(v) => runCommand('scene.hdri', { strength: v }, onError)} /></Prop>
+          <label className="sdx-check"><input type="checkbox" checked={!!world.hdriBackground} onChange={(event) => runCommand('scene.hdri', { background: event.target.checked }, onError)} />HDRI as background</label>
+          <Prop label="HDRI strength"><NumberField value={world.hdriStrength ?? 1} digits={2} step={0.05} min={0} max={10} {...edit('HDRI')} onChange={(v) => runCommand('scene.hdri', { strength: v }, onError)} /></Prop>
         </>
       )}
     </Panel>
@@ -170,13 +170,13 @@ const ObjectTab: React.FC<{ scene: SetDesignState; objectRef: SceneObjectRef; on
       <Crumb type={String(d.type)} name={d.name} />
       <Panel title="Transformation" automationId="setdesign-props-transform">
         {axis('location', 'Position', 'm', 0.1, 3)}
-        {axis('rotation', 'Drehung', '°', 5, 1)}
-        {d.scale && axis('scale', 'Maßstab', '', 0.1, 3)}
+        {axis('rotation', 'Rotation', '°', 5, 1)}
+        {d.scale && axis('scale', 'Scale', '', 0.1, 3)}
       </Panel>
-      <Panel title="Objekt">
+      <Panel title="Object">
         <Prop label="Name"><input className="sdx-input" style={{ width: '100%' }} defaultValue={d.name} key={d.name} onBlur={(event) => { if (event.target.value.trim() && event.target.value !== d.name) runCommand('object.update', { object: id, name: event.target.value }, onError); }} onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Enter') (event.target as HTMLInputElement).blur(); }} data-automation-id="setdesign-object-name" /></Prop>
-        <label className="sdx-check"><input type="checkbox" checked={!objectRef.object.hidden} onChange={(event) => runCommand('object.update', { object: id, hidden: !event.target.checked }, onError)} /> Sichtbar</label>
-        {objectRef.kind !== 'light' && <label className="sdx-check"><input type="checkbox" checked={locked} onChange={(event) => runCommand('object.update', { object: id, locked: event.target.checked }, onError)} /> Gesperrt</label>}
+        <label className="sdx-check"><input type="checkbox" checked={!objectRef.object.hidden} onChange={(event) => runCommand('object.update', { object: id, hidden: !event.target.checked }, onError)} />Visible</label>
+        {objectRef.kind !== 'light' && <label className="sdx-check"><input type="checkbox" checked={locked} onChange={(event) => runCommand('object.update', { object: id, locked: event.target.checked }, onError)} />Locked</label>}
         {objectRef.kind === 'asset' && objectRef.object.attribution && <div className="sdx-note">{objectRef.object.attribution.author} · {objectRef.object.attribution.license}</div>}
       </Panel>
     </>
@@ -193,58 +193,57 @@ const CameraTab: React.FC<{ scene: SetDesignState; camera: SetDesignCameraObject
   return (
     <>
       <Crumb type="camera" name={camera.name} />
-      {!isActive && <button type="button" className="sdx-btn sdx-btn--primary" style={{ width: '100%', marginBottom: 4 }} onClick={() => runCommand('camera.set_active', { object: camera.id }, onError)} data-automation-id="setdesign-camera-make-active">Als aktive Kamera setzen</button>}
-      <Panel title="Objektiv" automationId="setdesign-props-lens">
-        <Prop label="Brennweite"><NumberField value={camera.lensMm} unit="mm" digits={1} step={1} min={1} max={2000} {...edit('Brennweite')} onChange={(v) => update({ lensMm: v })} automationId="setdesign-camera-lens" /></Prop>
+      {!isActive && <button type="button" className="sdx-btn sdx-btn--primary" style={{ width: '100%', marginBottom: 4 }} onClick={() => runCommand('camera.set_active', { object: camera.id }, onError)} data-automation-id="setdesign-camera-make-active">Set as active camera</button>}
+      <Panel title="Lens" automationId="setdesign-props-lens">
+        <Prop label="Focal length"><NumberField value={camera.lensMm} unit="mm" digits={1} step={1} min={1} max={2000} {...edit('Focal length')} onChange={(v) => update({ lensMm: v })} automationId="setdesign-camera-lens" /></Prop>
         <div className="sdx-chips">
           {LENS_PRESETS_MM.map((mm) => <button key={mm} type="button" className={`sdx-chip${Math.abs(camera.lensMm - mm) < 0.05 ? ' is-on' : ''}`} onClick={() => update({ lensMm: mm })}>{mm}</button>)}
         </div>
-        <div className="sdx-note">Bildwinkel {horizontalFovDeg(camera, aspect).toFixed(1).replace('.', ',')}° horizontal</div>
+        <div className="sdx-note">Field of view {horizontalFovDeg(camera, aspect).toFixed(1).replace('.', ',')}° horizontal</div>
         <Prop label="Shift" stack>
           <NumberField label="X" position="first" value={camera.shiftX || 0} digits={3} step={0.01} min={-2} max={2} {...edit('Shift')} onChange={(v) => update({ shiftX: v })} automationId="setdesign-camera-shift-x" />
           <NumberField label="Y" position="last" value={camera.shiftY || 0} digits={3} step={0.01} min={-2} max={2} {...edit('Shift')} onChange={(v) => update({ shiftY: v })} automationId="setdesign-camera-shift-y" />
         </Prop>
         <Prop label="Clip" stack>
-          <NumberField label="Anfang" position="first" value={camera.clipStart ?? 0.1} unit="m" digits={2} step={0.05} min={0.001} {...edit('Clip')} onChange={(v) => update({ clipStart: v })} />
-          <NumberField label="Ende" position="last" value={camera.clipEnd ?? 1000} unit="m" digits={0} step={10} min={1} {...edit('Clip')} onChange={(v) => update({ clipEnd: v })} />
+          <NumberField label="Start" position="first" value={camera.clipStart ?? 0.1} unit="m" digits={2} step={0.05} min={0.001} {...edit('Clip')} onChange={(v) => update({ clipStart: v })} />
+          <NumberField label="End" position="last" value={camera.clipEnd ?? 1000} unit="m" digits={0} step={10} min={1} {...edit('Clip')} onChange={(v) => update({ clipEnd: v })} />
         </Prop>
       </Panel>
-      <Panel title="Kamera (Sensor)" automationId="setdesign-props-sensor">
+      <Panel title="Camera (sensor)" automationId="setdesign-props-sensor">
         <Prop label="Format">
           <select className="sdx-select" style={{ width: '100%' }} value={sensor?.id || ''} onChange={(event) => { if (event.target.value) update({ sensorPreset: event.target.value }); }} data-automation-id="setdesign-camera-sensor-preset">
-            <option value="">Eigene Größe</option>
+            <option value="">Custom size</option>
             {SENSOR_PRESETS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
         </Prop>
-        <Prop label="Anpassung">
+        <Prop label="Adjustment">
           <select className="sdx-select" style={{ width: '100%' }} value={camera.sensorFit || 'auto'} onChange={(event) => update({ sensorFit: event.target.value })}>
-            <option value="auto">Automatisch</option>
+            <option value="auto">Automatic</option>
             <option value="horizontal">Horizontal</option>
-            <option value="vertical">Vertikal</option>
+            <option value="vertical">Vertical</option>
           </select>
         </Prop>
-        <Prop label="Größe" stack>
-          <NumberField label="Breite" position="first" value={camera.sensorWidthMm} unit="mm" digits={2} step={0.1} min={1} {...edit('Sensor')} onChange={(v) => update({ sensorWidthMm: v })} automationId="setdesign-camera-sensor-width" />
-          <NumberField label="Höhe" position="last" value={camera.sensorHeightMm ?? camera.sensorWidthMm * (2 / 3)} unit="mm" digits={2} step={0.1} min={1} {...edit('Sensor')} onChange={(v) => update({ sensorHeightMm: v })} />
+        <Prop label="Size" stack>
+          <NumberField label="Width" position="first" value={camera.sensorWidthMm} unit="mm" digits={2} step={0.1} min={1} {...edit('Sensor')} onChange={(v) => update({ sensorWidthMm: v })} automationId="setdesign-camera-sensor-width" />
+          <NumberField label="Height" position="last" value={camera.sensorHeightMm ?? camera.sensorWidthMm * (2 / 3)} unit="mm" digits={2} step={0.1} min={1} {...edit('Sensor')} onChange={(v) => update({ sensorHeightMm: v })} />
         </Prop>
       </Panel>
-      <Panel title="Tiefenschärfe" defaultOpen={false}>
-        <Prop label="Fokusdistanz"><NumberField value={camera.focusDistance ?? 0} unit="m" digits={2} step={0.1} min={0} {...edit('Fokus')} onChange={(v) => update({ focusDistance: v })} /></Prop>
+      <Panel title="Depth of field" defaultOpen={false}>
+        <Prop label="Focus distance"><NumberField value={camera.focusDistance ?? 0} unit="m" digits={2} step={0.1} min={0} {...edit('Focus')} onChange={(v) => update({ focusDistance: v })} /></Prop>
         <Prop label="Blende"><NumberField value={camera.fStop ?? 2.8} digits={1} step={0.1} min={0.5} max={64} {...edit('Blende')} onChange={(v) => update({ fStop: v })} /></Prop>
-        <div className="sdx-note">Wird als Angabe in Prompts und Shot-Notizen genutzt; die Vorschau rendert ohne Unschärfe.</div>
+        <div className="sdx-note">Used as a note in prompts and shot notes; the preview renders without blur.</div>
       </Panel>
-      <Panel title="Einstellung als Text" automationId="setdesign-props-setup">
-        <div className="sdx-prompt">{setup.de}</div>
+      <Panel title="Setup as text" automationId="setdesign-props-setup">
         <div className="sdx-prompt" style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
           <span style={{ flex: 1 }}>{setup.en}</span>
-          <button type="button" className="sdx-btn sdx-btn--icon" title="Englische Zeile für den Prompt kopieren" onClick={() => copy(setup.en)}><Copy size={12} /></button>
+          <button type="button" className="sdx-btn sdx-btn--icon" title="Copy the English line for the prompt" onClick={() => copy(setup.en)}><Copy size={12} /></button>
         </div>
       </Panel>
     </>
   );
 };
 
-const LIGHT_LABEL: Record<string, string> = { point: 'Punkt', sun: 'Sonne', spot: 'Spot', area: 'Fläche' };
+const LIGHT_LABEL: Record<string, string> = { point: 'Point', sun: 'Sun', spot: 'Spot', area: 'Area' };
 
 const LightTab: React.FC<{ light: SetDesignLight; onError: (m: string) => void }> = ({ light, onError }) => {
   const type = light.type === 'directional' ? 'sun' : light.type;
@@ -252,10 +251,10 @@ const LightTab: React.FC<{ light: SetDesignLight; onError: (m: string) => void }
   if (type === 'ambient') {
     return (
       <>
-        <Crumb type="ambient" name={light.name || 'Umgebungslicht'} />
-        <Panel title="Umgebungslicht">
-          <Prop label="Stärke"><NumberField value={light.intensity} digits={2} step={0.05} min={0} {...edit('Licht')} onChange={(v) => update({ intensity: v })} /></Prop>
-          <div className="sdx-note">Altes Umgebungslicht aus früheren Projekten. Neue Sets nutzen die Welt-Stärke.</div>
+        <Crumb type="ambient" name={light.name || 'Ambient light'} />
+        <Panel title="Ambient light">
+          <Prop label="Strength"><NumberField value={light.intensity} digits={2} step={0.05} min={0} {...edit('Light')} onChange={(v) => update({ intensity: v })} /></Prop>
+          <div className="sdx-note">Legacy ambient light from earlier projects. New sets use the world strength.</div>
         </Panel>
       </>
     );
@@ -263,46 +262,46 @@ const LightTab: React.FC<{ light: SetDesignLight; onError: (m: string) => void }
   const power = light.power ?? (type === 'sun' ? light.intensity : light.intensity * 4 * Math.PI);
   return (
     <>
-      <Crumb type={type} name={light.name || 'Licht'} />
-      <Panel title="Licht" automationId="setdesign-props-light">
+      <Crumb type={type} name={light.name || 'Light'} />
+      <Panel title="Light" automationId="setdesign-props-light">
         <div className="sdx-seg" style={{ width: '100%' }}>
           {(['point', 'sun', 'spot', 'area'] as const).map((t) => (
             <button key={t} type="button" style={{ flex: 1 }} className={type === t ? 'is-on' : ''} onClick={() => update({ lightType: t })} data-automation-id={`setdesign-light-type-${t}`}>{LIGHT_LABEL[t]}</button>
           ))}
         </div>
-        <label className="sdx-check"><input type="checkbox" checked={!!light.useTemperature} onChange={(event) => update(event.target.checked ? { temperature: light.temperature || 5600 } : { color: light.color || '#ffffff' })} /> Farbtemperatur</label>
+        <label className="sdx-check"><input type="checkbox" checked={!!light.useTemperature} onChange={(event) => update(event.target.checked ? { temperature: light.temperature || 5600 } : { color: light.color || '#ffffff' })} />Color temperature</label>
         {light.useTemperature ? (
-          <Prop label="Temperatur">
+          <Prop label="Temperature">
             <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-              <div style={{ flex: 1 }}><NumberField value={light.temperature || 5600} unit="K" digits={0} step={100} min={1000} max={20000} {...edit('Farbtemperatur')} onChange={(v) => update({ temperature: v })} automationId="setdesign-light-temperature" /></div>
+              <div style={{ flex: 1 }}><NumberField value={light.temperature || 5600} unit="K" digits={0} step={100} min={1000} max={20000} {...edit('Color temperature')} onChange={(v) => update({ temperature: v })} automationId="setdesign-light-temperature" /></div>
               <span style={{ width: 18, height: 18, borderRadius: 3, background: kelvinToHex(light.temperature || 5600), border: '1px solid #000' }} />
             </div>
           </Prop>
         ) : (
-          <Prop label="Farbe"><input type="color" value={light.color || '#ffffff'} onChange={(event) => update({ color: event.target.value })} style={{ width: '100%', height: 22 }} data-automation-id="setdesign-light-color" /></Prop>
+          <Prop label="Color"><input type="color" value={light.color || '#ffffff'} onChange={(event) => update({ color: event.target.value })} style={{ width: '100%', height: 22 }} data-automation-id="setdesign-light-color" /></Prop>
         )}
         {light.useTemperature && (
           <div className="sdx-chips">
-            {[[1900, 'Kerze'], [2700, 'Glühlampe'], [3200, 'Kunstlicht'], [4300, 'Neon'], [5600, 'Tageslicht'], [6500, 'bedeckt'], [8000, 'Schatten']].map(([k, label]) => (
+            {[[1900, 'Candle'], [2700, 'Bulb'], [3200, 'Tungsten'], [4300, 'Neon'], [5600, 'Daylight'], [6500, 'Overcast'], [8000, 'Shadows']].map(([k, label]) => (
               <button key={k} type="button" className={`sdx-chip${light.temperature === k ? ' is-on' : ''}`} onClick={() => update({ temperature: k })} title={`${k} K`}>{label}</button>
             ))}
           </div>
         )}
-        <Prop label={type === 'sun' ? 'Stärke' : 'Leistung'}><NumberField value={power} unit={type === 'sun' ? 'W/m²' : 'W'} digits={type === 'sun' ? 2 : 0} step={type === 'sun' ? 0.1 : 10} min={0} {...edit('Leistung')} onChange={(v) => update({ power: v })} automationId="setdesign-light-power" /></Prop>
+        <Prop label={type === 'sun' ? 'Strength' : 'Power'}><NumberField value={power} unit={type === 'sun' ? 'W/m²' : 'W'} digits={type === 'sun' ? 2 : 0} step={type === 'sun' ? 0.1 : 10} min={0} {...edit('Power')} onChange={(v) => update({ power: v })} automationId="setdesign-light-power" /></Prop>
         {type === 'spot' && (
           <>
-            <Prop label="Kegel"><NumberField value={light.spotSize ?? 45} unit="°" digits={1} step={1} min={1} max={180} {...edit('Spot')} onChange={(v) => update({ spotSize: v })} automationId="setdesign-light-spot-size" /></Prop>
-            <Prop label="Weichheit"><NumberField value={light.spotBlend ?? 0.15} digits={3} step={0.01} min={0} max={1} slider {...edit('Spot')} onChange={(v) => update({ spotBlend: v })} /></Prop>
+            <Prop label="Cone"><NumberField value={light.spotSize ?? 45} unit="°" digits={1} step={1} min={1} max={180} {...edit('Spot')} onChange={(v) => update({ spotSize: v })} automationId="setdesign-light-spot-size" /></Prop>
+            <Prop label="Softness"><NumberField value={light.spotBlend ?? 0.15} digits={3} step={0.01} min={0} max={1} slider {...edit('Spot')} onChange={(v) => update({ spotBlend: v })} /></Prop>
           </>
         )}
         {type === 'area' && (
-          <Prop label="Größe" stack>
-            <NumberField label="X" position="first" value={light.size ?? 1} unit="m" digits={2} step={0.05} min={0.01} {...edit('Größe')} onChange={(v) => update({ size: v })} automationId="setdesign-light-size" />
-            <NumberField label="Y" position="last" value={light.sizeY ?? light.size ?? 1} unit="m" digits={2} step={0.05} min={0.01} {...edit('Größe')} onChange={(v) => update({ sizeY: v })} />
+          <Prop label="Size" stack>
+            <NumberField label="X" position="first" value={light.size ?? 1} unit="m" digits={2} step={0.05} min={0.01} {...edit('Size')} onChange={(v) => update({ size: v })} automationId="setdesign-light-size" />
+            <NumberField label="Y" position="last" value={light.sizeY ?? light.size ?? 1} unit="m" digits={2} step={0.05} min={0.01} {...edit('Size')} onChange={(v) => update({ sizeY: v })} />
           </Prop>
         )}
-        <label className="sdx-check"><input type="checkbox" checked={light.castShadow !== false} disabled={type === 'area'} onChange={(event) => update({ castShadow: event.target.checked })} /> Schatten{type === 'area' ? ' (Flächenlichter ohne Schatten in der Vorschau)' : ''}</label>
-        <div className="sdx-note">Leistung wie in Blender; die Vorschau rechnet sie angenähert um. Sichtbar in „Gerendert“ und in Referenzframes.</div>
+        <label className="sdx-check"><input type="checkbox" checked={light.castShadow !== false} disabled={type === 'area'} onChange={(event) => update({ castShadow: event.target.checked })} />Shadows{type === 'area' ? ' (area lights cast no shadows in the preview)' : ''}</label>
+        <div className="sdx-note">Power as in Blender; the preview converts it approximately. Visible in “Rendered” and in reference frames.</div>
       </Panel>
     </>
   );
@@ -315,12 +314,12 @@ const MaterialTab: React.FC<{ objectRef: Extract<SceneObjectRef, { kind: 'asset'
   return (
     <>
       <Crumb type={asset.kind === 'model' ? 'model' : asset.primitive || 'box'} name={asset.name} />
-      <Panel title="Oberfläche" automationId="setdesign-props-material">
-        {asset.kind === 'model' && <div className="sdx-note">Importierte Modelle behalten ihre eigenen Materialien; diese Werte wirken im Solid-Shading und als Grundfarbe.</div>}
-        <Prop label="Grundfarbe"><input type="color" value={material.color || '#b4b4b8'} onChange={(event) => update({ color: event.target.value })} style={{ width: '100%', height: 22 }} data-automation-id="setdesign-material-color" /></Prop>
-        <Prop label="Rauheit"><NumberField value={material.roughness ?? 0.8} digits={3} step={0.01} min={0} max={1} slider {...edit('Material')} onChange={(v) => update({ roughness: v })} automationId="setdesign-material-roughness" /></Prop>
-        <Prop label="Metallisch"><NumberField value={material.metalness ?? 0} digits={3} step={0.01} min={0} max={1} slider {...edit('Material')} onChange={(v) => update({ metalness: v })} /></Prop>
-        <Prop label="Deckkraft"><NumberField value={material.opacity ?? 1} digits={3} step={0.01} min={0} max={1} slider {...edit('Material')} onChange={(v) => update({ opacity: v })} /></Prop>
+      <Panel title="Surface" automationId="setdesign-props-material">
+        {asset.kind === 'model' && <div className="sdx-note">Imported models keep their own materials; these values apply in solid shading and as the base color.</div>}
+        <Prop label="Base color"><input type="color" value={material.color || '#b4b4b8'} onChange={(event) => update({ color: event.target.value })} style={{ width: '100%', height: 22 }} data-automation-id="setdesign-material-color" /></Prop>
+        <Prop label="Roughness"><NumberField value={material.roughness ?? 0.8} digits={3} step={0.01} min={0} max={1} slider {...edit('Material')} onChange={(v) => update({ roughness: v })} automationId="setdesign-material-roughness" /></Prop>
+        <Prop label="Metallic"><NumberField value={material.metalness ?? 0} digits={3} step={0.01} min={0} max={1} slider {...edit('Material')} onChange={(v) => update({ metalness: v })} /></Prop>
+        <Prop label="Opacity"><NumberField value={material.opacity ?? 1} digits={3} step={0.01} min={0} max={1} slider {...edit('Material')} onChange={(v) => update({ opacity: v })} /></Prop>
       </Panel>
     </>
   );

@@ -276,7 +276,7 @@ export const KeyframeLane: React.FC<{
                 }
             }}
         >
-            <div className="kfx-ruler" style={{ height: rulerHeight }} onMouseDown={scrub} data-automation-id="pp.fxc.lane.ruler" title={`Clip-Länge ${formatTimecode(duration / Math.max(0.05, speed), fps)} · Klicken/Ziehen setzt den Playhead`}>
+            <div className="kfx-ruler" style={{ height: rulerHeight }} onMouseDown={scrub} data-automation-id="pp.fxc.lane.ruler" title={`Clip length ${formatTimecode(duration / Math.max(0.05, speed), fps)} · Click/drag sets the playhead`}>
                 {ticks.map((t) => (
                     <span key={t} className="kfx-ruler__tick" style={{ left: xOf(t) }}>
                         <span className="kfx-ruler__label">{formatRulerLabel(timelineStart + t / Math.max(0.05, speed), step)}</span>
@@ -286,8 +286,8 @@ export const KeyframeLane: React.FC<{
                 {playheadInside && <span className="kfx-ruler__head" style={{ left: xOf(Math.max(0, localTime)) }} />}
                 {selection.size > 0 && (
                 <span className="kfx-toolbar" onMouseDown={(event) => event.stopPropagation()}>
-                    <span className="kfx-toolbar__count" data-automation-id="pp.fxc.lane.selection">{selection.size} ausgewählt</span>
-                    <button type="button" className="kfx-toolbar__btn" disabled={!selection.size} onClick={(event) => { const r = rootRef.current?.getBoundingClientRect(); const b = (event.currentTarget as HTMLElement).getBoundingClientRect(); setMenu({ x: b.left - (r?.left ?? 0), y: b.bottom - (r?.top ?? 0) }); }} title="Interpolation der ausgewählten Keyframes" data-automation-id="pp.fxc.lane.interpolation">
+                    <span className="kfx-toolbar__count" data-automation-id="pp.fxc.lane.selection">{selection.size}selected</span>
+                    <button type="button" className="kfx-toolbar__btn" disabled={!selection.size} onClick={(event) => { const r = rootRef.current?.getBoundingClientRect(); const b = (event.currentTarget as HTMLElement).getBoundingClientRect(); setMenu({ x: b.left - (r?.left ?? 0), y: b.bottom - (r?.top ?? 0) }); }} title="Interpolation of the selected keyframes" data-automation-id="pp.fxc.lane.interpolation">
                         Interpolation ▾
                     </button>
                 </span>
@@ -345,7 +345,7 @@ export const KeyframeLane: React.FC<{
                     ))}
                     <div className="kfx-menu__sep" />
                     <button type="button" role="menuitem" className="kfx-menu__item kfx-menu__item--danger" onClick={removeSelected} data-automation-id="pp.fxc.lane.menu.delete">
-                        <span className="kfx-menu__check" />Löschen
+                        <span className="kfx-menu__check" />Delete
                     </button>
                 </div>
             )}

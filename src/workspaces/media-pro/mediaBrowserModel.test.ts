@@ -53,8 +53,8 @@ test('paths: join, parent and breadcrumbs (posix, home, windows)', () => {
         { label: 'media', path: '/srv/media' },
         { label: 'day1', path: '/srv/media/day1' },
     ]);
-    assert.deepEqual(breadcrumbs('/home/ana/Movies/Dreh', { home: '/home/ana', homeLabel: 'Benutzer' }), [
-        { label: 'Benutzer', path: '/home/ana' },
+    assert.deepEqual(breadcrumbs('/home/ana/Movies/Dreh', { home: '/home/ana', homeLabel: 'User' }), [
+        { label: 'User', path: '/home/ana' },
         { label: 'Movies', path: '/home/ana/Movies' },
         { label: 'Dreh', path: '/home/ana/Movies/Dreh' },
     ]);
@@ -147,8 +147,8 @@ test('recent, favourites, bins and formatting', () => {
     assert.deepEqual(pushRecent(['/a', '/b', '/c'], '/c/', 3), ['/c', '/a', '/b']);
     assert.deepEqual(toggleFavorite(['/a'], '/b'), ['/a', '/b']);
     assert.deepEqual(toggleFavorite(['/a', '/b'], '/a'), ['/b']);
-    assert.equal(cleanBinName('  Dreh   Tag 1 ', []), 'Dreh Tag 1');
-    assert.equal(cleanBinName('', ['Ablage 1']), 'Ablage 2');
+    assert.equal(cleanBinName('  Shoot   Day 1 ', []), 'Shoot Day 1');
+    assert.equal(cleanBinName('', ['Bin 1']), 'Bin 2');
     assert.deepEqual(assignToBin({ X: ['m1'] }, 'X', ['m1', 'm2']), { X: ['m1', 'm2'] });
     assert.equal(formatBytes(1536), '1,5 KB');
     assert.equal(formatBytes(0), '');

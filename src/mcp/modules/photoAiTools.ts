@@ -33,10 +33,10 @@ const base = createLivePageModule({
         heal: { type: 'boolean' },
       },
     },
-    { name: 'expand_canvas', description: 'Grow the canvas by padding px on every side and select the new border, without AI ("Arbeitsfläche erweitern").', parameters: { padding: { type: 'number', minimum: 1 } } },
-    { name: 'expand_and_fill', description: 'Expand by settings.expandPadding and fill the new border generatively with settings.expandPrompt ("Erweitern und füllen").', cost: 'paid' },
+    { name: 'expand_canvas', description: 'Grow the canvas by padding px on every side and select the new border, without AI ("Canvas size").', parameters: { padding: { type: 'number', minimum: 1 } } },
+    { name: 'expand_and_fill', description: 'Expand by settings.expandPadding and fill the new border generatively with settings.expandPrompt ("Expand and fill").', cost: 'paid' },
     { name: 'set_neural_reference', description: 'Load the reference image for the "harmonize" look (empty clears it).', parameters: { url: { type: 'string' }, imagePath: { type: 'string' } } },
-    { name: 'resize_image', description: 'Set the image size in pixels (Bild › Bildgröße).', parameters: { width: { type: 'number' }, height: { type: 'number' } }, required: ['width', 'height'] },
+    { name: 'resize_image', description: 'Set the image size in pixels (Image › Image size).', parameters: { width: { type: 'number' }, height: { type: 'number' } }, required: ['width', 'height'] },
     { name: 'export_png', description: 'Return the flattened image as PNG data URL (instead of the download button; photo_export_to_media saves it to the media bin).', writes: false },
   ],
 });

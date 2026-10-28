@@ -62,10 +62,10 @@ const HeaderButtons: React.FC<{ track: TimelineTrack; mix: SoundMix; run: RunCom
   const t = trackMixOf(mix, track.id);
   return (
     <div className="snd-tl__head-row">
-      <button type="button" className="snd-tog snd-tog--r" aria-pressed={t.recordArm} title="Aufnahmebereit" onClick={() => run('mixer.toggleRecordArm', { trackId: track.id })}>R</button>
+      <button type="button" className="snd-tog snd-tog--r" aria-pressed={t.recordArm} title="Record ready" onClick={() => run('mixer.toggleRecordArm', { trackId: track.id })}>R</button>
       <button type="button" className="snd-tog snd-tog--s" aria-pressed={Boolean(track.isSolo)} title="Solo" data-automation-id={`sound-head-solo-${track.id}`} onClick={() => run('mixer.toggleSolo', { trackId: track.id })}>S</button>
-      <button type="button" className="snd-tog snd-tog--m" aria-pressed={track.isMuted} title="Stumm" data-automation-id={`sound-head-mute-${track.id}`} onClick={() => run('mixer.toggleMute', { trackId: track.id })}>M</button>
-      <button type="button" className="snd-tog snd-tog--l" aria-pressed={track.isLocked} title="Spur sperren" data-automation-id={`sound-head-lock-${track.id}`} onClick={() => run('mixer.toggleLock', { trackId: track.id })}>L</button>
+      <button type="button" className="snd-tog snd-tog--m" aria-pressed={track.isMuted} title="Mute" data-automation-id={`sound-head-mute-${track.id}`} onClick={() => run('mixer.toggleMute', { trackId: track.id })}>M</button>
+      <button type="button" className="snd-tog snd-tog--l" aria-pressed={track.isLocked} title="Lock track" data-automation-id={`sound-head-lock-${track.id}`} onClick={() => run('mixer.toggleLock', { trackId: track.id })}>L</button>
       {automation ? (
         <select className="snd-select" style={{ width: 62 }} value={t.automationMode} data-automation-id={`sound-head-auto-${track.id}`} onChange={(e) => run('automation.setMode', { trackId: track.id, mode: e.target.value as AutomationMode })}>
           {['off', 'read', 'touch', 'latch', 'write'].map((m) => <option key={m} value={m}>{m}</option>)}
@@ -89,10 +89,10 @@ export const FairlightView: React.FC<ViewProps> = (p) => {
         <MiniViewer clips={p.clips} tracks={p.tracks} media={p.media} playhead={p.playhead} isPlaying={p.isPlaying} />
         <LoudnessPanel meters={p.meters} mix={p.mix} run={p.run} />
         <div className="snd-panel snd-col" style={{ minHeight: 0, maxHeight: 160 }} data-automation-id="sound-index">
-          <div className="snd-panel__head">Spuren-Index</div>
+          <div className="snd-panel__head">Track index</div>
           <div className="snd-index">
             <table>
-              <thead><tr><th>Spur</th><th>Bus</th><th>Fader</th><th>Clips</th></tr></thead>
+              <thead><tr><th>Track</th><th>Bus</th><th>Fader</th><th>Clips</th></tr></thead>
               <tbody>
                 {tracks.map((t) => {
                   const tm = trackMixOf(p.mix, t.id);
@@ -144,7 +144,7 @@ export const ProToolsView: React.FC<ViewProps> = (p) => {
   return (
     <div className="snd-body snd-col" style={{ position: 'relative' }}>
       <div className="snd-bar" style={{ background: 'var(--snd-panel-2)' }}>
-        <div className="snd-seg" role="group" aria-label="Fenster">
+        <div className="snd-seg" role="group" aria-label="Window">
           <button type="button" aria-pressed={ui.proToolsWindow === 'edit'} data-automation-id="sound-pt-window-edit" onClick={() => p.run('view.toggleMixWindow', { window: 'edit' })}>Edit</button>
           <button type="button" aria-pressed={ui.proToolsWindow === 'mix'} data-automation-id="sound-pt-window-mix" onClick={() => p.run('view.toggleMixWindow', { window: 'mix' })}>Mix</button>
         </div>
@@ -155,7 +155,7 @@ export const ProToolsView: React.FC<ViewProps> = (p) => {
                 <button key={mode} type="button" aria-pressed={ui.editMode === mode} title={`${label} (${key})`} data-automation-id={`sound-edit-mode-${mode}`} onClick={() => p.run('edit.setMode', { mode })}>{label}</button>
               ))}
             </div>
-            <div className="snd-seg" role="group" aria-label="Werkzeug">
+            <div className="snd-seg" role="group" aria-label="Tool">
               {TOOLS.map(([tool, label, key]) => (
                 <button key={tool} type="button" aria-pressed={ui.tool === tool} title={`${label} (${key})`} data-automation-id={`sound-tool-${tool}`} onClick={() => p.run('edit.setTool', { tool })}>{label}</button>
               ))}
@@ -168,19 +168,18 @@ export const ProToolsView: React.FC<ViewProps> = (p) => {
             <button type="button" className={`snd-btn ${ui.showAutomation ? 'snd-btn--on' : ''}`} data-automation-id="sound-toggle-automation" onClick={() => p.run('view.toggleAutomation')}>Automation</button>
             <button type="button" className="snd-btn" data-automation-id="sound-zoom-out" onClick={() => p.run('view.zoom', { factor: 0.7 })}>−</button>
             <button type="button" className="snd-btn" data-automation-id="sound-zoom-in" onClick={() => p.run('view.zoom', { factor: 1.4 })}>+</button>
-            {ui.selection && <span className="snd-hint">Auswahl {formatTime(ui.selection.start)} – {formatTime(ui.selection.end)}</span>}
-            {ui.selection && <button type="button" className="snd-btn" data-automation-id="sound-delete-selection" onClick={() => p.run('edit.deleteSelection')}>Auswahl löschen</button>}
+            {ui.selection && <span className="snd-hint">Selection {formatTime(ui.selection.start)} – {formatTime(ui.selection.end)}</span>}
+            {ui.selection && <button type="button" className="snd-btn" data-automation-id="sound-delete-selection" onClick={() => p.run('edit.deleteSelection')}>Delete selection</button>}
             {selectedClip && (
               <>
                 <button type="button" className="snd-btn" data-automation-id="sound-crossfade" onClick={() => p.run('clip.crossfade', { clipId: selectedClip.id, duration: 0.5 })}>Crossfade</button>
-                <button type="button" className="snd-btn" data-automation-id="sound-split" onClick={() => p.run('clip.split', { clipIds: [selectedClip.id], time: p.playhead })}>Teilen</button>
+                <button type="button" className="snd-btn" data-automation-id="sound-split" onClick={() => p.run('clip.split', { clipIds: [selectedClip.id], time: p.playhead })}>Split</button>
               </>
             )}
             {ui.editMode === 'spot' && selectedClip && (
-              <span className="snd-hint" data-automation-id="sound-spot-dialog" style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
-                Spot „{p.media.find((m) => m.id === selectedClip.mediaId)?.name ?? selectedClip.id}“ auf
+              <span className="snd-hint" data-automation-id="sound-spot-dialog" style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>Spot “{p.media.find((m) => m.id === selectedClip.mediaId)?.name ?? selectedClip.id}” on
                 <input className="snd-input" style={{ width: 70 }} placeholder={selectedClip.start.toFixed(3)} value={spotTime} onChange={(e) => setSpotTime(e.target.value)} data-automation-id="sound-spot-time" />s
-                <button type="button" className="snd-btn snd-btn--primary" data-automation-id="sound-spot-apply" onClick={() => { const t = Number(spotTime.replace(',', '.')); if (Number.isFinite(t)) p.run('clip.move', { clipId: selectedClip.id, start: t, mode: 'spot' }); setSpotTime(''); }}>Platzieren</button>
+                <button type="button" className="snd-btn snd-btn--primary" data-automation-id="sound-spot-apply" onClick={() => { const t = Number(spotTime.replace(',', '.')); if (Number.isFinite(t)) p.run('clip.move', { clipId: selectedClip.id, start: t, mode: 'spot' }); setSpotTime(''); }}>Place</button>
               </span>
             )}
           </>
@@ -213,24 +212,24 @@ export const StudioView: React.FC<ViewProps> = (p) => {
 
   const checks = useMemo<CheckItem[]>(() => {
     const list: CheckItem[] = [];
-    if (unrouted.length) list.push({ level: 'warn', text: `${unrouted.length} Spur(en) ohne Stem-Rolle: ${unrouted.map((t) => t.name ?? t.id).join(', ')}` });
-    else if (tracks.length) list.push({ level: 'ok', text: 'Alle Spuren sind Stems zugeordnet.' });
+    if (unrouted.length) list.push({ level: 'warn', text: `${unrouted.length} track(s) without a stem role: ${unrouted.map((t) => t.name ?? t.id).join(', ')}` });
+    else if (tracks.length) list.push({ level: 'ok', text: 'All tracks are assigned to stems.' });
     if (measure) {
       const lufs = measure.integratedLufs as number | null;
       const tp = measure.truePeakDbtp as number | null;
       const target = p.mix.master.targetLufs;
-      if (lufs === null) list.push({ level: 'warn', text: 'Im Bereich ist nur Stille.' });
+      if (lufs === null) list.push({ level: 'warn', text: 'There is only silence in the range.' });
       else {
         const off = lufs - target;
-        list.push({ level: Math.abs(off) <= 1 ? 'ok' : Math.abs(off) <= 3 ? 'warn' : 'bad', text: `Loudness ${formatLufs(lufs)} LUFS, Ziel ${target} (${off > 0 ? '+' : ''}${off.toFixed(1)} LU)` });
+        list.push({ level: Math.abs(off) <= 1 ? 'ok' : Math.abs(off) <= 3 ? 'warn' : 'bad', text: `Loudness ${formatLufs(lufs)} LUFS, target ${target} (${off > 0 ? '+' : ''}${off.toFixed(1)} LU)` });
       }
-      if (tp !== null) list.push({ level: tp > p.mix.master.truePeakLimitDb ? 'bad' : 'ok', text: `True Peak ${tp.toFixed(1)} dBTP (Grenze ${p.mix.master.truePeakLimitDb})` });
+      if (tp !== null) list.push({ level: tp > p.mix.master.truePeakLimitDb ? 'bad' : 'ok', text: `True Peak ${tp.toFixed(1)} dBTP (ceiling ${p.mix.master.truePeakLimitDb})` });
       list.push({ level: 'ok', text: `Loudness Range ${measure.rangeLu} LU` });
-    } else list.push({ level: 'warn', text: 'Noch nicht gemessen: „Mischung messen“.' });
+    } else list.push({ level: 'warn', text: 'Not measured yet: “Measure mix”.' });
     const music = tracks.filter((t) => trackMixOf(p.mix, t.id).role === 'music');
     if (music.length && tracks.some((t) => trackMixOf(p.mix, t.id).role === 'dialog')) {
       const ducked = music.some((t) => (trackMixOf(p.mix, t.id).automation.volume?.length ?? 0) > 0);
-      list.push({ level: ducked ? 'ok' : 'warn', text: ducked ? 'Musik wird unter Dialog abgesenkt.' : 'Musik läuft unter Dialog in voller Lautstärke.' });
+      list.push({ level: ducked ? 'ok' : 'warn', text: ducked ? 'Music is ducked under dialogue.' : 'Music plays at full volume under dialogue.' });
     }
     return list;
   }, [unrouted, tracks, measure, p.mix]);
@@ -260,7 +259,7 @@ export const StudioView: React.FC<ViewProps> = (p) => {
               <div key={role} className="snd-stem" style={{ ['--snd-role' as string]: `var(--snd-role-${role})` }} data-automation-id={`sound-stem-${role}`}>
                 <div className="snd-stem__head">
                   <span>{STEM_LABELS[role]}</span>
-                  <span className="snd-hint">{members.length} Spur{members.length === 1 ? '' : 'en'}</span>
+                  <span className="snd-hint">{members.length}Track{members.length === 1 ? '' : 'en'}</span>
                   <span style={{ flex: 1 }} />
                   {bus && <button type="button" className="snd-tog snd-tog--s" aria-pressed={bus.solo} onClick={() => p.run('bus.set', { busId: bus.id, solo: !bus.solo })}>S</button>}
                   {bus && <button type="button" className="snd-tog snd-tog--m" aria-pressed={bus.mute} onClick={() => p.run('bus.set', { busId: bus.id, mute: !bus.mute })}>M</button>}
@@ -270,7 +269,7 @@ export const StudioView: React.FC<ViewProps> = (p) => {
                     <input type="range" min={-40} max={12} step={0.5} value={Math.max(-40, bus.gainDb)} data-automation-id={`sound-stem-${role}-fader`} onChange={(e) => p.run('bus.set', { busId: bus.id, gainDb: Number(e.target.value) <= -40 ? MIN_DB : Number(e.target.value) })} onDoubleClick={() => p.run('bus.set', { busId: bus.id, gainDb: 0 })} />
                     <span style={{ width: 44, textAlign: 'right' }}>{formatDb(bus.gainDb)}</span>
                   </div>
-                ) : <span className="snd-hint">Bus fehlt – „Stems zuordnen“ legt ihn an.</span>}
+                ) : <span className="snd-hint">Bus missing – “Assign stems” creates it.</span>}
                 <div className="snd-loud__bar"><div className="snd-loud__fill" style={{ width: `${m ? Math.max(0, Math.min(1, (m.rmsDb[0] + 60) / 66)) * 100 : 0}%` }} /></div>
               </div>
             );
@@ -280,24 +279,24 @@ export const StudioView: React.FC<ViewProps> = (p) => {
           renderHeader={(track) => (
             <div className="snd-tl__head-row">
               <select className="snd-select" style={{ width: 80 }} value={trackMixOf(p.mix, track.id).role ?? 'none'} data-automation-id={`sound-studio-role-${track.id}`} onChange={(e) => p.run('mixer.setRole', { trackId: track.id, role: e.target.value })}>
-                <option value="none">Rolle –</option>
+                <option value="none">Role –</option>
                 {STEM_ROLES.map((r) => <option key={r} value={r}>{STEM_LABELS[r]}</option>)}
               </select>
               <button type="button" className="snd-tog snd-tog--s" aria-pressed={Boolean(track.isSolo)} onClick={() => p.run('mixer.toggleSolo', { trackId: track.id })}>S</button>
               <button type="button" className="snd-tog snd-tog--m" aria-pressed={track.isMuted} onClick={() => p.run('mixer.toggleMute', { trackId: track.id })}>M</button>
-              <button type="button" className="snd-tog snd-tog--l" aria-pressed={track.isLocked} title="Spur sperren" data-automation-id={`sound-studio-lock-${track.id}`} onClick={() => p.run('mixer.toggleLock', { trackId: track.id })}>L</button>
+              <button type="button" className="snd-tog snd-tog--l" aria-pressed={track.isLocked} title="Lock track" data-automation-id={`sound-studio-lock-${track.id}`} onClick={() => p.run('mixer.toggleLock', { trackId: track.id })}>L</button>
             </div>
           )} />
       </div>
       <div className="snd-col" style={{ width: 300, flex: 'none', borderLeft: '1px solid var(--snd-line)', padding: 6, gap: 6, overflow: 'auto' }}>
         <LoudnessPanel meters={p.meters} mix={p.mix} run={p.run} compact />
         <div className="snd-panel" data-automation-id="sound-studio-check">
-          <div className="snd-panel__head">Mischung prüfen</div>
+          <div className="snd-panel__head">Check mix</div>
           <div className="snd-check">
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              <button type="button" className="snd-btn" data-automation-id="sound-studio-autoroute" onClick={() => p.run('studio.autoRoute')}>Stems zuordnen</button>
-              <button type="button" className="snd-btn" data-automation-id="sound-studio-duck" onClick={() => p.run('studio.duckMusic', { amountDb: -10 })}>Musik unter Dialog −10 dB</button>
-              <button type="button" className="snd-btn snd-btn--primary" disabled={Boolean(busy)} data-automation-id="sound-studio-measure" onClick={() => call('measure', 'sound_measure_loudness', {}, setMeasure)}>{busy === 'measure' ? 'Messe…' : 'Mischung messen'}</button>
+              <button type="button" className="snd-btn" data-automation-id="sound-studio-autoroute" onClick={() => p.run('studio.autoRoute')}>Assign stems</button>
+              <button type="button" className="snd-btn" data-automation-id="sound-studio-duck" onClick={() => p.run('studio.duckMusic', { amountDb: -10 })}>Music under dialogue −10 dB</button>
+              <button type="button" className="snd-btn snd-btn--primary" disabled={Boolean(busy)} data-automation-id="sound-studio-measure" onClick={() => call('measure', 'sound_measure_loudness', {}, setMeasure)}>{busy === 'measure' ? 'Messe…' : 'Measure mix'}</button>
             </div>
             {checks.map((c, i) => (
               <div key={i} className="snd-check__item"><span className={`snd-check__dot snd-check__dot--${c.level}`} /><span>{c.text}</span></div>
@@ -305,17 +304,17 @@ export const StudioView: React.FC<ViewProps> = (p) => {
           </div>
         </div>
         <div className="snd-panel" data-automation-id="sound-studio-delivery">
-          <div className="snd-panel__head">Ausgabe</div>
+          <div className="snd-panel__head">Output</div>
           <div className="snd-check">
-            <label><input type="checkbox" checked={normalize} onChange={(e) => setNormalize(e.target.checked)} data-automation-id="sound-studio-normalize" /> auf {p.mix.master.targetLufs} LUFS normalisieren</label>
-            <label><input type="checkbox" checked={stems} onChange={(e) => setStems(e.target.checked)} data-automation-id="sound-studio-stems" /> Stems mitliefern (Dialog, Musik, Effekte, Atmo)</label>
-            <button type="button" className="snd-btn snd-btn--primary" disabled={Boolean(busy)} data-automation-id="sound-studio-mixdown" onClick={() => call('mixdown', 'sound_mixdown', { normalize, stems }, setDelivery)}>{busy === 'mixdown' ? 'Rendere…' : 'Mixdown als WAV'}</button>
+            <label><input type="checkbox" checked={normalize} onChange={(e) => setNormalize(e.target.checked)} data-automation-id="sound-studio-normalize" /> Normalize to {p.mix.master.targetLufs} LUFS</label>
+            <label><input type="checkbox" checked={stems} onChange={(e) => setStems(e.target.checked)} data-automation-id="sound-studio-stems" />Include stems (dialogue, music, effects, ambience)</label>
+            <button type="button" className="snd-btn snd-btn--primary" disabled={Boolean(busy)} data-automation-id="sound-studio-mixdown" onClick={() => call('mixdown', 'sound_mixdown', { normalize, stems }, setDelivery)}>{busy === 'mixdown' ? 'Rendering…' : 'Mixdown as WAV'}</button>
             {delivery && (
               <div className="snd-hint">
                 {(delivery.files as Array<{ name: string; integratedLufs: number | null; truePeakDbtp: number | null }>).map((f) => (
                   <div key={f.name}>{f.name}: {formatLufs(f.integratedLufs ?? -Infinity)} LUFS · TP {f.truePeakDbtp ?? '−∞'}</div>
                 ))}
-                <div>Im Medienpool abgelegt.</div>
+                <div>Placed in the media pool.</div>
               </div>
             )}
             {note && <div className="snd-error" style={{ whiteSpace: 'normal' }}>{note}</div>}

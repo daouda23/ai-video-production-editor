@@ -8,9 +8,9 @@ import { Home } from 'lucide-react';
 import type { Workspace } from '../../types';
 
 export const MODE_TABS: Array<{ id: Workspace; label: string; hint: string }> = [
-    { id: 'IMPORT', label: 'Importieren', hint: 'Medien sichten und importieren' },
-    { id: 'EDIT', label: 'Bearbeiten', hint: 'Schnitt, Farbe, Effekte und Audio' },
-    { id: 'EXPORT', label: 'Exportieren', hint: 'Sequenz ausgeben' },
+    { id: 'IMPORT', label: 'Import', hint: 'Browse and import media' },
+    { id: 'EDIT', label: 'Edit', hint: 'Edit, color, effects and audio' },
+    { id: 'EXPORT', label: 'Export', hint: 'Output sequence' },
 ];
 
 type Props = {
@@ -28,12 +28,12 @@ const ModeBar: React.FC<Props> = ({ active, projectName, onSwitch, canAccess, tr
             className="ppx-modebar__home"
             onClick={() => onSwitch?.('PROJECT' as Workspace)}
             disabled={!onSwitch || (canAccess ? !canAccess('PROJECT' as Workspace) : false)}
-            title="Projektübersicht"
+            title="Project overview"
             data-automation-id="pp.modebar.home"
         >
             <Home size={15} />
         </button>
-        <nav className="ppx-modebar__tabs" aria-label="Arbeitsbereich">
+        <nav className="ppx-modebar__tabs" aria-label="Work area">
             {MODE_TABS.map((tab) => {
                 const allowed = Boolean(onSwitch) && (canAccess ? canAccess(tab.id) : true);
                 return (
@@ -52,7 +52,7 @@ const ModeBar: React.FC<Props> = ({ active, projectName, onSwitch, canAccess, tr
                 );
             })}
         </nav>
-        <div className="ppx-modebar__title" title={projectName || 'Unbenanntes Projekt'}>{projectName || 'Unbenanntes Projekt'}</div>
+        <div className="ppx-modebar__title" title={projectName || 'Untitled project'}>{projectName || 'Untitled project'}</div>
         <div className="ppx-modebar__trailing">{trailing}</div>
     </header>
 );

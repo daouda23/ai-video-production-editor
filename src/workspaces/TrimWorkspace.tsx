@@ -45,13 +45,13 @@ const FRAME = 1 / FPS;
 const STATE_KEY = 'cut_page_state_v1';
 
 const TOOLS: Array<{ mode: TrimMode; label: string; key: string; hint: string }> = [
-    { mode: 'normal', label: 'Trimmen', key: 'V', hint: 'Kante ändern, Nachbarn bleiben stehen' },
-    { mode: 'ripple', label: 'Ripple', key: 'R', hint: 'Kante ändern, alles danach rückt nach' },
-    { mode: 'roll', label: 'Rollen', key: 'Shift+R', hint: 'Schnittpunkt zwischen zwei Clips verschieben' },
-    { mode: 'slip', label: 'Slip', key: 'Y', hint: 'Andere Bilder zeigen, Clip bleibt an seinem Platz' },
-    { mode: 'slide', label: 'Slide', key: 'U', hint: 'Clip verschieben, Nachbarn gleichen aus' },
+    { mode: 'normal', label: 'Trim', key: 'V', hint: 'Change the edge, neighbors stay put' },
+    { mode: 'ripple', label: 'Ripple', key: 'R', hint: 'Change the edge, everything after ripples' },
+    { mode: 'roll', label: 'Roles', key: 'Shift+R', hint: 'Move the edit point between two clips' },
+    { mode: 'slip', label: 'Slip', key: 'Y', hint: 'Show other frames, the clip stays in place' },
+    { mode: 'slide', label: 'Slide', key: 'U', hint: 'Move the clip, neighbors adjust' },
 ];
-const TOOL_LABEL: Record<TrimTool, string> = { normal: 'Trimmen', ripple: 'Ripple', roll: 'Rollen', slip: 'Slip', slide: 'Slide' };
+const TOOL_LABEL: Record<TrimTool, string> = { normal: 'Trim', ripple: 'Ripple', roll: 'Roles', slip: 'Slip', slide: 'Slide' };
 
 const loadState = (): CutUiState => {
     try {
@@ -149,7 +149,7 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
         if (isEditFailure(result) && result.needsTrack) {
             pending.current = { run, trackCount: timelineTracks.length, restoreTrack: activeTrackId };
             onAddTrack(result.needsTrack);
-            say(`${label}: neue ${result.needsTrack === 'video' ? 'Video' : 'Audio'}spur angelegt`);
+            say(`${label}: new ${result.needsTrack === 'video' ? 'Video' : 'Audio'}track created`);
             return;
         }
         applyResult(result, label);
@@ -161,14 +161,14 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
         if (!job || timelineTracks.length <= job.trackCount) return;
         pending.current = null;
         const result = job.run(timelineClips, timelineTracks);
-        applyResult(result, 'Bearbeitet');
+        applyResult(result, 'Edited');
         if (job.restoreTrack) onSetActiveTrack(job.restoreTrack);
     }, [timelineTracks, timelineClips, applyResult, onSetActiveTrack]);
 
     const requireSource = useCallback(() => {
-        if (!editMedia) { say('Erst einen Clip im Mediapool wählen.'); return null; }
+        if (!editMedia) { say('Choose a clip in the media pool first.'); return null; }
         const source = editSourceFor(editMedia, ui.marks[editMedia.id]);
-        if (!source) { say('In/Out der Quelle ergeben keinen Bereich.'); return null; }
+        if (!source) { say('The source In/Out gives no range.'); return null; }
         return source;
     }, [editMedia, ui.marks, say]);
 
@@ -217,36 +217,36 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
         },
         smartInsert: () => {
             const source = requireSource(); if (!source) return;
-            const trackId = targetTrackId(source.mediaType); if (!trackId) { say('Keine freie Zielspur.'); return; }
+            const trackId = targetTrackId(source.mediaType); if (!trackId) { say('No free target track.'); return; }
             runEdit('Smart Insert', (clips, tracks) => smartInsert(clips, tracks, trackId, source, playheadPosition, makeId));
         },
         append: () => {
             const source = requireSource(); if (!source) return;
-            const trackId = targetTrackId(source.mediaType); if (!trackId) { say('Keine freie Zielspur.'); return; }
-            runEdit('Angehängt', (clips, tracks) => appendToEnd(clips, tracks, trackId, source, makeId));
+            const trackId = targetTrackId(source.mediaType); if (!trackId) { say('No free target track.'); return; }
+            runEdit('Appended', (clips, tracks) => appendToEnd(clips, tracks, trackId, source, makeId));
         },
         rippleOverwrite: () => {
             const source = requireSource(); if (!source) return;
-            const trackId = targetTrackId(source.mediaType); if (!trackId) { say('Keine freie Zielspur.'); return; }
-            runEdit('Ripple-Überschreiben', (clips, tracks) => rippleOverwrite(clips, tracks, trackId, source, playheadPosition, makeId));
+            const trackId = targetTrackId(source.mediaType); if (!trackId) { say('No free target track.'); return; }
+            runEdit('Ripple overwrite', (clips, tracks) => rippleOverwrite(clips, tracks, trackId, source, playheadPosition, makeId));
         },
         closeUp: () => {
             const base = targetTrackId('video');
             const range = ui.timelineIn !== null && ui.timelineOut !== null && ui.timelineOut > ui.timelineIn ? { start: ui.timelineIn, end: ui.timelineOut } : null;
-            runEdit('Nahaufnahme', (clips, tracks) => closeUp(clips, tracks, base, playheadPosition, makeId, { range }));
+            runEdit('Close-up', (clips, tracks) => closeUp(clips, tracks, base, playheadPosition, makeId, { range }));
         },
         placeOnTop: () => {
             const source = requireSource(); if (!source) return;
-            runEdit('Oben platziert', (clips, tracks) => placeOnTop(clips, tracks, source, playheadPosition, makeId));
+            runEdit('Placed on top', (clips, tracks) => placeOnTop(clips, tracks, source, playheadPosition, makeId));
         },
         sourceOverwrite: () => {
             const source = requireSource(); if (!source) return;
             const base = targetTrackId('video');
-            runEdit('Quelle überschrieben', (clips, tracks) => sourceOverwrite(clips, tracks, base, source, editSourceTime, playheadPosition, makeId));
+            runEdit('Source overwritten', (clips, tracks) => sourceOverwrite(clips, tracks, base, source, editSourceTime, playheadPosition, makeId));
         },
         blade: () => {
             const result = bladeAt(timelineClips, timelineTracks, playheadPosition, makeId);
-            if (result.cut === 0) { say('Unter dem Playhead liegt kein Clip.'); return; }
+            if (result.cut === 0) { say('No clip under the playhead.'); return; }
             onBatchUpdateClips(result.clips);
             say(`${result.cut} Clip${result.cut > 1 ? 's' : ''} geschnitten`);
         },
@@ -254,11 +254,11 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
             const target = ui.trimTarget;
             const outgoingId = target?.kind === 'edit' ? target.outgoingId : selectedClipId;
             const outgoing = outgoingId ? timelineClips.find((clip) => clip.id === outgoingId) : null;
-            if (!outgoing) { say('Erst einen Schnitt oder Clip wählen.'); return; }
+            if (!outgoing) { say('Choose an edit point or clip first.'); return; }
             const after = neighbours(timelineClips, outgoing).adjacentAfter;
             const length = quickTransitionDuration(kind, outgoing.end - outgoing.start, after ? after.end - after.start : null, FPS);
             onBatchUpdateClips(setTransitionOut(timelineClips, outgoing.id, length === null ? null : { type: TransitionType.CROSS_FADE, duration: length }) as TimelineClip[]);
-            say(kind === 'cut' ? 'Harter Schnitt' : kind === 'dissolve' ? 'Überblendung gesetzt' : 'Weicher Schnitt gesetzt');
+            say(kind === 'cut' ? 'Hard cut' : kind === 'dissolve' ? 'Crossfade set' : 'Soft cut set');
         },
         selectTrim: (target: TrimTarget | null) => {
             update({ trimTarget: target });
@@ -277,7 +277,7 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
                 return;
             }
             const result = applyTrim(timelineClips, target, tool, frames * FRAME, mediaLength);
-            if (Math.abs(result.applied) < 1e-6) { say('Am Limit: kein Material mehr oder Nachbar im Weg.'); return; }
+            if (Math.abs(result.applied) < 1e-6) { say('At the limit: no more media or a neighbor is in the way.'); return; }
             onBatchUpdateClips(result.clips);
             const next = retarget(result.clips, target);
             update({ trimTarget: next });
@@ -306,7 +306,7 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
                 : ui.viewerMode === 'tape' ? (current ? sourceMediaLength(current.media) : 0) : (editMedia ? sourceMediaLength(editMedia) : 0);
             const rate = fastReviewRate(length);
             setShuttle(rate);
-            say(`Schnelldurchsicht ${rate}×`);
+            say(`Quick review ${rate}×`);
         },
         setZoom: (zoom: number) => update({ detailZoom: Math.max(DETAIL_ZOOM_MIN, Math.min(DETAIL_ZOOM_MAX, zoom)) }),
     };
@@ -501,8 +501,8 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
         const frameOf = (clip: TimelineClip | null, which: 'first' | 'last', label: string, active: boolean): TrimFrame => ({
             media: mediaOf(clip),
             time: clip ? (which === 'first' ? clip.sourceIn ?? 0 : lastFrame(clip)) : 0,
-            label: clip ? `${label} · ${mediaOf(clip)?.name || 'Clip'}` : `${label} · Lücke`,
-            caption: clip ? `Quelle ${formatTimecode(which === 'first' ? clip.sourceIn ?? 0 : lastFrame(clip))} · Timeline ${formatTimecode(which === 'first' ? clip.start : clip.end)}` : '—',
+            label: clip ? `${label} · ${mediaOf(clip)?.name || 'Clip'}` : `${label} · Gap`,
+            caption: clip ? `Source ${formatTimecode(which === 'first' ? clip.sourceIn ?? 0 : lastFrame(clip))} · Timeline ${formatTimecode(which === 'first' ? clip.start : clip.end)}` : '—',
             active,
         });
         let left: TrimFrame;
@@ -512,17 +512,17 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
             if (!clip) return null;
             if (tool === 'slide') {
                 const near = neighbours(shownClips, clip);
-                left = frameOf(near.adjacentBefore, 'last', 'Davor Ende', true);
-                right = frameOf(near.adjacentAfter, 'first', 'Danach Anfang', true);
+                left = frameOf(near.adjacentBefore, 'last', 'Before end', true);
+                right = frameOf(near.adjacentAfter, 'first', 'Then start', true);
             } else {
-                left = frameOf(clip, 'first', 'Anfang', true);
-                right = frameOf(clip, 'last', 'Ende', true);
+                left = frameOf(clip, 'first', 'Start', true);
+                right = frameOf(clip, 'last', 'End', true);
             }
         } else {
-            left = frameOf(find(target.outgoingId), 'last', 'Ausgehend', target.side !== 'in');
-            right = frameOf(find(target.incomingId), 'first', 'Eingehend', target.side !== 'out');
+            left = frameOf(find(target.outgoingId), 'last', 'Outgoing', target.side !== 'in');
+            right = frameOf(find(target.incomingId), 'first', 'Incoming', target.side !== 'out');
         }
-        const label = target.kind === 'clip' ? (tool === 'slide' ? 'Slide' : 'Slip') : target.side === 'both' || tool === 'roll' ? 'Rollen' : TOOL_LABEL[tool];
+        const label = target.kind === 'clip' ? (tool === 'slide' ? 'Slide' : 'Slip') : target.side === 'both' || tool === 'roll' ? 'Roles' : TOOL_LABEL[tool];
         const offset = trimOffset + (preview ? Math.round(preview.applied * FPS) : 0);
         return <TrimFrames left={left} right={right} tool={label} offsetFrames={offset} onClose={() => commandsRef.current.selectTrim(null)} />;
     }, [ui.trimTarget, shownClips, mediaItems, tool, trimOffset, preview]);
@@ -559,7 +559,7 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
         else if (viewerMode === 'tape') update({ tapeTime: time });
         else update({ sourcePlayhead: time });
     };
-    const viewerTitle = viewerMode === 'timeline' ? (props.projectName || 'Timeline') : sourceMediaItem?.name || (viewerMode === 'tape' ? 'Quellband' : 'Kein Quellclip');
+    const viewerTitle = viewerMode === 'timeline' ? (props.projectName || 'Timeline') : sourceMediaItem?.name || (viewerMode === 'tape' ? 'Source tape' : 'No source clip');
     const marks = sourceMediaItem ? ui.marks[sourceMediaItem.id] : undefined;
     const viewerSubtitle = viewerMode === 'timeline'
         ? `${timelineClips.length} Clips · ${formatTimecode(duration)}`
@@ -567,16 +567,16 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
     const reviewLength = viewerMode === 'timeline' ? duration : current ? sourceMediaLength(current.media) : 0;
 
     const smartButtons: Array<{ id: string; label: string; hint: string; icon: React.FC<{ className?: string }>; run: () => void }> = [
-        { id: 'smart-insert', label: 'Smart Insert', hint: 'Am nächsten Schnittpunkt einfügen (F9)', icon: SmartInsertIcon, run: () => commandsRef.current.smartInsert() },
-        { id: 'append', label: 'Anhängen', hint: 'Ans Ende der Timeline (Shift+F9)', icon: AppendIcon, run: () => commandsRef.current.append() },
-        { id: 'ripple-overwrite', label: 'Ripple-Überschr.', hint: 'Clip unter dem Playhead ersetzen, Rest rückt nach (Shift+F10)', icon: RippleOverwriteIcon, run: () => commandsRef.current.rippleOverwrite() },
-        { id: 'close-up', label: 'Nahaufnahme', hint: 'Kopie mit 130 % auf die Spur darüber (Alt+F9)', icon: CloseUpIcon, run: () => commandsRef.current.closeUp() },
-        { id: 'place-on-top', label: 'Oben platzieren', hint: 'Auf die erste freie Spur darüber (F12)', icon: PlaceOnTopIcon, run: () => commandsRef.current.placeOnTop() },
-        { id: 'source-overwrite', label: 'Quelle überschr.', hint: 'Quell-Playhead an Timeline-Playhead ausrichten, Spur darüber (Shift+F11)', icon: SourceOverwriteIcon, run: () => commandsRef.current.sourceOverwrite() },
+        { id: 'smart-insert', label: 'Smart Insert', hint: 'Insert at the next edit point (F9)', icon: SmartInsertIcon, run: () => commandsRef.current.smartInsert() },
+        { id: 'append', label: 'Append', hint: 'To the end of the timeline (Shift+F9)', icon: AppendIcon, run: () => commandsRef.current.append() },
+        { id: 'ripple-overwrite', label: 'Ripple overwr.', hint: 'Replace the clip under the playhead, the rest ripples (Shift+F10)', icon: RippleOverwriteIcon, run: () => commandsRef.current.rippleOverwrite() },
+        { id: 'close-up', label: 'Close-up', hint: 'Copy at 130 % onto the track above (Alt+F9)', icon: CloseUpIcon, run: () => commandsRef.current.closeUp() },
+        { id: 'place-on-top', label: 'Place on top', hint: 'Onto the first free track above (F12)', icon: PlaceOnTopIcon, run: () => commandsRef.current.placeOnTop() },
+        { id: 'source-overwrite', label: 'Overwrite src.', hint: 'Align the source playhead to the timeline playhead, track above (Shift+F11)', icon: SourceOverwriteIcon, run: () => commandsRef.current.sourceOverwrite() },
     ];
 
     const editButtons = (
-        <div className="cutp-smart" role="toolbar" aria-label="Schnitt-Aktionen" data-automation-id="cut-smart-edit-bar">
+        <div className="cutp-smart" role="toolbar" aria-label="Edit actions" data-automation-id="cut-smart-edit-bar">
             {smartButtons.map(({ id, label, hint, icon: Icon, run }) => (
                 <button key={id} type="button" className="cutp-smart__btn" onClick={run} title={hint} data-automation-id={`cut-edit-${id}`} disabled={id !== 'close-up' && !editMedia}>
                     <Icon className="w-5 h-5" />
@@ -590,11 +590,11 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
         <div className="studio-workspace cutp" data-automation-id="cut-page">
             <div className="cutp-bar">
                 <strong className="cutp-bar__title">Cut</strong>
-                <small className="cutp-bar__project">{props.projectName || 'Unbenannte Sequenz'}</small>
+                <small className="cutp-bar__project">{props.projectName || 'Untitled sequence'}</small>
                 <span className="cutp-spacer" />
                 {notice && <span className="cutp-notice" role="status" data-automation-id="cut-notice">{notice}</span>}
                 {props.onSwitchToEdit && (
-                    <button type="button" className="cutp-btn" onClick={props.onSwitchToEdit} title="Zur Edit-Seite (3)" data-automation-id="cut-switch-edit"><EditIcon className="w-3.5 h-3.5" />Edit-Seite</button>
+                    <button type="button" className="cutp-btn" onClick={props.onSwitchToEdit} title="To the Edit page (3)" data-automation-id="cut-switch-edit"><EditIcon className="w-3.5 h-3.5" />Edit-Seite</button>
                 )}
             </div>
 
@@ -652,13 +652,13 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
                 />
             </div>
 
-            <div className="cutp-divider" onMouseDown={startResize} title="Ziehen: Höhe der Timelines" data-automation-id="cut-timeline-resize" />
+            <div className="cutp-divider" onMouseDown={startResize} title="Drag: height of the timelines" data-automation-id="cut-timeline-resize" />
 
             <div className="cutp-tlbar" role="toolbar" aria-label="Timeline-Werkzeuge">
-                <button type="button" className="cutp-btn" onClick={() => commandsRef.current.blade()} title="Am Playhead schneiden (Cmd+B)" data-automation-id="cut-blade"><BladeIcon />Schneiden</button>
+                <button type="button" className="cutp-btn" onClick={() => commandsRef.current.blade()} title="Cut at the playhead (Cmd+B)" data-automation-id="cut-blade"><BladeIcon />Cut</button>
                 <span className="cutp-sep" />
                 <TrimToolIcon className="w-4 h-4 cutp-dim" />
-                <div className="cutp-seg" role="tablist" aria-label="Trimm-Werkzeug">
+                <div className="cutp-seg" role="tablist" aria-label="Trim tool">
                     {TOOLS.map((entry) => (
                         <button key={entry.mode} type="button" role="tab" aria-selected={trimMode === entry.mode} className={`cutp-btn ${trimMode === entry.mode ? 'cutp-btn--on' : ''}`} onClick={() => onTrimModeChange(entry.mode)} title={`${entry.hint} (${entry.key})`} data-automation-id={`cut-tool-${entry.mode}`}>
                             {entry.label}
@@ -666,22 +666,22 @@ const TrimWorkspace: React.FC<TrimWorkspaceProps> = (props) => {
                     ))}
                 </div>
                 <span className="cutp-sep" />
-                <div className="cutp-seg" role="group" aria-label="Übergänge">
-                    <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.quickTransition('cut')} title="Harter Schnitt (Übergang entfernen)" data-automation-id="cut-transition-cut"><HardCutIcon /></button>
-                    <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.quickTransition('dissolve')} title="Überblendung 1 s (\\)" data-automation-id="cut-transition-dissolve"><DissolveIcon /></button>
-                    <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.quickTransition('smooth')} title="Weicher Schnitt (4 Frames)" data-automation-id="cut-transition-smooth"><SmoothCutIcon /></button>
+                <div className="cutp-seg" role="group" aria-label="Transitions">
+                    <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.quickTransition('cut')} title="Hard cut (remove transition)" data-automation-id="cut-transition-cut"><HardCutIcon /></button>
+                    <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.quickTransition('dissolve')} title="Crossfade 1 s (\\)" data-automation-id="cut-transition-dissolve"><DissolveIcon /></button>
+                    <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.quickTransition('smooth')} title="Soft cut (4 frames)" data-automation-id="cut-transition-smooth"><SmoothCutIcon /></button>
                 </div>
                 <span className="cutp-sep" />
                 <span className="cutp-hint" data-automation-id="cut-trim-hint">
-                    {ui.trimTarget ? `${TOOL_LABEL[tool]} · , . = ±1 Frame · Shift = ±${ui.multiFrame} · Esc beendet` : 'Schnitt anklicken zum Trimmen · Mitte = Rollen'}
+                    {ui.trimTarget ? `${TOOL_LABEL[tool]} · , . = ±1 Frame · Shift = ±${ui.multiFrame} · Esc finishes` : 'Click an edit to trim · Center = roll'}
                 </span>
                 <span className="cutp-spacer" />
                 <span className="cutp-tc cutp-tc--dim" title="Timeline In / Out">
                     {ui.timelineIn !== null ? formatTimecode(ui.timelineIn) : '--'} / {ui.timelineOut !== null ? formatTimecode(ui.timelineOut) : '--'}
                 </span>
-                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.setZoom(ui.detailZoom / 1.5)} title="Herauszoomen" data-automation-id="cut-zoom-out"><ZoomOut className="w-4 h-4" /></button>
-                <input className="cutp-zoom" type="range" min={Math.log(DETAIL_ZOOM_MIN)} max={Math.log(DETAIL_ZOOM_MAX)} step={0.01} value={Math.log(ui.detailZoom)} onChange={(event) => commandsRef.current.setZoom(Math.exp(Number(event.target.value)))} aria-label="Zoom der Detail-Timeline" data-automation-id="cut-zoom" />
-                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.setZoom(ui.detailZoom * 1.5)} title="Hineinzoomen" data-automation-id="cut-zoom-in"><ZoomIn className="w-4 h-4" /></button>
+                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.setZoom(ui.detailZoom / 1.5)} title="Zoom out" data-automation-id="cut-zoom-out"><ZoomOut className="w-4 h-4" /></button>
+                <input className="cutp-zoom" type="range" min={Math.log(DETAIL_ZOOM_MIN)} max={Math.log(DETAIL_ZOOM_MAX)} step={0.01} value={Math.log(ui.detailZoom)} onChange={(event) => commandsRef.current.setZoom(Math.exp(Number(event.target.value)))} aria-label="Detail timeline zoom" data-automation-id="cut-zoom" />
+                <button type="button" className="cutp-btn cutp-btn--icon" onClick={() => commandsRef.current.setZoom(ui.detailZoom * 1.5)} title="Zoom in" data-automation-id="cut-zoom-in"><ZoomIn className="w-4 h-4" /></button>
             </div>
 
             <CutTimeline

@@ -122,9 +122,9 @@ const COACH_TIPS = [
 ];
 
 const QUICK_ACTIONS: AssistantAction[] = [
-  { id: 'open-project', label: '🎬 My Project', tool: 'navigateWorkspace', args: { workspace: 'PROJECT' } },
-  { id: 'open-image-gen', label: '🖼️ Make Image', tool: 'navigateWorkspace', args: { workspace: 'IMAGE_GEN' } },
-  { id: 'open-video-gen', label: '🎥 Make Video', tool: 'navigateWorkspace', args: { workspace: 'VIDEO_GEN' } },
+  { id: 'open-project', label: '🎬 Project', tool: 'navigateWorkspace', args: { workspace: 'PROJECT' } },
+  { id: 'open-image-gen', label: '🖼️ Images', tool: 'navigateWorkspace', args: { workspace: 'IMAGE_GEN' } },
+  { id: 'open-video-gen', label: '🎥 Video', tool: 'navigateWorkspace', args: { workspace: 'VIDEO_GEN' } },
   { id: 'open-moodboard', label: '🗂️ Moodboard', tool: 'navigateWorkspace', args: { workspace: 'MOODBOARD' } },
   { id: 'open-settings', label: '⚙️ Settings', tool: 'openSettings' },
   { id: 'setup-check', label: '✅ Check Setup', tool: 'runSetupCheck' },

@@ -54,16 +54,16 @@ test('build and edit a layer comp over MCP', async () => {
     const mediaId = (media.layer as LayerOut).layerId;
     assert.equal((media.layer as LayerOut).outPoint, 8);
 
-    const solid = await mcp.call('ae_layer_add', { kind: 'solid', name: 'Hintergrund', color: '#203040' });
+    const solid = await mcp.call('ae_layer_add', { kind: 'solid', name: 'Background', color: '#203040' });
     const solidId = (solid.layer as LayerOut).layerId;
-    const text = await mcp.call('ae_layer_add', { kind: 'text', text: 'Titel', position: [960, 200] });
+    const text = await mcp.call('ae_layer_add', { kind: 'text', text: 'Title', position: [960, 200] });
     assert.deepEqual((text.layer as LayerOut).transform.position, [960, 200]);
 
     // Solid to the bottom; then move text to index 2.
     let order = await mcp.call('ae_layer_reorder', { layerId: solidId, mode: 'back' });
-    assert.deepEqual((order.order as LayerOut[]).map((l) => l.name), ['Titel', 'Clip', 'Hintergrund']);
+    assert.deepEqual((order.order as LayerOut[]).map((l) => l.name), ['Title', 'Clip', 'Background']);
     order = await mcp.call('ae_layer_reorder', { layerId: '1', index: 2 });
-    assert.deepEqual((order.order as LayerOut[]).map((l) => l.name), ['Clip', 'Titel', 'Hintergrund']);
+    assert.deepEqual((order.order as LayerOut[]).map((l) => l.name), ['Clip', 'Title', 'Background']);
 
     const tr = await mcp.call('ae_layer_set_transform', { layerId: mediaId, position: [1000, 540], scale: 50, opacity: 80, blend: 'screen', solo: true });
     const trLayer = tr.layer as LayerOut;
@@ -94,7 +94,7 @@ test('build and edit a layer comp over MCP', async () => {
     assert.equal(bad.ok, false);
 
     const dup = await mcp.call('ae_layer_duplicate', { layerId: solidId });
-    assert.equal((dup.layer as LayerOut).name, 'Hintergrund 2');
+    assert.equal((dup.layer as LayerOut).name, 'Background 2');
 
     const fx = await mcp.call('ae_layer_add_effect', { layerId: solidId, effectId: 'buckswood-post-plugins.film-emulation' });
     assert.equal(fx.ok, true);

@@ -27,7 +27,7 @@ import { EXPORT_COMMANDS, listExportCommands, runExportCommand } from './command
 
 const clone = (): DeliverySettings => JSON.parse(JSON.stringify(DEFAULT_DELIVERY_SETTINGS));
 let seq = 0;
-const ctx = { timelineDuration: 10, stillTime: 2, timelineName: 'Sequenz 01', now: 1, makeId: () => `j${++seq}` };
+const ctx = { timelineDuration: 10, stillTime: 2, timelineName: 'Sequence 01', now: 1, makeId: () => `j${++seq}` };
 
 test('presets map onto codec settings', () => {
     const ids = DELIVERY_PRESETS.map((preset) => preset.id);
@@ -116,7 +116,7 @@ test('commands: queue add / export / render scope / cancel', () => {
     state = runExportCommand(state, 'export.queue.add', {}, ctx);
     // media + audio + 2 interchange formats (fcpxml, otio)
     assert.deepEqual(state.queue.map((job) => job.kind), ['media', 'audio', 'interchange', 'interchange']);
-    assert.equal(state.queue[0].timelineName, 'Sequenz 01');
+    assert.equal(state.queue[0].timelineName, 'Sequence 01');
     assert.equal(state.runner.active, false);
 
     state = runExportCommand(state, 'export.export', {}, { ...ctx });
@@ -187,6 +187,6 @@ test('ffmpeg preflight mirrors the renderer checks', async () => {
     assert.deepEqual(ffmpegPreflight([base], media, []), []);
     const issues = ffmpegPreflight([{ ...base, blendMode: 'screen' }, { ...base, id: 'c2', textConfig: { content: 'x', font: 'a', size: 1, color: '#fff', position: 'center' } }], media, []);
     assert.equal(issues.length, 2);
-    assert.match(issues[0].message, /Mischmodus/);
+    assert.match(issues[0].message, /Blend mode/);
     assert.equal(ffmpegPreflight([{ ...base, blendMode: 'screen' }], media, [{ id: 'v1', name: 'V1', type: 'video', isLocked: false, isMuted: true }]).length, 0);
 });

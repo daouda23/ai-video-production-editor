@@ -44,8 +44,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
                     <h1 className="mt-8 text-5xl font-semibold leading-tight">
                         AI Video Production
                     </h1>
-                    <p className="mt-4 max-w-md text-base leading-7 text-slate-200">
-                        Lokale Projektordner, Timeline, Generierung und Review in einer ruhigen Desktop-Oberfläche.
+                    <p className="mt-4 max-w-md text-base leading-7 text-slate-200">Local project folders, timeline, generation and review in a calm desktop interface.
                     </p>
                     <div className="mt-8 grid max-w-md grid-cols-3 gap-3 text-xs text-slate-200">
                         <div className="auth-screen__metric">
@@ -83,8 +82,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
                         <h2 className="text-3xl font-semibold text-white">
                             Enter Studio
                         </h2>
-                        <p className="mt-2 text-sm text-gray-400">
-                            Starte eine lokale Electron-Session für deine Produktion.
+                        <p className="mt-2 text-sm text-gray-400">Start a local Electron session for your production.
                         </p>
                     </div>
 

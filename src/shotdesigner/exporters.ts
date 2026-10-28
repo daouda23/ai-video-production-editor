@@ -10,22 +10,22 @@ import { orderedShots, shotRows, type ShotRow } from './shotList.ts';
 import { PdfDoc, fitText, wrapText, type PdfImage, type PdfPage } from './pdfWriter.ts';
 
 export const SHOT_COLUMNS: Array<{ key: string; label: string }> = [
-  { key: 'shootOrder', label: 'Drehfolge' },
+  { key: 'shootOrder', label: 'Shooting order' },
   { key: 'code', label: 'Shot' },
-  { key: 'cameraName', label: 'Kamera' },
-  { key: 'sizeLabel', label: 'Größe' },
-  { key: 'lensMm', label: 'Objektiv (mm)' },
-  { key: 'moveLabel', label: 'Bewegung' },
-  { key: 'angleLabel', label: 'Perspektive' },
-  { key: 'heightM', label: 'Kamerahöhe (m)' },
-  { key: 'subjects', label: 'Figuren' },
-  { key: 'startS', label: 'Von (s)' },
+  { key: 'cameraName', label: 'Camera' },
+  { key: 'sizeLabel', label: 'Size' },
+  { key: 'lensMm', label: 'Lens (mm)' },
+  { key: 'moveLabel', label: 'Motion' },
+  { key: 'angleLabel', label: 'Perspective' },
+  { key: 'heightM', label: 'Camera height (m)' },
+  { key: 'subjects', label: 'Characters' },
+  { key: 'startS', label: 'From (s)' },
   { key: 'endS', label: 'Bis (s)' },
-  { key: 'description', label: 'Beschreibung' },
-  { key: 'props', label: 'Requisiten' },
-  { key: 'gear', label: 'Technik' },
+  { key: 'description', label: 'Description' },
+  { key: 'props', label: 'Props' },
+  { key: 'gear', label: 'Technique' },
   { key: 'crew', label: 'Crew' },
-  { key: 'notes', label: 'Notizen' },
+  { key: 'notes', label: 'Notes' },
   { key: 'storyboardShot', label: 'Storyboard-Shot' },
 ];
 
@@ -71,7 +71,7 @@ export const blockingJson = (host: StageHost & { stage: StageState }, title = ''
   units: 'm, Y-up, yaw 0 = -Z',
   assets: host.assets,
   stage: { ...host.stage, snapshots: undefined },
-  shotList: shotRows(host.stage).map(({ subjects, ...row }) => ({ ...row, subjects: subjects.map((s) => s.name), frameUrl: row.frameUrl && row.frameUrl.startsWith('data:') ? '(eingebettet)' : row.frameUrl })),
+  shotList: shotRows(host.stage).map(({ subjects, ...row }) => ({ ...row, subjects: subjects.map((s) => s.name), frameUrl: row.frameUrl && row.frameUrl.startsWith('data:') ? '(embedded)' : row.frameUrl })),
 }, null, 2);
 
 export type PdfExportOptions = {
@@ -93,12 +93,12 @@ const MARGIN = 36;
 const header = (page: PdfPage, title: string, subtitle: string, pageNo: number, total: string) => {
   page.text(MARGIN, MARGIN - 8, fitText(title, 16, page.width - 2 * MARGIN - 160, true), { size: 16, bold: true, color: '#1d232a' });
   if (subtitle) page.text(MARGIN, MARGIN + 8, fitText(subtitle, 9, page.width - 2 * MARGIN), { size: 9, color: '#5f6b77' });
-  page.text(page.width - MARGIN, MARGIN - 8, `Seite ${pageNo}${total}`, { size: 9, color: '#5f6b77', anchor: 'end' });
+  page.text(page.width - MARGIN, MARGIN - 8, `Page ${pageNo}${total}`, { size: 9, color: '#5f6b77', anchor: 'end' });
 };
 
 const drawPlanPage = (doc: PdfDoc, host: StageHost & { stage: StageState }, o: PdfExportOptions, pageNo: number) => {
   const page = doc.addPage(...A4L);
-  header(page, o.title || 'Kameraplan', o.subtitle || '', pageNo, '');
+  header(page, o.title || 'Camera plan', o.subtitle || '', pageNo, '');
   const bounds = planBounds(host);
   const top = MARGIN + 22;
   const availW = page.width - 2 * MARGIN;
@@ -140,12 +140,12 @@ const COLS: Array<{ key: keyof ShotRow | 'subjects' | 'time'; label: string; w: 
   { key: 'shootOrder', label: '#', w: 22 },
   { key: 'code', label: 'Shot', w: 34 },
   { key: 'cameraName', label: 'Kam.', w: 32 },
-  { key: 'sizeLabel', label: 'Größe', w: 70 },
+  { key: 'sizeLabel', label: 'Size', w: 70 },
   { key: 'lensMm', label: 'mm', w: 30 },
-  { key: 'moveLabel', label: 'Bewegung', w: 74 },
-  { key: 'subjects', label: 'Figuren', w: 92 },
-  { key: 'time', label: 'Zeit', w: 56 },
-  { key: 'description', label: 'Beschreibung', w: 0 },
+  { key: 'moveLabel', label: 'Motion', w: 74 },
+  { key: 'subjects', label: 'Characters', w: 92 },
+  { key: 'time', label: 'Time', w: 56 },
+  { key: 'description', label: 'Description', w: 0 },
 ];
 
 const drawShotListPages = (doc: PdfDoc, host: StageHost & { stage: StageState }, o: PdfExportOptions, firstPageNo: number) => {
@@ -160,7 +160,7 @@ const drawShotListPages = (doc: PdfDoc, host: StageHost & { stage: StageState },
   const descW = A4L[0] - 2 * MARGIN - frameW - 8 - COLS.reduce((s, c) => s + c.w, 0);
   const startPage = () => {
     page = doc.addPage(...A4L);
-    header(page, `${o.title || 'Kameraplan'} · Shot-Liste`, o.subtitle || '', pageNo, '');
+    header(page, `${o.title || 'Camera plan'} · Shot list`, o.subtitle || '', pageNo, '');
     pageNo += 1;
     y = MARGIN + 30;
     let x = MARGIN + frameW + 8;
@@ -173,7 +173,7 @@ const drawShotListPages = (doc: PdfDoc, host: StageHost & { stage: StageState },
     y += 12;
   };
   startPage();
-  if (rows.length === 0) (page as unknown as PdfPage).text(MARGIN, y + 20, 'Noch keine Shots – Kameras in den Plan setzen.', { size: 10, color: '#5f6b77' });
+  if (rows.length === 0) (page as unknown as PdfPage).text(MARGIN, y + 20, 'No shots yet – place cameras in the plan.', { size: 10, color: '#5f6b77' });
   for (const r of rows) {
     if (y + rowH > A4L[1] - MARGIN) startPage();
     const p = page as unknown as PdfPage;
@@ -194,9 +194,9 @@ const drawShotListPages = (doc: PdfDoc, host: StageHost & { stage: StageState },
     cell(r.moveLabel, COLS[5].w);
     cell(r.subjectNames.join(', ') || '–', COLS[6].w);
     cell(`${r.startS.toFixed(1)}–${r.endS.toFixed(1)} s`.replace(/\./g, ','), COLS[7].w);
-    const lines = wrapText([r.description, r.props && `Requisiten: ${r.props}`, r.gear && `Technik: ${r.gear}`, r.notes].filter(Boolean).join(' · '), 8.5, descW - 6, 4);
+    const lines = wrapText([r.description, r.props && `Props: ${r.props}`, r.gear && `Technique: ${r.gear}`, r.notes].filter(Boolean).join(' · '), 8.5, descW - 6, 4);
     lines.forEach((line, i) => p.text(x + 3, y + 16 + i * 10.5, line, { size: 8.5, color: '#1d232a' }));
-    if (warnIds.has(r.id)) p.text(x + 3, y + rowH - 6, 'Achtung: Achssprung über die 180°-Linie', { size: 7.5, color: '#c62828' });
+    if (warnIds.has(r.id)) p.text(x + 3, y + rowH - 6, 'Warning: axis jump across the 180° line', { size: 7.5, color: '#c62828' });
     y += rowH;
     p.poly([[MARGIN, y], [A4L[0] - MARGIN, y]], false, { stroke: '#e3e7ec', lineWidth: 0.5 });
   }
@@ -218,7 +218,7 @@ const drawStoryboardPages = (doc: PdfDoc, host: StageHost & { stage: StageState 
     const perPage = cols * Math.max(1, Math.floor((A4L[1] - MARGIN * 2 - 30) / (cellH + gap)));
     if (i % perPage === 0) {
       page = doc.addPage(...A4L);
-      header(page, `${o.title || 'Kameraplan'} · Storyboard`, o.subtitle || '', pageNo, '');
+      header(page, `${o.title || 'Camera plan'} · Storyboard`, o.subtitle || '', pageNo, '');
       pageNo += 1;
     }
     const p = page as unknown as PdfPage;
@@ -237,7 +237,7 @@ const drawStoryboardPages = (doc: PdfDoc, host: StageHost & { stage: StageState 
 /** Floor plan, shot list and storyboard as one PDF. */
 export const buildBlockingPdf = (host: StageHost & { stage: StageState }, o: PdfExportOptions = {}): Uint8Array => {
   const doc = new PdfDoc();
-  doc.title = o.title || 'Kameraplan';
+  doc.title = o.title || 'Camera plan';
   let pageNo = 1;
   if (o.includePlan !== false) { drawPlanPage(doc, host, o, pageNo); pageNo += 1; }
   if (o.includeShotList !== false) pageNo = drawShotListPages(doc, host, o, pageNo);

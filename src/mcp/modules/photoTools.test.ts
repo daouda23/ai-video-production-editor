@@ -22,58 +22,58 @@ function fakePhotoPage() {
   let h: History<PhotoDoc> | null = null;
   const calls: Array<{ name: string; args: Record<string, any> }> = [];
   let n = 0;
-  const doc = () => { if (!h) throw new Error('Kein Dokument geöffnet'); return currentState(h); };
+  const doc = () => { if (!h) throw new Error('No document open'); return currentState(h); };
   const apply = (action: Parameters<typeof docReducer>[1], label: string) => { h = commit(h!, docReducer(doc(), action), label, { now: (n += 10000) }); };
   const listed = () => ({ document: describeDoc(doc()), layers: describeLayers(doc()) });
   const log = (name: string, args: Record<string, any>) => calls.push({ name, args });
   const dispose = registerLiveCommands({
     [PHOTO_LIVE.state]: () => ({ active: h ? describeDoc(doc()) : null, history: h ? { index: h.index, entries: h.entries.map((e) => e.label) } : null }),
-    [PHOTO_LIVE.open]: (args) => { log('open', args); h = createHistory(createDoc(String(args.name), 64, 32, [makeRasterLayer('L1', 'Hintergrund', 'px-1', 64, 32)])); return listed(); },
-    [PHOTO_LIVE.newDocument]: (args) => { h = createHistory(createDoc(String(args.name), Number(args.width), Number(args.height), [makeRasterLayer('L1', 'Hintergrund', 'px-1', Number(args.width), Number(args.height))])); return listed(); },
+    [PHOTO_LIVE.open]: (args) => { log('open', args); h = createHistory(createDoc(String(args.name), 64, 32, [makeRasterLayer('L1', 'Background', 'px-1', 64, 32)])); return listed(); },
+    [PHOTO_LIVE.newDocument]: (args) => { h = createHistory(createDoc(String(args.name), Number(args.width), Number(args.height), [makeRasterLayer('L1', 'Background', 'px-1', Number(args.width), Number(args.height))])); return listed(); },
     [PHOTO_LIVE.layersList]: () => listed(),
     [PHOTO_LIVE.layerAdd]: (args: Record<string, any>) => {
       const id = `X${(n += 1)}`;
       const layer = args.kind === 'text' ? makeTextLayer(id, 0, 0, { text: args.text })
-        : args.kind === 'adjustment' ? makeAdjustmentLayer(id, 'Korrektur', args.adjustment)
-          : makeRasterLayer(id, 'Ebene', `px-${id}`, 64, 32);
-      apply({ type: 'add', layer: { ...layer, ...(args.opacity !== undefined ? { opacity: args.opacity } : {}) } }, 'Neue Ebene');
+        : args.kind === 'adjustment' ? makeAdjustmentLayer(id, 'Correction', args.adjustment)
+          : makeRasterLayer(id, 'Layer', `px-${id}`, 64, 32);
+      apply({ type: 'add', layer: { ...layer, ...(args.opacity !== undefined ? { opacity: args.opacity } : {}) } }, 'New layer');
       return { layerId: id, ...listed() };
     },
-    [PHOTO_LIVE.layerRemove]: (args) => { const l = resolveLayer(doc(), args.layerId); apply({ type: 'remove', id: l.id }, 'Ebene löschen'); return listed(); },
+    [PHOTO_LIVE.layerRemove]: (args) => { const l = resolveLayer(doc(), args.layerId); apply({ type: 'remove', id: l.id }, 'Delete layer'); return listed(); },
     [PHOTO_LIVE.layerReorder]: (args: Record<string, any>) => {
       const l = resolveLayer(doc(), args.layerId);
-      apply(args.index !== undefined ? { type: 'reorder', id: l.id, toIndex: args.index } : { type: 'step', id: l.id, delta: args.delta }, 'Anordnen');
+      apply(args.index !== undefined ? { type: 'reorder', id: l.id, toIndex: args.index } : { type: 'step', id: l.id, delta: args.delta }, 'Arrange');
       return listed();
     },
     [PHOTO_LIVE.layerSet]: (args) => {
       const l = resolveLayer(doc(), args.layerId);
-      apply({ type: 'update', id: l.id, patch: layerPatchFromArgs(l, args) }, 'Ebeneneigenschaften');
+      apply({ type: 'update', id: l.id, patch: layerPatchFromArgs(l, args) }, 'Layer properties');
       const next = resolveLayer(doc(), l.id);
       return { layer: describeLayer(next, doc().layers.indexOf(next)) };
     },
     [PHOTO_LIVE.adjustmentAdd]: (args: Record<string, any>) => {
-      const layer = { ...makeAdjustmentLayer(`A${(n += 1)}`, args.name ?? 'Korrektur', args.adjustment), opacity: args.opacity ?? 1 };
-      apply({ type: 'add', layer }, 'Neue Einstellungsebene');
+      const layer = { ...makeAdjustmentLayer(`A${(n += 1)}`, args.name ?? 'Correction', args.adjustment), opacity: args.opacity ?? 1 };
+      apply({ type: 'add', layer }, 'New adjustment layer');
       return { layerId: layer.id, ...listed() };
     },
     [PHOTO_LIVE.smartFilterAdd]: (args: Record<string, any>) => {
       const l = resolveLayer(doc(), args.layerId);
-      if (l.kind !== 'raster') throw new Error('keine Pixelebene');
-      apply({ type: 'update', id: l.id, patch: { fx: [...l.fx, args.instance] } }, 'Smartfilter');
+      if (l.kind !== 'raster') throw new Error('not a pixel layer');
+      apply({ type: 'update', id: l.id, patch: { fx: [...l.fx, args.instance] } }, 'Smart filter');
       return { layerId: l.id, instanceId: args.instance.id };
     },
     [PHOTO_LIVE.smartFilterRemove]: (args) => {
       const l = resolveLayer(doc(), args.layerId);
-      if (l.kind !== 'raster') throw new Error('keine Pixelebene');
-      apply({ type: 'update', id: l.id, patch: { fx: l.fx.filter((fx) => fx.id !== args.instanceId) } }, 'Smartfilter entfernen');
+      if (l.kind !== 'raster') throw new Error('not a pixel layer');
+      apply({ type: 'update', id: l.id, patch: { fx: l.fx.filter((fx) => fx.id !== args.instanceId) } }, 'Remove smart filter');
       return { removed: args.instanceId };
     },
     [PHOTO_LIVE.smartFilterApply]: (args) => { log('apply', args); return listed(); },
-    [PHOTO_LIVE.selectionSet]: (args) => { log('selection', args); apply({ type: 'selection', selection: args.mode === 'none' ? null : { pixelKey: 'sel', bounds: args.rect ?? { x: 0, y: 0, width: 64, height: 32 } } }, 'Auswahl'); return { selection: describeDoc(doc()).selection }; },
+    [PHOTO_LIVE.selectionSet]: (args) => { log('selection', args); apply({ type: 'selection', selection: args.mode === 'none' ? null : { pixelKey: 'sel', bounds: args.rect ?? { x: 0, y: 0, width: 64, height: 32 } } }, 'Selection'); return { selection: describeDoc(doc()).selection }; },
     [PHOTO_LIVE.generativeFill]: (args) => { log('fill', args); return listed(); },
-    [PHOTO_LIVE.crop]: (args: Record<string, any>) => { apply({ type: 'crop', rect: args.rect }, 'Freistellen'); return { document: describeDoc(doc()) }; },
-    [PHOTO_LIVE.mergeDown]: (args) => { log('merge', args); const d = doc(); const top = resolveLayer(d, args.layerId); const i = d.layers.indexOf(top); apply({ type: 'replace', ids: [d.layers[i - 1].id, top.id], layer: makeRasterLayer('M', 'Merged', 'px-m', 64, 32) }, 'Auf eine Ebene reduzieren'); return listed(); },
-    [PHOTO_LIVE.flatten]: () => { apply({ type: 'replace', ids: doc().layers.map((l) => l.id), layer: makeRasterLayer('F', 'Hintergrund', 'px-f', 64, 32) }, 'Auf Hintergrundebene reduzieren'); return listed(); },
+    [PHOTO_LIVE.crop]: (args: Record<string, any>) => { apply({ type: 'crop', rect: args.rect }, 'Cut out'); return { document: describeDoc(doc()) }; },
+    [PHOTO_LIVE.mergeDown]: (args) => { log('merge', args); const d = doc(); const top = resolveLayer(d, args.layerId); const i = d.layers.indexOf(top); apply({ type: 'replace', ids: [d.layers[i - 1].id, top.id], layer: makeRasterLayer('M', 'Merged', 'px-m', 64, 32) }, 'Flatten image'); return listed(); },
+    [PHOTO_LIVE.flatten]: () => { apply({ type: 'replace', ids: doc().layers.map((l) => l.id), layer: makeRasterLayer('F', 'Background', 'px-f', 64, 32) }, 'Flatten to background layer'); return listed(); },
     [PHOTO_LIVE.historyUndo]: (args) => { for (let i = 0; i < Number(args.steps ?? 1); i += 1) h = undo(h!); return { index: h!.index }; },
     [PHOTO_LIVE.historyRedo]: (args) => { for (let i = 0; i < Number(args.steps ?? 1); i += 1) h = redo(h!); return { index: h!.index }; },
     [PHOTO_LIVE.historyJump]: (args) => { h = jumpTo(h!, Number(args.index)); return { index: h!.index }; },
@@ -106,7 +106,7 @@ test('open, layers, adjustments, smart filters, history and export over MCP', as
     assert.equal(page.calls[0].args.url, media.url);
     assert.equal((await mcp.call('photo_open', { mediaId: 'nope' })).ok, false);
 
-    const text = await mcp.call('photo_layer_add', { kind: 'text', text: 'Titel', opacity: 80 });
+    const text = await mcp.call('photo_layer_add', { kind: 'text', text: 'Title', opacity: 80 });
     assert.equal((text.layers as any[])[0].opacity, 0.8);
     const raster = await mcp.call('photo_layer_add', { kind: 'raster' });
     const adj = await mcp.call('photo_adjustment_add', { type: 'hueSaturation', values: { saturation: -40 }, opacity: 0.5 });
@@ -134,8 +134,8 @@ test('open, layers, adjustments, smart filters, history and export over MCP', as
     const sel = await mcp.call('photo_selection_set', { mode: 'rect', rect: { x: 1, y: 2, width: 10, height: 5 }, combine: 'add' });
     assert.deepEqual((sel.selection as any).bounds, { x: 1, y: 2, width: 10, height: 5 });
     assert.equal((await mcp.call('photo_selection_set', { mode: 'rect' })).ok, false, 'rect required');
-    await mcp.call('photo_generative_fill', { prompt: 'Himmel', model: 'flux-2-pro' });
-    assert.equal(page.calls.find((c) => c.name === 'fill')!.args.prompt, 'Himmel');
+    await mcp.call('photo_generative_fill', { prompt: 'Sky', model: 'flux-2-pro' });
+    assert.equal(page.calls.find((c) => c.name === 'fill')!.args.prompt, 'Sky');
 
     const listed = await mcp.call('photo_layers_list');
     assert.equal((listed.layers as unknown[]).length, 4);
@@ -178,7 +178,7 @@ test('photo tools open the PHOTO page when it is not mounted', async () => {
     page = fakePhotoPage();
     const result = await pending;
     assert.equal(result.ok, false);
-    assert.match(String(result.message), /Kein Dokument/);
+    assert.match(String(result.message), /No document/);
   } finally {
     mcp.dispose();
     page?.dispose();

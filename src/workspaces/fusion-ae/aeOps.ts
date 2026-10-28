@@ -290,7 +290,7 @@ export function addFxInstanceToLayer(comp: Composition, layerId: string, instanc
       fxNodeId: existing.id,
     };
   }
-  const fx = createNode('fx', { name: `${layer.source.name} Effekte`, x: layer.source.x + 320, y: layer.source.y, fxStack: [instance] });
+  const fx = createNode('fx', { name: `${layer.source.name} effects`, x: layer.source.x + 320, y: layer.source.y, fxStack: [instance] });
   return { comp: insertAtLayerTop(comp, layerId, fx), fxNodeId: fx.id };
 }
 
@@ -301,7 +301,7 @@ export function addMaskToLayer(comp: Composition, layerId: string, shape: 'ellip
   if (!layer) return { comp, maskId: null };
   const n = layer.maskNodes.length + 1;
   const mask = createNode('mask', {
-    name: `Maske ${n}`,
+    name: `Mask ${n}`,
     x: layer.source.x + 240,
     y: layer.source.y + 60,
     params: { shape, feather: 0, ...(rect ? { cx: clamp(rect.cx, -1, 2), cy: clamp(rect.cy, -1, 2), w: clamp(rect.w, 0.001, 4), h: clamp(rect.h, 0.001, 4) } : {}) },
@@ -325,19 +325,19 @@ export function removeBranchNode(comp: Composition, nodeId: string): Composition
 // ---------------------------------------------------------------- new layers
 
 export const LABEL_COLORS: { id: string; name: string; color: string }[] = [
-  { id: 'none', name: 'Ohne', color: '#6a6a70' },
+  { id: 'none', name: 'None', color: '#6a6a70' },
   { id: 'red', name: 'Rot', color: '#c9565c' },
-  { id: 'yellow', name: 'Gelb', color: '#d3bf4c' },
-  { id: 'teal', name: 'Türkis', color: '#4fb0ad' },
+  { id: 'yellow', name: 'Yellow', color: '#d3bf4c' },
+  { id: 'teal', name: 'Teal', color: '#4fb0ad' },
   { id: 'rose', name: 'Rosa', color: '#d585b6' },
-  { id: 'lavender', name: 'Lavendel', color: '#a092d6' },
-  { id: 'peach', name: 'Pfirsich', color: '#dca57b' },
+  { id: 'lavender', name: 'Lavender', color: '#a092d6' },
+  { id: 'peach', name: 'Peach', color: '#dca57b' },
   { id: 'mint', name: 'Mint', color: '#98cc97' },
-  { id: 'blue', name: 'Blau', color: '#5b7fd4' },
-  { id: 'green', name: 'Grün', color: '#4aa457' },
-  { id: 'violet', name: 'Violett', color: '#8d5bb6' },
+  { id: 'blue', name: 'Blue', color: '#5b7fd4' },
+  { id: 'green', name: 'Green', color: '#4aa457' },
+  { id: 'violet', name: 'Violet', color: '#8d5bb6' },
   { id: 'orange', name: 'Orange', color: '#de8a3c' },
-  { id: 'brown', name: 'Braun', color: '#93694b' },
+  { id: 'brown', name: 'Brown', color: '#93694b' },
 ];
 
 export function defaultLabel(node: Pick<CompNode, 'type'>, mediaType?: string): string {
@@ -379,7 +379,7 @@ export function addSourceLayer(comp: Composition, source: CompNode, options: New
 const countOf = (comp: Composition, type: CompNode['type']) => comp.nodes.filter((n) => n.type === type).length;
 
 export function newSolidLayer(comp: Composition, opts: { name?: string; color?: string; at?: number } = {}) {
-  const solid = createNode('solid', { name: opts.name || `Farbfläche ${countOf(comp, 'solid') + 1}`, params: { color: opts.color || '#7a7a7a' } });
+  const solid = createNode('solid', { name: opts.name || `Solid ${countOf(comp, 'solid') + 1}`, params: { color: opts.color || '#7a7a7a' } });
   return addSourceLayer(comp, solid, { at: opts.at });
 }
 
@@ -579,11 +579,11 @@ export function splitLayer(comp: Composition, layerId: string, t: number): { com
 export type AePropId = 'anchor' | 'position' | 'scale' | 'rotation' | 'opacity';
 
 export const AE_PROPS: { id: AePropId; label: string; params: string[]; key: string; unit: string }[] = [
-  { id: 'anchor', label: 'Ankerpunkt', params: ['anchorX', 'anchorY'], key: 'a', unit: '' },
+  { id: 'anchor', label: 'Anchor point', params: ['anchorX', 'anchorY'], key: 'a', unit: '' },
   { id: 'position', label: 'Position', params: ['x', 'y'], key: 'p', unit: '' },
-  { id: 'scale', label: 'Skalierung', params: ['scale'], key: 's', unit: '%' },
-  { id: 'rotation', label: 'Drehung', params: ['rotation'], key: 'r', unit: '°' },
-  { id: 'opacity', label: 'Deckkraft', params: ['opacity'], key: 't', unit: '%' },
+  { id: 'scale', label: 'Scale', params: ['scale'], key: 's', unit: '%' },
+  { id: 'rotation', label: 'Rotation', params: ['rotation'], key: 'r', unit: '°' },
+  { id: 'opacity', label: 'Opacity', params: ['opacity'], key: 't', unit: '%' },
 ];
 
 export const propDef = (id: AePropId) => AE_PROPS.find((p) => p.id === id)!;
@@ -1009,69 +1009,69 @@ export type AeCommand = { id: AeCommandId; label: string; menu: string; shortcut
 
 /** One table for menus, shortcut hints and agent automation (window.avpeAeView.run). */
 export const AE_COMMANDS: AeCommand[] = [
-  { id: 'transport.playToggle', label: 'Wiedergabe / Stopp', menu: 'Vorschau', shortcut: 'Leertaste' },
-  { id: 'time.prevFrame', label: 'Vorheriges Bild', menu: 'Vorschau', shortcut: 'Bild ↑' },
-  { id: 'time.nextFrame', label: 'Nächstes Bild', menu: 'Vorschau', shortcut: 'Bild ↓' },
-  { id: 'time.prev10', label: '10 Bilder zurück', menu: 'Vorschau', shortcut: '⇧ Bild ↑' },
-  { id: 'time.next10', label: '10 Bilder vor', menu: 'Vorschau', shortcut: '⇧ Bild ↓' },
-  { id: 'time.start', label: 'Zum Anfang', menu: 'Vorschau', shortcut: 'Pos1' },
-  { id: 'time.end', label: 'Zum Ende', menu: 'Vorschau', shortcut: 'Ende' },
-  { id: 'time.prevKeyframe', label: 'Vorheriger Keyframe', menu: 'Animation', shortcut: 'J' },
-  { id: 'time.nextKeyframe', label: 'Nächster Keyframe', menu: 'Animation', shortcut: 'K' },
-  { id: 'layer.newSolid', label: 'Neu › Farbfläche …', menu: 'Ebene', shortcut: '⌘ Y' },
-  { id: 'layer.newText', label: 'Neu › Text', menu: 'Ebene', shortcut: '⌥⇧⌘ T' },
-  { id: 'time.layerIn', label: 'Zum In-Point der Ebene', menu: 'Ebene', shortcut: 'I' },
-  { id: 'time.layerOut', label: 'Zum Out-Point der Ebene', menu: 'Ebene', shortcut: 'O' },
-  { id: 'workArea.start', label: 'Arbeitsbereich-Anfang setzen', menu: 'Komposition', shortcut: 'B' },
-  { id: 'workArea.end', label: 'Arbeitsbereich-Ende setzen', menu: 'Komposition', shortcut: 'N' },
-  { id: 'layer.inToTime', label: 'In-Point zur aktuellen Zeit verschieben', menu: 'Ebene', shortcut: '[' },
-  { id: 'layer.outToTime', label: 'Out-Point zur aktuellen Zeit verschieben', menu: 'Ebene', shortcut: ']' },
-  { id: 'layer.trimIn', label: 'In-Point auf aktuelle Zeit trimmen', menu: 'Ebene', shortcut: '⌥ [' },
-  { id: 'layer.trimOut', label: 'Out-Point auf aktuelle Zeit trimmen', menu: 'Ebene', shortcut: '⌥ ]' },
-  { id: 'layer.duplicate', label: 'Duplizieren', menu: 'Ebene', shortcut: '⌘ D' },
-  { id: 'layer.split', label: 'Ebene teilen', menu: 'Ebene', shortcut: '⇧⌘ D' },
-  { id: 'layer.forward', label: 'Ebene nach vorne', menu: 'Ebene', shortcut: '⌘ ]' },
-  { id: 'layer.backward', label: 'Ebene nach hinten', menu: 'Ebene', shortcut: '⌘ [' },
-  { id: 'layer.front', label: 'In den Vordergrund', menu: 'Ebene', shortcut: '⇧⌘ ]' },
-  { id: 'layer.back', label: 'In den Hintergrund', menu: 'Ebene', shortcut: '⇧⌘ [' },
-  { id: 'layer.maskEllipse', label: 'Neue Maske › Ellipse', menu: 'Ebene' },
-  { id: 'layer.maskRect', label: 'Neue Maske › Rechteck', menu: 'Ebene' },
-  { id: 'layer.precompose', label: 'Vorkomponieren … (nicht verfügbar)', menu: 'Ebene', shortcut: '⇧⌘ C' },
-  { id: 'edit.delete', label: 'Löschen', menu: 'Bearbeiten', shortcut: '⌫' },
-  { id: 'edit.undo', label: 'Rückgängig', menu: 'Bearbeiten', shortcut: '⌘ Z' },
-  { id: 'edit.redo', label: 'Wiederholen', menu: 'Bearbeiten', shortcut: '⇧⌘ Z' },
-  { id: 'select.all', label: 'Alle Ebenen auswählen', menu: 'Bearbeiten', shortcut: '⌘ A' },
-  { id: 'select.none', label: 'Auswahl aufheben', menu: 'Bearbeiten', shortcut: 'F2' },
-  { id: 'select.above', label: 'Ebene darüber auswählen', menu: 'Bearbeiten', shortcut: '⌘ ↑' },
-  { id: 'select.below', label: 'Ebene darunter auswählen', menu: 'Bearbeiten', shortcut: '⌘ ↓' },
-  { id: 'reveal.anchor', label: 'Ankerpunkt einblenden', menu: 'Animation', shortcut: 'A' },
-  { id: 'reveal.position', label: 'Position einblenden', menu: 'Animation', shortcut: 'P' },
-  { id: 'reveal.scale', label: 'Skalierung einblenden', menu: 'Animation', shortcut: 'S' },
-  { id: 'reveal.rotation', label: 'Drehung einblenden', menu: 'Animation', shortcut: 'R' },
-  { id: 'reveal.opacity', label: 'Deckkraft einblenden', menu: 'Animation', shortcut: 'T' },
-  { id: 'reveal.keyframed', label: 'Animierte Eigenschaften einblenden', menu: 'Animation', shortcut: 'U' },
-  { id: 'key.anchor', label: 'Keyframe: Ankerpunkt', menu: 'Animation', shortcut: '⌥⇧ A' },
+  { id: 'transport.playToggle', label: 'Play / Stop', menu: 'Preview', shortcut: 'Space' },
+  { id: 'time.prevFrame', label: 'Previous frame', menu: 'Preview', shortcut: 'Page Up' },
+  { id: 'time.nextFrame', label: 'Next frame', menu: 'Preview', shortcut: 'Page Down' },
+  { id: 'time.prev10', label: '10 frames back', menu: 'Preview', shortcut: '⇧ Page Up' },
+  { id: 'time.next10', label: '10 frames forward', menu: 'Preview', shortcut: '⇧ Page Down' },
+  { id: 'time.start', label: 'Go to start', menu: 'Preview', shortcut: 'Pos1' },
+  { id: 'time.end', label: 'Go to end', menu: 'Preview', shortcut: 'End' },
+  { id: 'time.prevKeyframe', label: 'Previous keyframe', menu: 'Animation', shortcut: 'J' },
+  { id: 'time.nextKeyframe', label: 'Next keyframe', menu: 'Animation', shortcut: 'K' },
+  { id: 'layer.newSolid', label: 'New › Solid …', menu: 'Layer', shortcut: '⌘ Y' },
+  { id: 'layer.newText', label: 'New › Text', menu: 'Layer', shortcut: '⌥⇧⌘ T' },
+  { id: 'time.layerIn', label: 'Go to layer In point', menu: 'Layer', shortcut: 'I' },
+  { id: 'time.layerOut', label: 'Go to layer Out point', menu: 'Layer', shortcut: 'O' },
+  { id: 'workArea.start', label: 'Set work area start', menu: 'Composition', shortcut: 'B' },
+  { id: 'workArea.end', label: 'Set work area end', menu: 'Composition', shortcut: 'N' },
+  { id: 'layer.inToTime', label: 'Move In point to current time', menu: 'Layer', shortcut: '[' },
+  { id: 'layer.outToTime', label: 'Move Out point to current time', menu: 'Layer', shortcut: ']' },
+  { id: 'layer.trimIn', label: 'Trim In point to current time', menu: 'Layer', shortcut: '⌥ [' },
+  { id: 'layer.trimOut', label: 'Trim Out point to current time', menu: 'Layer', shortcut: '⌥ ]' },
+  { id: 'layer.duplicate', label: 'Duplicate', menu: 'Layer', shortcut: '⌘ D' },
+  { id: 'layer.split', label: 'Split layer', menu: 'Layer', shortcut: '⇧⌘ D' },
+  { id: 'layer.forward', label: 'Bring layer forward', menu: 'Layer', shortcut: '⌘ ]' },
+  { id: 'layer.backward', label: 'Send layer backward', menu: 'Layer', shortcut: '⌘ [' },
+  { id: 'layer.front', label: 'Bring to front', menu: 'Layer', shortcut: '⇧⌘ ]' },
+  { id: 'layer.back', label: 'Send to back', menu: 'Layer', shortcut: '⇧⌘ [' },
+  { id: 'layer.maskEllipse', label: 'New mask › Ellipse', menu: 'Layer' },
+  { id: 'layer.maskRect', label: 'New mask › Rectangle', menu: 'Layer' },
+  { id: 'layer.precompose', label: 'Precompose … (not available)', menu: 'Layer', shortcut: '⇧⌘ C' },
+  { id: 'edit.delete', label: 'Delete', menu: 'Edit', shortcut: '⌫' },
+  { id: 'edit.undo', label: 'Undo', menu: 'Edit', shortcut: '⌘ Z' },
+  { id: 'edit.redo', label: 'Redo', menu: 'Edit', shortcut: '⇧⌘ Z' },
+  { id: 'select.all', label: 'Select all layers', menu: 'Edit', shortcut: '⌘ A' },
+  { id: 'select.none', label: 'Deselect', menu: 'Edit', shortcut: 'F2' },
+  { id: 'select.above', label: 'Select layer above', menu: 'Edit', shortcut: '⌘ ↑' },
+  { id: 'select.below', label: 'Select layer below', menu: 'Edit', shortcut: '⌘ ↓' },
+  { id: 'reveal.anchor', label: 'Show anchor point', menu: 'Animation', shortcut: 'A' },
+  { id: 'reveal.position', label: 'Show position', menu: 'Animation', shortcut: 'P' },
+  { id: 'reveal.scale', label: 'Show scale', menu: 'Animation', shortcut: 'S' },
+  { id: 'reveal.rotation', label: 'Show rotation', menu: 'Animation', shortcut: 'R' },
+  { id: 'reveal.opacity', label: 'Show opacity', menu: 'Animation', shortcut: 'T' },
+  { id: 'reveal.keyframed', label: 'Show animated properties', menu: 'Animation', shortcut: 'U' },
+  { id: 'key.anchor', label: 'Keyframe: anchor point', menu: 'Animation', shortcut: '⌥⇧ A' },
   { id: 'key.position', label: 'Keyframe: Position', menu: 'Animation', shortcut: '⌥⇧ P' },
-  { id: 'key.scale', label: 'Keyframe: Skalierung', menu: 'Animation', shortcut: '⌥⇧ S' },
-  { id: 'key.rotation', label: 'Keyframe: Drehung', menu: 'Animation', shortcut: '⌥⇧ R' },
-  { id: 'key.opacity', label: 'Keyframe: Deckkraft', menu: 'Animation', shortcut: '⌥⇧ T' },
+  { id: 'key.scale', label: 'Keyframe: scale', menu: 'Animation', shortcut: '⌥⇧ S' },
+  { id: 'key.rotation', label: 'Keyframe: rotation', menu: 'Animation', shortcut: '⌥⇧ R' },
+  { id: 'key.opacity', label: 'Keyframe: opacity', menu: 'Animation', shortcut: '⌥⇧ T' },
   { id: 'ease.easy', label: 'Keyframe-Assistent › Easy Ease', menu: 'Animation', shortcut: 'F9' },
   { id: 'ease.in', label: 'Keyframe-Assistent › Easy Ease In', menu: 'Animation', shortcut: '⇧ F9' },
   { id: 'ease.out', label: 'Keyframe-Assistent › Easy Ease Out', menu: 'Animation', shortcut: '⇧⌘ F9' },
   { id: 'ease.linear', label: 'Keyframe-Interpolation › Linear', menu: 'Animation' },
-  { id: 'ease.hold', label: 'Keyframe-Interpolation › Halten umschalten', menu: 'Animation', shortcut: '⌥⌘ H' },
-  { id: 'tool.selection', label: 'Auswahl-Werkzeug', menu: 'Werkzeuge', shortcut: 'V' },
-  { id: 'tool.hand', label: 'Hand-Werkzeug', menu: 'Werkzeuge', shortcut: 'H' },
-  { id: 'tool.zoom', label: 'Zoom-Werkzeug', menu: 'Werkzeuge', shortcut: 'Z' },
-  { id: 'tool.rotate', label: 'Drehen-Werkzeug', menu: 'Werkzeuge', shortcut: 'W' },
-  { id: 'tool.anchor', label: 'Ausschnitt-dahinter-Werkzeug (Ankerpunkt)', menu: 'Werkzeuge', shortcut: 'Y' },
-  { id: 'tool.mask', label: 'Form-/Masken-Werkzeug', menu: 'Werkzeuge', shortcut: 'Q' },
-  { id: 'tool.text', label: 'Text-Werkzeug', menu: 'Werkzeuge', shortcut: '⌘ T' },
-  { id: 'view.zoomIn', label: 'Ansicht vergrößern', menu: 'Ansicht', shortcut: '.' },
-  { id: 'view.zoomOut', label: 'Ansicht verkleinern', menu: 'Ansicht', shortcut: ',' },
-  { id: 'timeline.zoomIn', label: 'Zeitleiste einzoomen', menu: 'Ansicht', shortcut: '=' },
-  { id: 'timeline.zoomOut', label: 'Zeitleiste auszoomen', menu: 'Ansicht', shortcut: '-' },
-  { id: 'comp.render', label: 'Rendern → Medien', menu: 'Komposition', shortcut: '⌃⌘ M' },
+  { id: 'ease.hold', label: 'Keyframe interpolation › Toggle hold', menu: 'Animation', shortcut: '⌥⌘ H' },
+  { id: 'tool.selection', label: 'Selection tool', menu: 'Tools', shortcut: 'V' },
+  { id: 'tool.hand', label: 'Hand tool', menu: 'Tools', shortcut: 'H' },
+  { id: 'tool.zoom', label: 'Zoom tool', menu: 'Tools', shortcut: 'Z' },
+  { id: 'tool.rotate', label: 'Rotate tool', menu: 'Tools', shortcut: 'W' },
+  { id: 'tool.anchor', label: 'Pan behind tool (anchor point)', menu: 'Tools', shortcut: 'Y' },
+  { id: 'tool.mask', label: 'Shape/mask tool', menu: 'Tools', shortcut: 'Q' },
+  { id: 'tool.text', label: 'Text tool', menu: 'Tools', shortcut: '⌘ T' },
+  { id: 'view.zoomIn', label: 'Zoom in', menu: 'View', shortcut: '.' },
+  { id: 'view.zoomOut', label: 'Zoom out', menu: 'View', shortcut: ',' },
+  { id: 'timeline.zoomIn', label: 'Zoom timeline in', menu: 'View', shortcut: '=' },
+  { id: 'timeline.zoomOut', label: 'Zoom timeline out', menu: 'View', shortcut: '-' },
+  { id: 'comp.render', label: 'Render → media', menu: 'Composition', shortcut: '⌃⌘ M' },
 ];
 
 export type KeyInput = { key: string; code?: string; metaKey?: boolean; ctrlKey?: boolean; shiftKey?: boolean; altKey?: boolean };

@@ -12,7 +12,7 @@
 export type PlaybackResolution = 'full' | 'half' | 'quarter';
 
 export const PLAYBACK_RESOLUTIONS: Array<{ id: PlaybackResolution; label: string; scale: number }> = [
-    { id: 'full', label: 'Voll', scale: 1 },
+    { id: 'full', label: 'Full', scale: 1 },
     { id: 'half', label: '1/2', scale: 0.5 },
     { id: 'quarter', label: '1/4', scale: 0.25 },
 ];

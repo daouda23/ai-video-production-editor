@@ -14,7 +14,7 @@ export const HistoryPanel: React.FC<{
   onUndo: () => void;
   onRedo: () => void;
 }> = ({ history, docName, onJump, onUndo, onRedo }) => {
-  if (!history) return <p className="psx-hint" style={{ padding: 8 }}>Kein Dokument geöffnet.</p>;
+  if (!history) return <p className="psx-hint" style={{ padding: 8 }}>No document open.</p>;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }} data-automation-id="photo.history-panel">
       <div style={{ overflowY: 'auto', flex: 1 }}>
@@ -48,9 +48,9 @@ export const HistoryPanel: React.FC<{
         ))}
       </div>
       <div className="psx-panel__foot">
-        <span className="psx-hint" style={{ marginRight: 'auto' }}>{history.entries.length - 1} Schritte</span>
-        <button type="button" className="psx-icon-btn" disabled={history.index === 0} onClick={onUndo} title="Schritt zurück (Cmd+Z)" data-automation-id="photo.history.undo"><Undo2 size={14} /></button>
-        <button type="button" className="psx-icon-btn" disabled={history.index >= history.entries.length - 1} onClick={onRedo} title="Schritt vorwärts (Umschalt+Cmd+Z)" data-automation-id="photo.history.redo"><Redo2 size={14} /></button>
+        <span className="psx-hint" style={{ marginRight: 'auto' }}>{history.entries.length - 1}Steps</span>
+        <button type="button" className="psx-icon-btn" disabled={history.index === 0} onClick={onUndo} title="Step back (Cmd+Z)" data-automation-id="photo.history.undo"><Undo2 size={14} /></button>
+        <button type="button" className="psx-icon-btn" disabled={history.index >= history.entries.length - 1} onClick={onRedo} title="Step forward (Shift+Cmd+Z)" data-automation-id="photo.history.redo"><Redo2 size={14} /></button>
       </div>
     </div>
   );
@@ -66,10 +66,10 @@ export const ColorPanel: React.FC<{ fg: string; bg: string; onFg: (c: string) =>
   return (
     <div data-automation-id="photo.color-panel">
       <div className="psx-color-big">
-        <label style={{ background: fg, outline: target === 'fg' ? '2px solid rgb(var(--psx-accent-rgb))' : undefined }} title="Vordergrundfarbe" onClick={() => setTarget('fg')}>
+        <label style={{ background: fg, outline: target === 'fg' ? '2px solid rgb(var(--psx-accent-rgb))' : undefined }} title="Foreground color" onClick={() => setTarget('fg')}>
           <input type="color" value={fg} onChange={(e) => onFg(e.target.value)} />
         </label>
-        <label style={{ background: bg, outline: target === 'bg' ? '2px solid rgb(var(--psx-accent-rgb))' : undefined }} title="Hintergrundfarbe" onClick={() => setTarget('bg')}>
+        <label style={{ background: bg, outline: target === 'bg' ? '2px solid rgb(var(--psx-accent-rgb))' : undefined }} title="Background color" onClick={() => setTarget('bg')}>
           <input type="color" value={bg} onChange={(e) => onBg(e.target.value)} />
         </label>
         <input
@@ -111,7 +111,7 @@ export const SwatchesPanel: React.FC<{ onPick: (color: string, background: boole
   <div data-automation-id="photo.swatches-panel">
     <div className="psx-swatches">
       {SWATCHES.map((c) => (
-        <button key={c} type="button" style={{ background: c }} title={`${c} (Alt: Hintergrundfarbe)`} onClick={(e) => onPick(c, e.altKey)} data-automation-id={`photo.swatch.${c.slice(1)}`} />
+        <button key={c} type="button" style={{ background: c }} title={`${c} (Alt: background color)`} onClick={(e) => onPick(c, e.altKey)} data-automation-id={`photo.swatch.${c.slice(1)}`} />
       ))}
     </div>
   </div>
@@ -194,7 +194,7 @@ export const Dialog: React.FC<{ spec: DialogSpec; onClose: () => void }> = ({ sp
           ))}
         </div>
         <div className="psx-dialog__foot">
-          <button type="button" className="psx-btn" onClick={onClose} data-automation-id={`photo.dialog.${spec.id}.cancel`}>Abbrechen</button>
+          <button type="button" className="psx-btn" onClick={onClose} data-automation-id={`photo.dialog.${spec.id}.cancel`}>Cancel</button>
           <button type="button" className="psx-btn psx-btn--primary" onClick={submit} data-automation-id={`photo.dialog.${spec.id}.ok`}>{spec.okLabel ?? 'OK'}</button>
         </div>
       </div>

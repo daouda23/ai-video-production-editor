@@ -18,15 +18,15 @@ import { applySoundPatchToContext, readSoundMix } from './soundTools.ts';
 
 const requireConfirm = (args: Record<string, unknown>, what: string) => {
   if (args.confirm !== true) {
-    throw new Error(`${what} verbraucht Provider-Credits. Nach Rückfrage beim Nutzer erneut mit confirm: true aufrufen.`);
+    throw new Error(`${what} uses provider credits. Ask the user, then call again with confirm: true.`);
   }
 };
 
-const CONFIRM: JsonSchema = { type: 'boolean', description: 'Muss true sein (verbraucht Provider-Credits).' };
+const CONFIRM: JsonSchema = { type: 'boolean', description: 'Must be true (uses provider credits).' };
 const PLACE_PROPS: Record<string, JsonSchema> = {
-  placeOnTimeline: { type: 'boolean', description: 'Ergebnis in die Timeline legen (Standard: ja)' },
-  trackId: { type: 'string', description: 'optional: Zielspur (Standard: freie Audiospur, sonst neue Spur)' },
-  start: { type: 'number', description: 'optional: Startzeit in Sekunden (Standard: Abspielposition)' },
+  placeOnTimeline: { type: 'boolean', description: 'Put the result in the timeline (default: yes)' },
+  trackId: { type: 'string', description: 'optional: target track (default: free audio track, otherwise a new track)' },
+  start: { type: 'number', description: 'optional: start time in seconds (default: playhead)' },
 };
 
 /** Media duration in seconds: from the item, else by decoding, else 5 s. */
@@ -52,8 +52,8 @@ export const placeOnTimeline = async (
   let track: TimelineTrack | undefined;
   if (opts.trackId) {
     track = tracks.find((t) => t.id === opts.trackId);
-    if (!track) throw new Error(`Spur „${opts.trackId}“ gibt es nicht.`);
-    if (track.isLocked) throw new Error(`Spur „${track.name ?? track.id}“ ist gesperrt.`);
+    if (!track) throw new Error(`Track “${opts.trackId}” does not exist.`);
+    if (track.isLocked) throw new Error(`Track “${track.name ?? track.id}” is locked.`);
   } else {
     track = tracks.find((t) => t.type === 'audio' && free(t));
   }
@@ -109,26 +109,26 @@ const resolveSource = async (ctx: StudioToolContext, args: Record<string, unknow
   const services = getSoundAudioServices();
   if (typeof args.clipId === 'string') {
     const clip = state.timelineClips.find((c) => c.id === args.clipId);
-    if (!clip) throw new Error(`Clip „${args.clipId}“ gibt es nicht.`);
+    if (!clip) throw new Error(`Clip “${args.clipId}” does not exist.`);
     const media = state.mediaItems.find((m) => m.id === clip.mediaId);
-    if (!media || (media.type !== 'audio' && media.type !== 'video')) throw new Error('Der Clip hat keinen Ton.');
+    if (!media || (media.type !== 'audio' && media.type !== 'video')) throw new Error('The clip has no sound.');
     return { name: media.name, url: media.url, payload: () => services.urlToPayload(media.url), startAt: clip.start };
   }
   if (typeof args.mediaId === 'string') {
     const media = state.mediaItems.find((m) => m.id === args.mediaId);
-    if (!media) throw new Error(`Medium „${args.mediaId}“ gibt es nicht.`);
+    if (!media) throw new Error(`Media “${args.mediaId}” does not exist.`);
     return { name: media.name, url: media.url, payload: () => services.urlToPayload(media.url) };
   }
   if (typeof args.assetId === 'string') {
     const assets = await listLibraryAudio(ctx);
     const asset = assets.find((a) => a.id === args.assetId);
-    if (!asset?.url) throw new Error(`Library-Asset „${args.assetId}“ gibt es nicht (sound_library_list).`);
+    if (!asset?.url) throw new Error(`Library asset “${args.assetId}” does not exist (sound_library_list).`);
     return { name: asset.name, url: asset.url, payload: () => services.urlToPayload(asset.url as string) };
   }
   // the MCP server turns *Path args into file:// URLs; both keys are accepted
   const url = typeof args.url === 'string' ? args.url : typeof args.filePath === 'string' ? (args.filePath.startsWith('/') ? `file://${args.filePath}` : args.filePath) : null;
   if (url) return { name: url.split('/').pop() || 'audio', url, payload: () => services.urlToPayload(url) };
-  throw new Error('Quelle fehlt: clipId, mediaId, assetId, url oder filePath angeben.');
+  throw new Error('Source missing: give clipId, mediaId, assetId, url or filePath.');
 };
 
 type LibraryAudio = { id: string; name: string; url?: string | null; duration?: number; projectName: string; origin: string; generatedBy?: string };
@@ -140,28 +140,28 @@ const listLibraryAudio = async (ctx: StudioToolContext): Promise<LibraryAudio[]>
 };
 
 const SOURCE_PROPS: Record<string, JsonSchema> = {
-  clipId: { type: 'string', description: 'Timeline-Clip als Quelle' },
-  mediaId: { type: 'string', description: 'Medium aus dem Medienpool' },
-  assetId: { type: 'string', description: 'Audio aus der Bibliothek (sound_library_list)' },
-  url: { type: 'string', description: 'https-, file- oder data-URL' },
-  filePath: { type: 'string', description: 'lokaler Dateipfad' },
+  clipId: { type: 'string', description: 'Timeline clip as source' },
+  mediaId: { type: 'string', description: 'Media from the media pool' },
+  assetId: { type: 'string', description: 'Audio from the library (sound_library_list)' },
+  url: { type: 'string', description: 'https, file or data URL' },
+  filePath: { type: 'string', description: 'local file path' },
 };
 
 const tools: StudioTool[] = [
   {
     name: 'sound_generate_voice',
-    description: 'Erzeugt Sprache aus Text (ElevenLabs oder MiniMax Speech 02 HD), legt sie in den Medienpool und an die Abspielposition auf eine freie Audiospur (Rolle Dialog). Verbraucht Credits: confirm: true nötig.',
+    description: 'Generates speech from text (ElevenLabs or MiniMax Speech 02 HD), puts it in the media pool and at the playhead on a free audio track (role dialogue). Uses credits: confirm: true required.',
     writes: true,
     cost: 'paid',
     parameters: {
       type: 'object',
       properties: {
-        text: { type: 'string', description: 'Was die Stimme sagt' },
+        text: { type: 'string', description: 'What the voice says' },
         provider: { type: 'string', enum: ['elevenlabs', 'minimax'], description: 'Standard: elevenlabs' },
         voiceId: { type: 'string', description: 'ElevenLabs: Voice-ID' },
         modelId: { type: 'string', description: 'ElevenLabs: Modell (Standard eleven_multilingual_v2)' },
         outputFormat: { type: 'string', description: 'ElevenLabs: z. B. mp3_44100_128' },
-        voice: { type: 'string', description: 'MiniMax: Stimme' },
+        voice: { type: 'string', description: 'MiniMax: voice' },
         speed: { type: 'number', minimum: 0.5, maximum: 1.5, description: 'MiniMax: Tempo' },
         ...PLACE_PROPS,
         confirm: CONFIRM,
@@ -170,7 +170,7 @@ const tools: StudioTool[] = [
     },
     handler: async (args, ctx) => {
       const text = str(args, 'text');
-      requireConfirm(args, 'Sprachgenerierung');
+      requireConfirm(args, 'Speech generation');
       const s = getSoundAudioServices();
       const provider = args.provider === 'minimax' ? 'minimax' : 'elevenlabs';
       const item = provider === 'minimax'
@@ -181,16 +181,16 @@ const tools: StudioTool[] = [
   },
   {
     name: 'sound_generate_music',
-    description: 'Erzeugt Musik (Lyria 2: kurzer Cue mit Dauer; Sonauto v3: ganzer Song, optional instrumental), legt sie in den Medienpool und auf eine freie Audiospur (Rolle Musik). Verbraucht Credits: confirm: true nötig.',
+    description: 'Generates music (Lyria 2: short cue with duration; Sonauto v3: full song, optionally instrumental), puts it in the media pool and on a free audio track (role music). Uses credits: confirm: true required.',
     writes: true,
     cost: 'paid',
     parameters: {
       type: 'object',
       properties: {
-        prompt: { type: 'string', description: 'Stil, Tempo, Stimmung, Instrumente' },
+        prompt: { type: 'string', description: 'Style, tempo, mood, instruments' },
         provider: { type: 'string', enum: ['lyria2', 'sonauto-v3'], description: 'Standard: lyria2' },
         duration: { type: 'number', minimum: 4, maximum: 120, description: 'Lyria 2: Sekunden (Standard 20)' },
-        instrumental: { type: 'boolean', description: 'Sonauto: ohne Gesang (Standard: ja)' },
+        instrumental: { type: 'boolean', description: 'Sonauto: no vocals (default: yes)' },
         ...PLACE_PROPS,
         confirm: CONFIRM,
       },
@@ -198,10 +198,10 @@ const tools: StudioTool[] = [
     },
     handler: async (args, ctx) => {
       const prompt = str(args, 'prompt');
-      requireConfirm(args, 'Musikgenerierung');
+      requireConfirm(args, 'Music generation');
       const s = getSoundAudioServices();
       const provider = args.provider === 'sonauto-v3' ? 'sonauto-v3' : 'lyria2';
-      if (provider === 'sonauto-v3' && !(await s.sonautoAvailable())) throw new Error('Für Sonauto fehlt der API-Key (Einstellungen).');
+      if (provider === 'sonauto-v3' && !(await s.sonautoAvailable())) throw new Error('The API key for Sonauto is missing (Settings).');
       const item = provider === 'sonauto-v3'
         ? await s.sonautoMusic(prompt, { instrumental: args.instrumental !== false })
         : await s.lyriaMusic(prompt, { duration: typeof args.duration === 'number' ? Math.min(120, Math.max(4, args.duration)) : 20 });
@@ -210,14 +210,14 @@ const tools: StudioTool[] = [
   },
   {
     name: 'sound_generate_sfx',
-    description: 'Erzeugt einen Soundeffekt (Lyria 2) aus einer Beschreibung, legt ihn in den Medienpool und auf eine freie Audiospur (Rolle Effekte). Verbraucht Credits: confirm: true nötig.',
+    description: 'Generates a sound effect (Lyria 2) from a description, puts it in the media pool and on a free audio track (role effects). Uses credits: confirm: true required.',
     writes: true,
     cost: 'paid',
     parameters: {
       type: 'object',
       properties: {
-        prompt: { type: 'string', description: 'z. B. „Whoosh, Einschlag, Regen auf Blechdach“' },
-        duration: { type: 'number', minimum: 2, maximum: 60, description: 'Sekunden (Standard 6)' },
+        prompt: { type: 'string', description: 'e.g. “Whoosh, impact, rain on a tin roof”' },
+        duration: { type: 'number', minimum: 2, maximum: 60, description: 'Seconds (default 6)' },
         ...PLACE_PROPS,
         confirm: CONFIRM,
       },
@@ -232,7 +232,7 @@ const tools: StudioTool[] = [
   },
   {
     name: 'sound_stems_separate',
-    description: 'Trennt Audio mit Demucs in Stems (Vocals, Drums, Bass, Other). Quelle: clipId, mediaId, assetId (Bibliothek), url oder filePath. Ergebnisse in den Medienpool und, bei placeOnTimeline, jeweils auf eigene freie Spuren ab Clip-Start. Verbraucht Credits: confirm: true nötig.',
+    description: 'Splits audio into stems with Demucs (vocals, drums, bass, other). Source: clipId, mediaId, assetId (library), url or filePath. Results go to the media pool and, with placeOnTimeline, each onto its own free track from the clip start. Uses credits: confirm: true required.',
     writes: true,
     cost: 'paid',
     parameters: { type: 'object', properties: { ...SOURCE_PROPS, ...PLACE_PROPS, confirm: CONFIRM }, required: ['confirm'] },
@@ -240,27 +240,27 @@ const tools: StudioTool[] = [
       const source = await resolveSource(ctx, args);
       requireConfirm(args, 'Stem-Trennung');
       const stems = await getSoundAudioServices().demucs(await source.payload());
-      if (!stems.length) throw new Error('Demucs hat keine Stems geliefert.');
+      if (!stems.length) throw new Error('Demucs returned no stems.');
       const result = await deliver(ctx, stems, { ...args, start: typeof args.start === 'number' ? args.start : source.startAt, trackId: undefined }, null, 'Demucs Stem');
       return { source: source.name, ...result };
     },
   },
   {
     name: 'sound_mastering_status',
-    description: 'Prüft die lokale Mastering-Umgebung (Python, pyloudnorm …): bereit, verfügbar, Pfade, Version, Fehler.',
+    description: 'Checks the local mastering environment (Python, pyloudnorm …): ready, available, paths, version, errors.',
     parameters: { type: 'object', properties: {} },
     handler: async () => ({ status: await getSoundAudioServices().masteringStatus() }),
   },
   {
     name: 'sound_mastering_setup',
-    description: 'Richtet die lokale Mastering-Umgebung ein (legt eine Python-Umgebung an und installiert die Pakete; dauert einige Minuten, keine Credits).',
+    description: 'Sets up the local mastering environment (creates a Python environment and installs the packages; takes a few minutes, no credits).',
     writes: true,
     parameters: { type: 'object', properties: {} },
     handler: async () => ({ status: await getSoundAudioServices().masteringSetup() }),
   },
   {
     name: 'sound_mastering_run',
-    description: 'Mastert eine Audiodatei lokal: mode manual (EQ-Match an eine Referenz, Multiband-Kompression, Stereobreite, Limiter, Ziel-LUFS) oder spotify_auto (automatisches Streaming-Profil). Quelle wie bei sound_stems_separate, Referenz optional über referenceClipId/referenceMediaId/referenceUrl. Ergebnis (24-bit WAV) in den Medienpool, optional in die Timeline. Keine Credits.',
+    description: 'Masters an audio file locally: mode manual (EQ match to a reference, multiband compression, stereo width, limiter, target LUFS) or spotify_auto (automatic streaming profile). Source as in sound_stems_separate, reference optional via referenceClipId/referenceMediaId/referenceUrl. Result (24-bit WAV) goes to the media pool, optionally into the timeline. No credits.',
     writes: true,
     parameters: {
       type: 'object',
@@ -277,7 +277,7 @@ const tools: StudioTool[] = [
         limiterCeilingDbtp: { type: 'number', minimum: -6, maximum: 0, description: 'optional' },
         lowMidCrossoverHz: { type: 'number', description: 'optional' },
         midHighCrossoverHz: { type: 'number', description: 'optional' },
-        placeOnTimeline: { type: 'boolean', description: 'Ergebnis in die Timeline legen (Standard: nein)' },
+        placeOnTimeline: { type: 'boolean', description: 'Put the result in the timeline (default: no)' },
         trackId: PLACE_PROPS.trackId,
         start: PLACE_PROPS.start,
       },
@@ -285,7 +285,7 @@ const tools: StudioTool[] = [
     handler: async (args, ctx) => {
       const s = getSoundAudioServices();
       const status = await s.masteringStatus();
-      if (!status.ready) throw new Error(`Mastering-Umgebung nicht bereit${status.error ? `: ${status.error}` : ''}. Erst sound_mastering_setup.`);
+      if (!status.ready) throw new Error(`Mastering environment not ready${status.error ? `: ${status.error}` : ''}. Erst sound_mastering_setup.`);
       const target = await resolveSource(ctx, args);
       const refArgs = { clipId: args.referenceClipId, mediaId: args.referenceMediaId, url: args.referenceUrl };
       const reference = refArgs.clipId || refArgs.mediaId || refArgs.url ? await resolveSource(ctx, refArgs) : null;
@@ -327,11 +327,11 @@ const tools: StudioTool[] = [
   },
   {
     name: 'sound_library_list',
-    description: 'Listet Audio aus dem Projekt (Medienpool) und aus der Bibliothek (letzte Projekte): id/assetId, Name, Dauer, Projekt, Herkunft. Mit query filtern.',
+    description: 'Lists audio from the project (media pool) and from the library (recent projects): id/assetId, name, duration, project, origin. Filter with query.',
     parameters: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'optional: Suchtext (Name oder Projekt)' },
+        query: { type: 'string', description: 'optional: search text (name or project)' },
         scope: { type: 'string', enum: ['project', 'library', 'all'], description: 'Standard: all' },
       },
     },
@@ -350,14 +350,14 @@ const tools: StudioTool[] = [
   },
   {
     name: 'sound_library_add_to_timeline',
-    description: 'Legt Projekt-Audio (mediaId) oder Bibliotheks-Audio (assetId, wird dafür in den Medienpool übernommen) in die Timeline: Zielspur oder freie Audiospur, Start oder Abspielposition, optional mit Stem-Rolle.',
+    description: 'Puts project audio (mediaId) or library audio (assetId, added to the media pool for this) into the timeline: target track or a free audio track, start or playhead, optionally with a stem role.',
     writes: true,
     parameters: {
       type: 'object',
       properties: {
-        mediaId: { type: 'string', description: 'Medium aus dem Medienpool' },
-        assetId: { type: 'string', description: 'Audio aus der Bibliothek' },
-        role: { type: 'string', enum: ['dialog', 'music', 'effects', 'ambience'], description: 'optional: Stem-Rolle der Zielspur' },
+        mediaId: { type: 'string', description: 'Media from the media pool' },
+        assetId: { type: 'string', description: 'Audio from the library' },
+        role: { type: 'string', enum: ['dialog', 'music', 'effects', 'ambience'], description: 'optional: stem role of the target track' },
         trackId: PLACE_PROPS.trackId,
         start: PLACE_PROPS.start,
       },
@@ -366,17 +366,17 @@ const tools: StudioTool[] = [
       let item: MediaItem | undefined;
       if (typeof args.mediaId === 'string') {
         item = ctx.getState().mediaItems.find((m) => m.id === args.mediaId);
-        if (!item) throw new Error(`Medium „${args.mediaId}“ gibt es nicht.`);
+        if (!item) throw new Error(`Media “${args.mediaId}” does not exist.`);
       } else if (typeof args.assetId === 'string') {
         const asset = (await listLibraryAudio(ctx)).find((a) => a.id === args.assetId);
-        if (!asset?.url) throw new Error(`Library-Asset „${args.assetId}“ gibt es nicht (sound_library_list).`);
+        if (!asset?.url) throw new Error(`Library asset “${args.assetId}” does not exist (sound_library_list).`);
         item = ctx.getState().mediaItems.find((m) => m.url === asset.url);
         if (!item) {
           item = { id: `media-lib-${Date.now().toString(36)}`, name: asset.name, type: 'audio', url: asset.url, source: 'upload', duration: asset.duration, generatedBy: asset.generatedBy, originProjectPath: null };
           ctx.actions.addMediaItem(item);
         }
-      } else throw new Error('mediaId oder assetId angeben.');
-      if (item.type !== 'audio' && item.type !== 'video') throw new Error('Das Medium hat keinen Ton.');
+      } else throw new Error('Give mediaId or assetId.');
+      if (item.type !== 'audio' && item.type !== 'video') throw new Error('The media has no sound.');
       const role = typeof args.role === 'string' && ['dialog', 'music', 'effects', 'ambience'].includes(args.role) ? (args.role as StemRole) : null;
       return { mediaId: item.id, ...(await placeOnTimeline(ctx, item, { trackId: typeof args.trackId === 'string' ? args.trackId : undefined, start: typeof args.start === 'number' ? args.start : undefined, role })) };
     },
@@ -385,4 +385,4 @@ const tools: StudioTool[] = [
 
 export const SOUND_MEDIA_TOOLS = tools;
 
-registerStudioToolModule({ id: 'sound-media', label: 'Sound: Generierung, Stems, Mastering, Bibliothek', tools });
+registerStudioToolModule({ id: 'sound-media', label: 'Sound: generation, stems, mastering, library', tools });

@@ -65,13 +65,13 @@ export const NumberRow: React.FC<{
   return (
     <div className="pe-row" data-automation-id={automationId}>
       {onKey ? (
-        <button type="button" className={`pe-key pe-key--${keyState ?? 'none'}`} onClick={onKey} title={keyState === 'key' ? 'Keyframe entfernen' : 'Keyframe setzen'} data-automation-id={`${automationId}-key`}>
+        <button type="button" className={`pe-key pe-key--${keyState ?? 'none'}`} onClick={onKey} title={keyState === 'key' ? 'Remove keyframe' : 'Set keyframe'} data-automation-id={`${automationId}-key`}>
           <span />
         </button>
       ) : (
         <span className="pe-key pe-key--off" />
       )}
-      <span className="pe-label" onPointerDown={scrub} title="Ziehen zum Ändern (Shift = fein)">
+      <span className="pe-label" onPointerDown={scrub} title="Drag to change (Shift = fine)">
         {label}
       </span>
       <input
@@ -98,8 +98,8 @@ export const NumberRow: React.FC<{
       {unit && <span className="pe-unit">{unit}</span>}
       {keyState && keyState !== 'none' && (
         <span className="pe-keynav">
-          <button type="button" onClick={onPrevKey} title="Vorheriger Keyframe" data-automation-id={`${automationId}-prev`}>‹</button>
-          <button type="button" onClick={onNextKey} title="Nächster Keyframe" data-automation-id={`${automationId}-next`}>›</button>
+          <button type="button" onClick={onPrevKey} title="Previous keyframe" data-automation-id={`${automationId}-prev`}>‹</button>
+          <button type="button" onClick={onNextKey} title="Next keyframe" data-automation-id={`${automationId}-next`}>›</button>
         </span>
       )}
     </div>
@@ -141,28 +141,28 @@ const FxStackEditor: React.FC<{ node: CompNode; onNodeChange: ParamEditorProps['
   const setStack = (next: FxInstance[], key?: string) => onNodeChange({ ...node, fxStack: next }, key);
   return (
     <div className="pe-fx">
-      {stack.length === 0 && <p className="pe-hint">Kein Effekt – unten einen GPU-Effekt wählen.</p>}
+      {stack.length === 0 && <p className="pe-hint">No effect – choose a GPU effect below.</p>}
       {stack.map((instance, index) => {
         const definition = getFxDefinition(instance.effectId);
         const values = resolveParams(instance);
         return (
           <div key={instance.id} className="pe-fx__item">
             <div className="pe-fx__head">
-              <input type="checkbox" checked={instance.enabled} onChange={(event) => setStack(stack.map((entry) => (entry.id === instance.id ? { ...entry, enabled: event.target.checked } : entry)))} title="Effekt aktiv" data-automation-id={`${automationId}-fx-${index}-enabled`} />
+              <input type="checkbox" checked={instance.enabled} onChange={(event) => setStack(stack.map((entry) => (entry.id === instance.id ? { ...entry, enabled: event.target.checked } : entry)))} title="Effect active" data-automation-id={`${automationId}-fx-${index}-enabled`} />
               <select
                 className="pe-select"
                 value={instance.effectId}
                 onChange={(event) => setStack(stack.map((entry) => (entry.id === instance.id ? createFxInstance(event.target.value) : entry)))}
                 data-automation-id={`${automationId}-fx-${index}-effect`}
               >
-                {!definition && <option value={instance.effectId}>{instance.effectId} (nicht verfügbar)</option>}
+                {!definition && <option value={instance.effectId}>{instance.effectId}(not available)</option>}
                 {effects.map((effect) => (
                   <option key={effect.id} value={effect.id}>
                     {effect.name}
                   </option>
                 ))}
               </select>
-              <button type="button" className="pe-btn" onClick={() => setStack(stack.filter((entry) => entry.id !== instance.id))} title="Effekt entfernen" data-automation-id={`${automationId}-fx-${index}-remove`}>
+              <button type="button" className="pe-btn" onClick={() => setStack(stack.filter((entry) => entry.id !== instance.id))} title="Remove effect" data-automation-id={`${automationId}-fx-${index}-remove`}>
                 ×
               </button>
             </div>
@@ -187,7 +187,7 @@ const FxStackEditor: React.FC<{ node: CompNode; onNodeChange: ParamEditorProps['
                   automationId={`${automationId}-fx-${index}-${def.id}`}
                 />
               ))}
-            {definition && definition.params.filter((def) => !def.hidden).length > 40 && <p className="pe-hint">Weitere Parameter im Effekt-Panel der Edit-Seite.</p>}
+            {definition && definition.params.filter((def) => !def.hidden).length > 40 && <p className="pe-hint">More parameters in the effect panel of the Edit page.</p>}
           </div>
         );
       })}
@@ -199,7 +199,7 @@ const FxStackEditor: React.FC<{ node: CompNode; onNodeChange: ParamEditorProps['
         }}
         data-automation-id={`${automationId}-fx-add`}
       >
-        <option value="">+ GPU-Effekt hinzufügen …</option>
+        <option value="">+ Add GPU effect …</option>
         {effects.map((effect) => (
           <option key={effect.id} value={effect.id}>
             {effect.name} ({effect.vendor})
@@ -212,19 +212,19 @@ const FxStackEditor: React.FC<{ node: CompNode; onNodeChange: ParamEditorProps['
 
 const CompSettings: React.FC<{ comp: Composition; onCompChange: ParamEditorProps['onCompChange']; automationId: string }> = ({ comp, onCompChange, automationId }) => (
   <div className="pe-group">
-    <div className="pe-group__title">Komposition</div>
+    <div className="pe-group__title">Composition</div>
     <label className="pe-row">
       <span className="pe-key pe-key--off" />
       <span className="pe-label">Name</span>
       <input className="pe-text" value={comp.name} onChange={(event) => onCompChange({ ...comp, name: event.target.value }, 'comp:name')} data-automation-id={`${automationId}-comp-name`} />
     </label>
-    <NumberRow label="Breite" value={comp.width} min={16} max={8192} step={2} unit="px" onChange={(width) => onCompChange({ ...comp, width: Math.round(width) }, 'comp:w')} automationId={`${automationId}-comp-width`} />
-    <NumberRow label="Höhe" value={comp.height} min={16} max={8192} step={2} unit="px" onChange={(height) => onCompChange({ ...comp, height: Math.round(height) }, 'comp:h')} automationId={`${automationId}-comp-height`} />
-    <NumberRow label="Bildrate" value={comp.fps} min={1} max={120} step={1} unit="fps" onChange={(fps) => onCompChange({ ...comp, fps: Math.max(1, fps) }, 'comp:fps')} automationId={`${automationId}-comp-fps`} />
-    <NumberRow label="Dauer" value={comp.durationSeconds} min={0.04} max={600} step={0.01} unit="s" onChange={(durationSeconds) => onCompChange({ ...comp, durationSeconds: Math.max(1 / comp.fps, durationSeconds) }, 'comp:dur')} automationId={`${automationId}-comp-duration`} />
+    <NumberRow label="Width" value={comp.width} min={16} max={8192} step={2} unit="px" onChange={(width) => onCompChange({ ...comp, width: Math.round(width) }, 'comp:w')} automationId={`${automationId}-comp-width`} />
+    <NumberRow label="Height" value={comp.height} min={16} max={8192} step={2} unit="px" onChange={(height) => onCompChange({ ...comp, height: Math.round(height) }, 'comp:h')} automationId={`${automationId}-comp-height`} />
+    <NumberRow label="Frame rate" value={comp.fps} min={1} max={120} step={1} unit="fps" onChange={(fps) => onCompChange({ ...comp, fps: Math.max(1, fps) }, 'comp:fps')} automationId={`${automationId}-comp-fps`} />
+    <NumberRow label="Duration" value={comp.durationSeconds} min={0.04} max={600} step={0.01} unit="s" onChange={(durationSeconds) => onCompChange({ ...comp, durationSeconds: Math.max(1 / comp.fps, durationSeconds) }, 'comp:dur')} automationId={`${automationId}-comp-duration`} />
     <label className="pe-row">
       <span className="pe-key pe-key--off" />
-      <span className="pe-label">Hintergrund</span>
+      <span className="pe-label">Background</span>
       <input type="color" value={/^#[0-9a-f]{6}$/i.test(comp.background) ? comp.background : '#000000'} onChange={(event) => onCompChange({ ...comp, background: event.target.value }, 'comp:bg')} data-automation-id={`${automationId}-comp-background`} />
     </label>
   </div>
@@ -335,30 +335,30 @@ const ParamEditor: React.FC<ParamEditorProps> = ({ comp, node, time, mediaItems,
             <span className="pe-key pe-key--off" />
             <span className="pe-label">Clip</span>
             <select className="pe-select" value={node.mediaId ?? ''} onChange={(event) => onNodeChange({ ...node, mediaId: event.target.value || undefined })}>
-              <option value="">– kein Medium –</option>
+              <option value="">– no media –</option>
               {visualMedia.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name} ({item.type === 'video' ? 'Video' : 'Bild'})
+                  {item.name} ({item.type === 'video' ? 'Video' : 'Image'})
                 </option>
               ))}
             </select>
           </label>
-          <NumberRow label="Startzeit" value={node.inPoint ?? 0} min={0} max={Math.max(1, comp.durationSeconds)} step={1 / comp.fps} unit="s" onChange={(inPoint) => onNodeChange({ ...node, inPoint: inPoint > 0 ? inPoint : undefined }, `${node.id}:in`)} automationId={`${id}-inpoint`} />
+          <NumberRow label="Start time" value={node.inPoint ?? 0} min={0} max={Math.max(1, comp.durationSeconds)} step={1 / comp.fps} unit="s" onChange={(inPoint) => onNodeChange({ ...node, inPoint: inPoint > 0 ? inPoint : undefined }, `${node.id}:in`)} automationId={`${id}-inpoint`} />
         </div>
       )}
       {PARAM_SCHEMA[node.type].length > 0 && (
         <div className="pe-group">
-          <div className="pe-group__title">{variant === 'nuke' ? node.type : 'Steuerung'}</div>
+          <div className="pe-group__title">{variant === 'nuke' ? node.type : 'Controls'}</div>
           {PARAM_SCHEMA[node.type].map(renderControl)}
         </div>
       )}
       {node.type === 'fx' && cls !== 'dot' && (
         <div className="pe-group">
-          <div className="pe-group__title">{cls === 'grade' ? 'Farbkorrektur' : cls === 'blur' ? 'Weichzeichner' : 'GPU-Effekte'}</div>
+          <div className="pe-group__title">{cls === 'grade' ? 'Color correction' : cls === 'blur' ? 'Blur' : 'GPU-Effekte'}</div>
           <FxStackEditor node={node} onNodeChange={onNodeChange} automationId={id} />
         </div>
       )}
-      {cls === 'dot' && <p className="pe-hint">Dot – Leitungspunkt ohne Parameter.</p>}
+      {cls === 'dot' && <p className="pe-hint">Dot – routing point without parameters.</p>}
       {node.type === 'output' && <CompSettings comp={comp} onCompChange={onCompChange} automationId={id} />}
     </div>
   );

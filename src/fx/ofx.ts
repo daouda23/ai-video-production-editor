@@ -233,7 +233,7 @@ export async function renderStackAsync(
     }
     flushGpu();
     const pluginId = nativePluginId(instance.effectId);
-    if (!bridge || !pluginId) throw new Error(`OFX-Plugin ${instance.effectId} ist nicht verfügbar (Desktop-App nötig).`);
+    if (!bridge || !pluginId) throw new Error(`OFX-Plugin ${instance.effectId} is not available (desktop app required).`);
     const input = ctx.getImageData(0, 0, width, height);
     const result = await bridge.render({
       pluginId,

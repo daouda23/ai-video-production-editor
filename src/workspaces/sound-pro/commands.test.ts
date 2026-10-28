@@ -38,7 +38,7 @@ test('commands reject bad input with a message instead of throwing', () => {
   assert.deepEqual(runSoundCommand(st, 'nope').ok, false);
   const r = runSoundCommand(st, 'mixer.setFader', { trackId: 'x', db: 0 });
   assert.equal(r.ok, false);
-  if (!r.ok) assert.match(r.error, /Spur/);
+  if (!r.ok) assert.match(r.error, /Track/);
   const r2 = runSoundCommand(st, 'mixer.setFader', { trackId: 'a1', db: 'loud' });
   assert.equal(r2.ok, false);
   const r3 = runSoundCommand(st, 'mixer.setFader', { trackId: 'a1', db: 99 });
@@ -146,7 +146,7 @@ test('studio: auto routing by name and ducking automation', () => {
   // regression: an SFX generator named after a music model must not become music
   const sfxTrack = { id: 'a9', name: 'A9', type: 'audio' as const, isLocked: false, isMuted: false };
   assert.equal(guessRole(sfxTrack, [clip('x', 'a9', 0, 1)], [{ id: 'm-x', type: 'audio', name: 'Impacts.wav', generatedBy: 'Lyria 2 SFX' }]), 'effects');
-  assert.equal(guessRole({ ...sfxTrack, name: 'Effekte' }, [], []), 'effects');
+  assert.equal(guessRole({ ...sfxTrack, name: 'Effects' }, [], []), 'effects');
   const routed = runSoundCommand(st, 'studio.autoRoute', {});
   assert.ok(routed.ok);
   if (!routed.ok) return;

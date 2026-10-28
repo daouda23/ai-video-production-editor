@@ -106,7 +106,7 @@ export const resolveKey = (event: KeyInput, context: KeyContext): KeyIntent | nu
 
 /** Shortcut hints for the status bar (Blender shows the mouse/keys of the current mode). */
 export const STATUS_HINTS: Record<'idle' | 'modal' | 'walk', string[]> = {
-  idle: ['Klick: Auswählen', 'Mitteltaste/Alt+Ziehen: Orbit', 'Shift+Mitte: Verschieben', 'Rad: Zoom', 'G/R/S: Bewegen/Drehen/Skalieren', 'Shift+A: Hinzufügen', 'Num0: Kamera'],
-  modal: ['X/Y/Z: Achse', 'Shift+Achse: Ebene', 'Zahl: exakter Wert', 'Strg: Raster', 'Enter/Klick: Bestätigen', 'Esc/Rechtsklick: Abbrechen'],
-  walk: ['W/A/S/D: Gehen', 'Q/E: Runter/Hoch', 'Shift: Schneller', 'Maus: Umsehen', 'Klick/Enter: Übernehmen', 'Esc: Abbrechen'],
+  idle: ['Click: select', 'Middle mouse/Alt+drag: orbit', 'Shift+middle: pan', 'Wheel: zoom', 'G/R/S: Move/Rotate/Scale', 'Shift+A: Add', 'Num0: camera'],
+  modal: ['X/Y/Z: axis', 'Shift+axis: plane', 'Number: exact value', 'Ctrl: grid', 'Enter/click: confirm', 'Esc/right-click: cancel'],
+  walk: ['W/A/S/D: walk', 'Q/E: down/up', 'Shift: faster', 'Mouse: look around', 'Click/Enter: apply', 'Esc: cancel'],
 };

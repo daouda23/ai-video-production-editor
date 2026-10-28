@@ -106,8 +106,8 @@ export function nativeChainFor(clip: TimelineClip): Array<{ pluginId: string; pa
     .filter((entry) => entry.enabled && (entry.mix ?? 1) > 0.0001)
     .map((entry) => {
       const pluginId = nativePluginId(entry.effectId);
-      if (!pluginId) throw new Error(`Effekt ${entry.effectId} hat kein OFX-Gegenstück für den Export.`);
-      if ((entry.mix ?? 1) < 0.9999) throw new Error(`Mix < 100 % wird im OFX-Export noch nicht unterstützt (${entry.effectId}).`);
+      if (!pluginId) throw new Error(`Effect ${entry.effectId} has no OFX counterpart for export.`);
+      if ((entry.mix ?? 1) < 0.9999) throw new Error(`Mix < 100 % is not supported in the OFX export yet (${entry.effectId}).`);
       return { pluginId, params: resolveParams(entry) };
     });
 }
@@ -233,9 +233,9 @@ export async function bakeFxForExport(
         const ofx = ofxBridge();
         if (!ofx) throw new Error('OFX-Export braucht die Desktop-App.');
         const source = await bridge.resolveSource({ folderPath: options.folderPath, media });
-        if (!source.ok || !source.path) throw new Error(source.error || `Quelle von ${media.name} fehlt.`);
+        if (!source.ok || !source.path) throw new Error(source.error || `Source of ${media.name} is missing.`);
         const target = await bridge.bakeDir({ folderPath: options.folderPath, name, extension: 'mov' });
-        if (!target.ok || !target.path || !target.url) throw new Error(target.error || 'Bake-Ordner nicht verfügbar.');
+        if (!target.ok || !target.path || !target.url) throw new Error(target.error || 'Bake folder not available.');
         const sourceIn = Math.max(0, clip.sourceIn ?? 0);
         const duration = Math.max(1 / fps, (clip.sourceOut ?? sourceIn + clip.duration * (clip.speed || 1)) - sourceIn);
         const jobId = `${clip.id}-${Date.now().toString(36)}`;

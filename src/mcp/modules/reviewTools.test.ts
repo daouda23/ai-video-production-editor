@@ -29,7 +29,7 @@ test('review and requests tools are published with schemas and safety markers', 
     for (const name of ['review_get', 'review_set_feedback', 'review_add_change_request', 'review_remove_change_request', 'review_set_annotation', 'review_remove_annotation', 'review_get_annotation_image', 'review_set_naming_template', 'review_preview_naming', 'requests_list', 'requests_set_task_status', 'requests_export']) {
       assert.ok(names.includes(name), `${name} missing`);
     }
-    assert.match(listed.find((tool) => tool.name === 'review_remove_change_request')!.description, /LÖSCHT/);
+    assert.match(listed.find((tool) => tool.name === 'review_remove_change_request')!.description, /DELETES/);
   } finally {
     mcp.dispose();
   }

@@ -40,11 +40,11 @@ const TILE_ICON: Record<RenderKind, React.ReactNode> = {
 };
 
 const TILES: Tile[] = [
-    { id: 'custom', label: 'Benutzerdefiniert', kind: 'media', presetId: null, icon: <FileCode size={16} /> },
+    { id: 'custom', label: 'Custom', kind: 'media', presetId: null, icon: <FileCode size={16} /> },
     ...['youtube-1080', 'youtube-4k', 'prores-422-hq', 'prores-4444', 'hq-1080-h264', 'h265-10bit', 'instagram-916', 'draft-720', 'quick-browser', 'audio-only', 'image-sequence']
         .map((id) => DELIVERY_PRESETS.find((preset) => preset.id === id)!)
         .map((preset) => ({ id: preset.id, label: preset.tile, kind: preset.kind, presetId: preset.id, icon: TILE_ICON[preset.kind] })),
-    { id: 'still', label: 'Einzelbild', kind: 'still', presetId: null, icon: TILE_ICON.still },
+    { id: 'still', label: 'Still frame', kind: 'still', presetId: null, icon: TILE_ICON.still },
 ];
 
 const tileActive = (vm: ExportViewModel, tile: Tile) => {
@@ -79,8 +79,8 @@ const DavinciDeliverView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
     return (
         <div className="xp-body xp-davinci">
             {/* ─── Render-Einstellungen ─── */}
-            <section className="xp-panel" aria-label="Render-Einstellungen">
-                <div className="xp-panel__head">Render-Einstellungen <small>{tileActive(vm, TILES[0]) ? 'Benutzerdefiniert' : TILES.find((t) => tileActive(vm, t))?.label}</small></div>
+            <section className="xp-panel" aria-label="Render settings">
+                <div className="xp-panel__head">Render settings <small>{tileActive(vm, TILES[0]) ? 'Custom' : TILES.find((t) => tileActive(vm, t))?.label}</small></div>
                 <div className="xp-tiles" role="group" aria-label="Render-Vorgaben">
                     {TILES.map((tile) => (
                         <button key={tile.id} type="button" className="xp-tile" aria-pressed={tileActive(vm, tile)} data-automation-id={`export.davinci.preset.${tile.id}`} onClick={() => onTile(tile)} title={tile.presetId ? DELIVERY_PRESETS.find((p) => p.id === tile.presetId)?.description : tile.label}>
@@ -92,38 +92,38 @@ const DavinciDeliverView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                 <div className="xp-tabs" role="tablist">
                     {(['video', 'audio', 'file'] as const).map((id) => (
                         <button key={id} type="button" role="tab" className="xp-tab" aria-selected={tab === id} data-automation-id={`export.davinci.tab.${id}`} onClick={() => dispatch('export.davinci.tab', { tab: id })}>
-                            {id === 'video' ? 'Video' : id === 'audio' ? 'Audio' : 'Datei'}
+                            {id === 'video' ? 'Video' : id === 'audio' ? 'Audio' : 'File'}
                         </button>
                     ))}
                 </div>
                 <div className="xp-panel__scroll">
                     {tab === 'video' && kind === 'media' ? (
                         <>
-                            <Section id="davinci.video" title="Video exportieren" open><FormatFields {...env} /><VideoFields {...env} sourceLabel={sourceLabelOf(vm.sourceInfo)} /></Section>
-                            <Section id="davinci.effects" title="Einblendungen & Ausgabe-LUT" open><EffectsFields {...env} /></Section>
+                            <Section id="davinci.video" title="Export video" open><FormatFields {...env} /><VideoFields {...env} sourceLabel={sourceLabelOf(vm.sourceInfo)} /></Section>
+                            <Section id="davinci.effects" title="Overlays & output LUT" open><EffectsFields {...env} /></Section>
                         </>
                     ) : null}
-                    {tab === 'video' && kind === 'still' ? <Section id="davinci.still" title="Einzelbild" open><StillFields {...env} stillLabel={formatTimecode(vm.previewTime, fps)} /><FrameFields vm={vm} /><EffectsFields {...env} /></Section> : null}
-                    {tab === 'video' && kind === 'sequence' ? <Section id="davinci.sequence" title="Einzelbilder" open><SequenceFields {...env} frameCount={Math.max(1, Math.round(vm.range.duration * fps))} /><FrameFields vm={vm} withFps /><EffectsFields {...env} /></Section> : null}
-                    {tab === 'video' && kind === 'audio' ? <div className="xp-note">Nur Audio: kein Videostream. Einstellungen unter „Audio“.</div> : null}
-                    {tab === 'audio' && kind === 'media' ? <Section id="davinci.audio" title="Audio exportieren" open><AudioFields {...env} /></Section> : null}
-                    {tab === 'audio' && kind === 'audio' ? <Section id="davinci.audioOnly" title="Nur Audio" open><AudioOnlyFields {...env} /></Section> : null}
-                    {tab === 'audio' && (kind === 'still' || kind === 'sequence') ? <div className="xp-note">Bildausgaben enthalten keinen Ton.</div> : null}
+                    {tab === 'video' && kind === 'still' ? <Section id="davinci.still" title="Still frame" open><StillFields {...env} stillLabel={formatTimecode(vm.previewTime, fps)} /><FrameFields vm={vm} /><EffectsFields {...env} /></Section> : null}
+                    {tab === 'video' && kind === 'sequence' ? <Section id="davinci.sequence" title="Single frames" open><SequenceFields {...env} frameCount={Math.max(1, Math.round(vm.range.duration * fps))} /><FrameFields vm={vm} withFps /><EffectsFields {...env} /></Section> : null}
+                    {tab === 'video' && kind === 'audio' ? <div className="xp-note">Audio only: no video stream. Settings under “Audio”.</div> : null}
+                    {tab === 'audio' && kind === 'media' ? <Section id="davinci.audio" title="Export audio" open><AudioFields {...env} /></Section> : null}
+                    {tab === 'audio' && kind === 'audio' ? <Section id="davinci.audioOnly" title="Audio only" open><AudioOnlyFields {...env} /></Section> : null}
+                    {tab === 'audio' && (kind === 'still' || kind === 'sequence') ? <div className="xp-note">Image outputs contain no sound.</div> : null}
                     {tab === 'file' ? (
                         <>
-                            <Section id="davinci.file" title="Datei" open><FileFields {...env} fileName={outputFileName(kind, settings)} /></Section>
-                            {kind === 'media' || kind === 'audio' ? <Section id="davinci.metadata" title="Metadaten" open><MetadataFields {...env} /></Section> : null}
-                            <Section id="davinci.general" title="Erweitert" open><GeneralFields /></Section>
+                            <Section id="davinci.file" title="File" open><FileFields {...env} fileName={outputFileName(kind, settings)} /></Section>
+                            {kind === 'media' || kind === 'audio' ? <Section id="davinci.metadata" title="Metadata" open><MetadataFields {...env} /></Section> : null}
+                            <Section id="davinci.general" title="Advanced" open><GeneralFields /></Section>
                         </>
                     ) : null}
                 </div>
                 <PreflightList items={vm.preflight} />
                 <div className="xp-panel__foot" style={{ display: 'grid', gap: 6 }}>
                     <div className="xp-unit">
-                        {outputFileName(kind, settings)} · geschätzt {formatBytes(estimateOutputBytes(kind, settings, vm.range.duration))}
+                        {outputFileName(kind, settings)}· estimated {formatBytes(estimateOutputBytes(kind, settings, vm.range.duration))}
                     </div>
                     <button type="button" className="xp-btn xp-btn--primary" data-automation-id="export.queue.add" onClick={() => dispatch('export.queue.add', { kinds: [kind] })}>
-                        <ListPlus size={13} /> Zur Render-Warteschlange hinzufügen
+                        <ListPlus size={13} />Add to render queue
                     </button>
                 </div>
             </section>
@@ -135,10 +135,10 @@ const DavinciDeliverView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
             </section>
 
             {/* ─── Render-Warteschlange ─── */}
-            <section className="xp-panel" aria-label="Render-Warteschlange">
-                <div className="xp-panel__head">Render-Warteschlange <small>{summary.total} Jobs</small></div>
+            <section className="xp-panel" aria-label="Render queue">
+                <div className="xp-panel__head">Render queue <small>{summary.total} Jobs</small></div>
                 <div className="xp-panel__scroll">
-                    {state.queue.length === 0 ? <div className="xp-empty">Keine Jobs. Links eine Vorgabe wählen und „Zur Render-Warteschlange hinzufügen“.</div> : null}
+                    {state.queue.length === 0 ? <div className="xp-empty">No jobs. Choose a preset on the left and “Add to render queue”.</div> : null}
                     {state.queue.map((job) => <JobRow key={job.id} vm={vm} job={job} />)}
                 </div>
                 <div className="xp-panel__foot" style={{ display: 'grid', gap: 6 }}>
@@ -147,13 +147,13 @@ const DavinciDeliverView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                         <div className="xp-progress"><i style={{ width: `${summary.overallProgress}%` }} /></div>
                     ) : null}
                     <div style={{ display: 'flex', gap: 6 }}>
-                        <button type="button" className="xp-btn" data-automation-id="export.queue.clearFinished" disabled={summary.done + summary.error + summary.cancelled === 0} onClick={() => dispatch('export.queue.clearFinished', {})}>Erledigte entfernen</button>
+                        <button type="button" className="xp-btn" data-automation-id="export.queue.clearFinished" disabled={summary.done + summary.error + summary.cancelled === 0} onClick={() => dispatch('export.queue.clearFinished', {})}>Remove completed</button>
                         <span style={{ flex: 1 }} />
                         {running ? (
-                            <button type="button" className="xp-btn xp-btn--danger" data-automation-id="export.queue.cancel" onClick={() => dispatch('export.queue.cancel', {})}><Square size={12} /> Stopp</button>
+                            <button type="button" className="xp-btn xp-btn--danger" data-automation-id="export.queue.cancel" onClick={() => dispatch('export.queue.cancel', {})}><Square size={12} />Stop</button>
                         ) : (
                             <button type="button" className="xp-btn xp-btn--primary" data-automation-id="export.queue.renderAll" disabled={summary.pending === 0} title={vm.exportBlockReason || undefined} onClick={() => dispatch('export.queue.renderAll', {})}>
-                                <Play size={12} /> Alle rendern
+                                <Play size={12} />Render all
                             </button>
                         )}
                     </div>
@@ -164,7 +164,7 @@ const DavinciDeliverView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
             <section className="xp-panel xp-davinci__timeline" aria-label="Timeline">
                 <div className="xp-tlbar">
                     <div className="xp-seg" role="group" aria-label="Render-Bereich">
-                        <button type="button" className="xp-seg__btn" aria-pressed={rangeMode === 'full'} data-automation-id="export.range.full" onClick={() => dispatch('export.range.set', { mode: 'full' })}>Ganze Timeline</button>
+                        <button type="button" className="xp-seg__btn" aria-pressed={rangeMode === 'full'} data-automation-id="export.range.full" onClick={() => dispatch('export.range.set', { mode: 'full' })}>Whole timeline</button>
                         <button type="button" className="xp-seg__btn" aria-pressed={rangeMode === 'inout'} data-automation-id="export.range.inout" onClick={() => dispatch('export.range.set', { mode: 'inout' })}>In/Out-Bereich</button>
                     </div>
                     <div
@@ -191,7 +191,7 @@ const DavinciDeliverView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                         <TimecodeInput aid="export.range.in" value={vm.range.start} fps={fps} disabled={rangeMode === 'full'} onChange={(inPoint) => dispatch('export.range.set', { mode: 'inout', inPoint })} />
                         <span className="xp-unit">Out</span>
                         <TimecodeInput aid="export.range.out" value={vm.range.end} fps={fps} disabled={rangeMode === 'full'} onChange={(outPoint) => dispatch('export.range.set', { mode: 'inout', outPoint })} />
-                        <span className="xp-unit">Dauer {formatTimecode(vm.range.duration, fps)}</span>
+                        <span className="xp-unit">Duration {formatTimecode(vm.range.duration, fps)}</span>
                     </div>
                 </div>
             </section>

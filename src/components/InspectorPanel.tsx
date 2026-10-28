@@ -772,7 +772,7 @@ const InspectorPanel: React.FC<InspectorPanelProps> = (props) => {
                     <FxStackPanel
                         stack={selectedClip.fxStack}
                         onChange={(fxStack) => onUpdateClip({ ...selectedClip, fxStack })}
-                        emptyHint="GPU-Effekte aus Buckswood Post Plugins (Optics Lab, Film-Emulation …). Läuft in Vorschau und Export identisch."
+                        emptyHint="GPU effects from Buckswood Post Plugins (Optics Lab, film emulation …). Runs identically in preview and export."
                     />
                 );
             case 'AI':

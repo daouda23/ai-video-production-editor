@@ -55,7 +55,7 @@ test('build a comp without the page open: create, add, connect, params, keyframe
     assert.equal(store.activeId, compId);
 
     // Text+ after MediaIn1 → Fusion auto-merge.
-    const text = await mcp.call('fusion_node_add', { tool: 'TextPlus', afterNodeId: 'MediaIn1', params: { text: 'Hallo' } });
+    const text = await mcp.call('fusion_node_add', { tool: 'TextPlus', afterNodeId: 'MediaIn1', params: { text: 'Hello' } });
     assert.ok(text.mergeId);
     const blur = await mcp.call('fusion_node_add', { tool: 'Blur', afterNodeId: 'Merge1' });
     assert.equal((blur.node as { class: string }).class, 'blur');
@@ -67,7 +67,7 @@ test('build a comp without the page open: create, add, connect, params, keyframe
     const merge = nodes.find((node) => node.name === 'Merge1')!;
     const mediaIn = nodes.find((node) => node.name === 'MediaIn1') as unknown as { id: string };
     assert.equal(merge.inputs.bg, mediaIn.id);
-    assert.equal(nodes.find((node) => node.name === 'Text1')!.params.text, 'Hallo');
+    assert.equal(nodes.find((node) => node.name === 'Text1')!.params.text, 'Hello');
     const output = nodes.find((node) => node.name === 'MediaOut1')!;
     assert.equal(output.inputs.input, (blur.node as { id: string }).id);
 

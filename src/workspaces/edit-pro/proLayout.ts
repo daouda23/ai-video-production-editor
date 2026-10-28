@@ -75,25 +75,25 @@ export type ProLayoutState = {
 export const PRO_LAYOUT_STORAGE_KEY = 'edit_workspace_pro_layout_v1';
 
 export const PRO_PANELS: Record<ProPanelId, { label: string; hint: string }> = {
-    source: { label: 'Quelle', hint: 'Quellmonitor: Medium sichten, In/Out setzen, einfügen' },
-    program: { label: 'Programm', hint: 'Programmmonitor der Sequenz' },
-    timeline: { label: 'Timeline', hint: 'Sequenz mit Video- und Audiospuren' },
-    tools: { label: 'Werkzeuge', hint: 'Werkzeugleiste' },
-    meters: { label: 'Pegel', hint: 'Audiopegel der Sequenz' },
-    project: { label: 'Projekt', hint: 'Projektmedien' },
-    effects: { label: 'Effekte', hint: 'Effekte, Übergänge und Titel' },
-    markers: { label: 'Marken', hint: 'In/Out-Marken und Schnittpunkte' },
-    history: { label: 'Verlauf', hint: 'Änderungen in dieser Sitzung' },
-    info: { label: 'Info', hint: 'Details zur Auswahl' },
-    effectControls: { label: 'Effekteinstellungen', hint: 'Bewegung, Deckkraft und GPU-Effekte des Clips' },
-    audioMixer: { label: 'Audio-Mixer', hint: 'Clip-Lautstärke pro Spur an der Abspielposition' },
-    inspector: { label: 'Eigenschaften', hint: 'Vollständiger Clip-Inspektor' },
-    titles: { label: 'Titel', hint: 'Titel, Bauchbinden, Untertitel' },
-    transitions: { label: 'Übergänge', hint: 'Übergangsbibliothek' },
-    lookbook: { label: 'Lookbook', hint: 'Referenzen, Figuren, Umgebungen' },
-    music: { label: 'Musik', hint: 'Musik-Assistent' },
+    source: { label: 'Source', hint: 'Source monitor: browse media, set In/Out, insert' },
+    program: { label: 'Program', hint: 'Sequence program monitor' },
+    timeline: { label: 'Timeline', hint: 'Sequence with video and audio tracks' },
+    tools: { label: 'Tools', hint: 'Toolbar' },
+    meters: { label: 'Level', hint: 'Sequence audio levels' },
+    project: { label: 'Project', hint: 'Project media' },
+    effects: { label: 'Effects', hint: 'Effects, transitions and titles' },
+    markers: { label: 'Markers', hint: 'In/Out marks and edit points' },
+    history: { label: 'History', hint: 'Changes in this session' },
+    info: { label: 'Info', hint: 'Selection details' },
+    effectControls: { label: 'Effect controls', hint: 'Clip motion, opacity and GPU effects' },
+    audioMixer: { label: 'Audio-Mixer', hint: 'Clip volume per track at the playhead' },
+    inspector: { label: 'Properties', hint: 'Full clip inspector' },
+    titles: { label: 'Title', hint: 'Titles, lower thirds, subtitles' },
+    transitions: { label: 'Transitions', hint: 'Transition library' },
+    lookbook: { label: 'Lookbook', hint: 'References, characters, environments' },
+    music: { label: 'Music', hint: 'Musik-Assistent' },
     autocut: { label: 'Auto-Cut', hint: 'KI-Segmentauswahl' },
-    agent: { label: 'Agent', hint: 'KI-Schnittvorschläge planen und anwenden' },
+    agent: { label: 'Agent', hint: 'Plan and apply AI edit suggestions' },
 };
 
 export const ALL_PANEL_IDS = Object.keys(PRO_PANELS) as ProPanelId[];
@@ -102,22 +102,22 @@ export const ALL_PANEL_IDS = Object.keys(PRO_PANELS) as ProPanelId[];
 export const COMPACT_PANELS: ProPanelId[] = ['tools', 'meters'];
 
 export const PRO_WORKSPACES: Array<{ id: ProWorkspaceId; label: string; hint: string }> = [
-    { id: 'editing', label: 'Schnitt', hint: 'Quelle, Programm, Projekt und Timeline' },
-    { id: 'color', label: 'Farbe', hint: 'Großer Programmmonitor mit Effekteinstellungen' },
-    { id: 'effects', label: 'Effekte', hint: 'Effektbrowser und Effekteinstellungen im Vordergrund' },
-    { id: 'audio', label: 'Audio', hint: 'Audio-Mixer und Pegel im Vordergrund' },
-    { id: 'classic', label: 'Klassisch', hint: 'Bisheriges Layout mit Browser, Monitor und Inspektor' },
+    { id: 'editing', label: 'Edit', hint: 'Source, program, project and timeline' },
+    { id: 'color', label: 'Color', hint: 'Large program monitor with effect controls' },
+    { id: 'effects', label: 'Effects', hint: 'Effects browser and effect controls in front' },
+    { id: 'audio', label: 'Audio', hint: 'Audio mixer and meters in front' },
+    { id: 'classic', label: 'Classic', hint: 'Previous layout with browser, monitor and inspector' },
 ];
 
 export const EDITOR_TOOLS: Array<{ id: EditorToolId; key: string; label: string; hint: string; status: 'ready' | 'partial' | 'planned' }> = [
-    { id: 'selection', key: 'V', label: 'Auswahl', hint: 'Clips auswählen, verschieben und trimmen', status: 'ready' },
-    { id: 'trackForward', key: 'A', label: 'Spur vorwärts auswählen', hint: 'Klicken und ziehen verschiebt alle Clips der Spur ab dem Klickpunkt', status: 'ready' },
-    { id: 'ripple', key: 'B', label: 'Löschen und Lücke schließen (Ripple)', hint: 'Clipkante trimmen, nachfolgende Clips rücken nach', status: 'ready' },
-    { id: 'razor', key: 'C', label: 'Rasierklinge', hint: 'Klick auf einen Clip teilt ihn an dieser Stelle', status: 'ready' },
-    { id: 'slip', key: 'Y', label: 'Unterschieben (Slip)', hint: 'Clip ziehen verschiebt den Quellausschnitt, Position und Länge bleiben', status: 'ready' },
-    { id: 'pen', key: 'P', label: 'Zeichenstift', hint: 'Keyframes auf Spuren zeichnen – noch nicht verfügbar', status: 'planned' },
-    { id: 'hand', key: 'H', label: 'Hand', hint: 'Timeline durch Ziehen verschieben', status: 'ready' },
-    { id: 'type', key: 'T', label: 'Text', hint: 'In den Programmmonitor klicken legt einen Textclip an der Abspielposition an', status: 'ready' },
+    { id: 'selection', key: 'V', label: 'Selection', hint: 'Select, move and trim clips', status: 'ready' },
+    { id: 'trackForward', key: 'A', label: 'Select track forward', hint: 'Click and drag moves all clips on the track from the click point', status: 'ready' },
+    { id: 'ripple', key: 'B', label: 'Delete and close gap (ripple)', hint: 'Trim the clip edge, following clips ripple', status: 'ready' },
+    { id: 'razor', key: 'C', label: 'Razor', hint: 'Clicking a clip splits it at that point', status: 'ready' },
+    { id: 'slip', key: 'Y', label: 'Slip', hint: 'Dragging the clip slips the source range; position and length stay', status: 'ready' },
+    { id: 'pen', key: 'P', label: 'Pen tool', hint: 'Drawing keyframes on tracks – not available yet', status: 'planned' },
+    { id: 'hand', key: 'H', label: 'Hand', hint: 'Drag to scroll the timeline', status: 'ready' },
+    { id: 'type', key: 'T', label: 'Text', hint: 'Clicking in the program monitor adds a text clip at the playhead', status: 'ready' },
 ];
 
 const TOOL_IDS = EDITOR_TOOLS.map((tool) => tool.id);

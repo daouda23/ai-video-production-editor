@@ -80,12 +80,12 @@ test('every page tool reaches the Media page live commands', async () => {
     const selected = await mcp.call('media_select', { ids: ['/home/demo/a.mov'] });
     assert.deepEqual(selected.selection, ['/home/demo/a.mov']);
     assert.deepEqual((await mcp.call('media_get_state')).selection, ['/home/demo/a.mov']);
-    await mcp.call('media_set_import_options', { copyToProject: true, bin: 'Dreh Tag 1', sequence: 'Rohschnitt', sequenceOrder: 'name' });
-    const imported = await mcp.call('media_import', { sequence: 'Rohschnitt', bin: 'Dreh Tag 1' });
+    await mcp.call('media_set_import_options', { copyToProject: true, bin: 'Shoot day 1', sequence: 'Rough cut', sequenceOrder: 'name' });
+    const imported = await mcp.call('media_import', { sequence: 'Rough cut', bin: 'Shoot day 1' });
     assert.deepEqual(imported.mediaIds, ['m9']);
     assert.equal(imported.timelineQueued, 1);
-    await mcp.call('media_bin_update', { bin: 'Auswahl', add: ['m9'] });
-    assert.deepEqual(((await mcp.call('media_list_bin', { bin: 'Auswahl' })).items as Array<{ mediaId: string }>).map((item) => item.mediaId), ['m9']);
+    await mcp.call('media_bin_update', { bin: 'Selection', add: ['m9'] });
+    assert.deepEqual(((await mcp.call('media_list_bin', { bin: 'Selection' })).items as Array<{ mediaId: string }>).map((item) => item.mediaId), ['m9']);
     assert.equal(((await mcp.call('media_list_bin')).bins as unknown[]).length, 1);
     assert.deepEqual((await mcp.call('media_favorites_add', { path: '/home/demo/Movies' })).favorites, ['/home/demo/Movies']);
     assert.deepEqual((await mcp.call('media_favorites_remove', { path: '/home/demo/Movies' })).favorites, []);
@@ -95,7 +95,7 @@ test('every page tool reaches the Media page live commands', async () => {
     for (const command of ['places', 'browse', 'select', 'state', 'setOptions', 'import', 'binUpdate', 'bins', 'favorite', 'view']) {
       assert.ok(commands.includes(command), `live command ${command} not reached`);
     }
-    assert.equal(page.calls.find((call) => call.command === 'import')!.args.bin, 'Dreh Tag 1');
+    assert.equal(page.calls.find((call) => call.command === 'import')!.args.bin, 'Shoot day 1');
     assert.equal(page.calls.find((call) => call.command === 'setOptions')!.args.sequenceOrder, 'name');
 
     const missingBin = await mcp.call('media_bin_update', {});

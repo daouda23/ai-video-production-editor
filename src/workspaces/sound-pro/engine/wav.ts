@@ -62,7 +62,7 @@ export type DecodedWav = { sampleRate: number; channels: Float32Array[] };
 export const decodeWav = (input: Uint8Array): DecodedWav => {
   const view = new DataView(input.buffer, input.byteOffset, input.byteLength);
   const tag = (o: number) => String.fromCharCode(input[o], input[o + 1], input[o + 2], input[o + 3]);
-  if (input.byteLength < 12 || tag(0) !== 'RIFF' || tag(8) !== 'WAVE') throw new Error('Keine WAV-Datei');
+  if (input.byteLength < 12 || tag(0) !== 'RIFF' || tag(8) !== 'WAVE') throw new Error('Not a WAV file');
   let offset = 12;
   let fmt: { audioFormat: number; channels: number; sampleRate: number; bits: number } | null = null;
   while (offset + 8 <= input.byteLength) {
@@ -79,7 +79,7 @@ export const decodeWav = (input: Uint8Array): DecodedWav => {
         bits: view.getUint16(body + 14, true),
       };
     } else if (id === 'data') {
-      if (!fmt) throw new Error('WAV ohne fmt-Block');
+      if (!fmt) throw new Error('WAV without fmt chunk');
       const bytesPer = fmt.bits / 8;
       const numCh = Math.max(1, fmt.channels);
       // streamed WAV (pipe) has no final size: 0 or 0xFFFFFFFF means "until the end"
@@ -106,5 +106,5 @@ export const decodeWav = (input: Uint8Array): DecodedWav => {
     if (size === 0xffffffff) break;
     offset = body + size + (size % 2);
   }
-  throw new Error('WAV ohne data-Block');
+  throw new Error('WAV without data chunk');
 };

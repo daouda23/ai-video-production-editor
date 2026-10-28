@@ -9,10 +9,10 @@ export type Rect = { x: number; y: number; width: number; height: number };
 export type SelectionMode = 'new' | 'add' | 'subtract' | 'intersect';
 
 export const SELECTION_MODES: Array<{ id: SelectionMode; label: string }> = [
-  { id: 'new', label: 'Neue Auswahl' },
-  { id: 'add', label: 'Der Auswahl hinzufügen' },
-  { id: 'subtract', label: 'Von Auswahl subtrahieren' },
-  { id: 'intersect', label: 'Schnittmenge mit Auswahl bilden' },
+  { id: 'new', label: 'New selection' },
+  { id: 'add', label: 'Add to selection' },
+  { id: 'subtract', label: 'Subtract from selection' },
+  { id: 'intersect', label: 'Intersect with selection' },
 ];
 
 export const rectIsEmpty = (r: Rect | null | undefined) => !r || r.width <= 0 || r.height <= 0;
@@ -117,7 +117,7 @@ export function combineBounds(prev: Rect | null, shape: Rect | null, mode: Selec
 export type CropRatio = { id: string; label: string; ratio: number | null };
 
 export const CROP_RATIOS: CropRatio[] = [
-  { id: 'free', label: 'Verhältnis', ratio: null },
+  { id: 'free', label: 'Ratio', ratio: null },
   { id: 'original', label: 'Original', ratio: -1 },
   { id: '1:1', label: '1 : 1 (Quadrat)', ratio: 1 },
   { id: '4:5', label: '4 : 5 (8 : 10)', ratio: 4 / 5 },

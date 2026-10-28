@@ -82,24 +82,24 @@ export const shotSizeFor = (cam: StageCamera, chr: StageCharacter, depthM: numbe
 
 export const SHOT_SIZE_LABELS: Record<StageShotSize, string> = {
   EWS: 'Panorama',
-  WS: 'Totale',
-  FS: 'Halbtotale',
-  MLS: 'Amerikanische',
-  MS: 'Halbnah',
-  MCU: 'Nah',
-  CU: 'Groß',
+  WS: 'Wide shot',
+  FS: 'Medium long shot',
+  MLS: 'Cowboy shot',
+  MS: 'Medium shot',
+  MCU: 'Close',
+  CU: 'Large',
   ECU: 'Detail',
 };
 
 export const MOVE_LABELS: Record<StageCameraMove, string> = {
-  static: 'Statisch',
-  pan: 'Schwenk',
-  tilt: 'Neigen',
+  static: 'Static',
+  pan: 'Pan',
+  tilt: 'Tilt',
   zoom: 'Zoom',
   dolly: 'Dolly',
-  track: 'Mitfahrt',
+  track: 'Tracking shot',
   crane: 'Kran',
-  handheld: 'Handkamera',
+  handheld: 'Handheld camera',
 };
 
 /** Side of the line of action for a floor point: +1 left, −1 right, 0 on the line. */
@@ -175,12 +175,12 @@ export type ShotFacts = {
 };
 
 export const angleLabelFor = (pitchDeg: number, heightM: number, eyeM: number | null): string => {
-  if (pitchDeg <= -60) return 'Vogelperspektive';
-  if (pitchDeg <= -12) return 'Aufsicht';
-  if (pitchDeg >= 12) return 'Untersicht';
-  if (eyeM !== null && heightM < eyeM - 0.45) return 'leichte Untersicht';
-  if (eyeM !== null && heightM > eyeM + 0.45) return 'leichte Aufsicht';
-  return 'Augenhöhe';
+  if (pitchDeg <= -60) return 'Bird\'s-eye view';
+  if (pitchDeg <= -12) return 'High angle';
+  if (pitchDeg >= 12) return 'Low angle';
+  if (eyeM !== null && heightM < eyeM - 0.45) return 'slight low angle';
+  if (eyeM !== null && heightM > eyeM + 0.45) return 'slight high angle';
+  return 'Eye level';
 };
 
 export const shotCode = (shot: Pick<StageShot, 'number' | 'version'>) => `${shot.number}${shot.version}`;
@@ -216,10 +216,10 @@ export const shotFacts = (stage: StageState, shot: StageShot): ShotFacts => {
   const line = lineOfActionAt(stage, t);
   const side = line ? sideOfLine(line[0], line[1], [cam.position.x, cam.position.z]) : null;
   const subjectNames = subjects.map((s) => s.name);
-  const sizeLabel = size ? SHOT_SIZE_LABELS[size] : 'ohne Figur';
+  const sizeLabel = size ? SHOT_SIZE_LABELS[size] : 'no character';
   const moveLabel = moves.map((m) => MOVE_LABELS[m]).join(' + ');
-  const who = subjectNames.length === 0 ? 'Raum' : subjectNames.length <= 2 ? subjectNames.join(' & ') : `${subjectNames.slice(0, 2).join(', ')} +${subjectNames.length - 2}`;
-  const autoDescription = `${sizeLabel} ${who} · ${Math.round(lensMm)} mm · ${moveLabel}${angleLabel !== 'Augenhöhe' ? ` · ${angleLabel}` : ''}`;
+  const who = subjectNames.length === 0 ? 'Room' : subjectNames.length <= 2 ? subjectNames.join(' & ') : `${subjectNames.slice(0, 2).join(', ')} +${subjectNames.length - 2}`;
+  const autoDescription = `${sizeLabel} ${who} · ${Math.round(lensMm)} mm · ${moveLabel}${angleLabel !== 'Eye level' ? ` · ${angleLabel}` : ''}`;
   return {
     code: shotCode(shot), cameraName: cam.name, size, sizeLabel, lensMm, moves, moveLabel, subjects, subjectNames,
     heightM: cam.position.y, pitchDeg: cam.pitchDeg, angleLabel, durationS, side, autoDescription,
@@ -236,7 +236,7 @@ export const axisWarnings = (stage: StageState, orderedShots: StageShot[]): Axis
     const facts = shotFacts(stage, shot);
     if (facts.side === null || facts.side === 0) continue;
     if (prev && prev.side !== facts.side) {
-      out.push({ fromShotId: prev.shot.id, toShotId: shot.id, message: `${shotCode(prev.shot)} → ${shotCode(shot)} springt über die 180°-Linie` });
+      out.push({ fromShotId: prev.shot.id, toShotId: shot.id, message: `${shotCode(prev.shot)} → ${shotCode(shot)} jumps across the 180° line` });
     }
     prev = { shot, side: facts.side };
   }

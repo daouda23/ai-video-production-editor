@@ -23,7 +23,7 @@ export type History<T> = {
 export const DEFAULT_HISTORY_LIMIT = 50;
 export const COALESCE_WINDOW_MS = 1200;
 
-export function createHistory<T>(state: T, label = 'Öffnen', limit = DEFAULT_HISTORY_LIMIT, now = Date.now()): History<T> {
+export function createHistory<T>(state: T, label = 'Open', limit = DEFAULT_HISTORY_LIMIT, now = Date.now()): History<T> {
   return { entries: [{ id: 1, label, state, time: now }], index: 0, nextId: 2, limit: Math.max(2, limit) };
 }
 

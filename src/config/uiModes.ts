@@ -98,41 +98,6 @@ const MODE_WORKSPACES: Record<UIMode, Workspace[]> = {
     ],
 };
 
-const BEGINNER_LABELS: Partial<Record<Workspace, string>> = {
-    PROJECT: 'My Project',
-    MICRODRAMA: '9:16 Microdrama',
-    IMPORT: 'Upload',
-    DESIGN: 'Design',
-    IMAGE_GEN: 'Make Image',
-    VIDEO_GEN: 'Make Video',
-    EDIT: 'Edit Video',
-    SOUND: 'Music',
-    EXPORT: 'Download',
-};
-
-const ADVANCED_LABELS: Partial<Record<Workspace, string>> = {
-    IMAGE_GEN: 'Img Gen',
-    VIDEO_GEN: 'Vid Gen',
-    COMPOSITING: 'Comp',
-    ANALYSIS: 'QC',
-};
-
-const BEGINNER_GROUP_LABELS: Record<string, string> = {
-    PROJECTS: 'Start',
-    CREATE: 'Create',
-    EDITING: 'Edit',
-    REVIEW: 'Review',
-    DELIVERY: 'Finish',
-};
-
-const ADVANCED_GROUP_LABELS: Record<string, string> = {
-    PROJECTS: 'Project',
-    CREATE: 'Build',
-    EDITING: 'Edit',
-    REVIEW: 'Review',
-    DELIVERY: 'Ship',
-};
-
 export const normalizeUIMode = (value: unknown): UIMode => {
     if (value === 'beginner' || value === 'advanced' || value === 'pro') {
         return value;
@@ -150,24 +115,4 @@ export const filterWorkspacesForRole = (workspaces: Workspace[], isDirector: boo
         if (workspace === 'REQUESTS') return !isDirector;
         return true;
     });
-};
-
-export const getWorkspaceDisplayLabel = (workspace: Workspace, fallback: string, mode: UIMode): string => {
-    if (mode === 'beginner') {
-        return BEGINNER_LABELS[workspace] || fallback;
-    }
-    if (mode === 'advanced') {
-        return ADVANCED_LABELS[workspace] || fallback;
-    }
-    return fallback;
-};
-
-export const getWorkspaceGroupDisplayLabel = (groupId: string, fallback: string, mode: UIMode): string => {
-    if (mode === 'beginner') {
-        return BEGINNER_GROUP_LABELS[groupId] || fallback;
-    }
-    if (mode === 'advanced') {
-        return ADVANCED_GROUP_LABELS[groupId] || fallback;
-    }
-    return fallback;
 };

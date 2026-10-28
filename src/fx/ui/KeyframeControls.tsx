@@ -57,8 +57,8 @@ export const Stopwatch: React.FC<{
         className={`kfx-stopwatch ${animated ? 'kfx-stopwatch--on' : ''}`}
         aria-pressed={animated}
         disabled={disabled}
-        title={animated ? `Animation von „${label}“ ausschalten (löscht ${keyCount} Keyframe${keyCount === 1 ? '' : 's'})` : `Animation von „${label}“ einschalten (Keyframe am Playhead)`}
-        aria-label={animated ? `Animation ${label} aus` : `Animation ${label} ein`}
+        title={animated ? `Animation of “${label}” off (deletes ${keyCount} Keyframe${keyCount === 1 ? '' : 's'})` : `Animation of “${label}” on (keyframe at the playhead)`}
+        aria-label={animated ? `Animation ${label} off` : `Animation ${label} on`}
         data-automation-id={automationId}
         onClick={() => {
           if (!animated) onToggle(true);
@@ -69,8 +69,8 @@ export const Stopwatch: React.FC<{
         <StopwatchIcon on={animated} />
       </button>
       {confirming && (
-        <span className="kfx-confirm" role="dialog" aria-label="Keyframes löschen" data-automation-id={`${automationId}.confirm`}>
-          <span>Alle {keyCount} Keyframes von „{label}“ löschen?</span>
+        <span className="kfx-confirm" role="dialog" aria-label="Delete keyframes" data-automation-id={`${automationId}.confirm`}>
+          <span>All {keyCount}Keyframes of “{label}” – delete?</span>
           <button
             type="button"
             className="kfx-confirm__danger"
@@ -79,11 +79,9 @@ export const Stopwatch: React.FC<{
               setConfirming(false);
               onToggle(false);
             }}
-          >
-            Löschen
+          >Delete
           </button>
-          <button type="button" data-automation-id={`${automationId}.confirm.cancel`} onClick={() => setConfirming(false)}>
-            Abbrechen
+          <button type="button" data-automation-id={`${automationId}.confirm.cancel`} onClick={() => setConfirming(false)}>Cancel
           </button>
         </span>
       )}
@@ -103,7 +101,7 @@ export const KeyNavigator: React.FC<{
   onToggleKey: () => void;
 }> = ({ automationId, label, atKey, canKey, prevTime, nextTime, onSeek, onToggleKey }) => (
   <span className="kfx-nav" data-automation-id={automationId}>
-    <button type="button" className="kfx-nav__btn" disabled={prevTime === null} onClick={() => prevTime !== null && onSeek(prevTime)} title="Zum vorherigen Keyframe" aria-label={`${label}: vorheriger Keyframe`} data-automation-id={`${automationId}.prev`}>
+    <button type="button" className="kfx-nav__btn" disabled={prevTime === null} onClick={() => prevTime !== null && onSeek(prevTime)} title="Go to previous keyframe" aria-label={`${label}: previous keyframe`} data-automation-id={`${automationId}.prev`}>
       <Arrow dir="left" />
     </button>
     <button
@@ -111,14 +109,14 @@ export const KeyNavigator: React.FC<{
       className={`kfx-nav__btn kfx-nav__key ${atKey ? 'kfx-nav__key--on' : ''}`}
       disabled={!canKey}
       onClick={onToggleKey}
-      title={canKey ? (atKey ? 'Keyframe am Playhead entfernen' : 'Keyframe am Playhead hinzufügen') : 'Playhead liegt außerhalb des Clips'}
-      aria-label={`${label}: Keyframe ${atKey ? 'entfernen' : 'hinzufügen'}`}
+      title={canKey ? (atKey ? 'Remove keyframe at the playhead' : 'Add keyframe at the playhead') : 'The playhead is outside the clip'}
+      aria-label={`${label}: Keyframe ${atKey ? 'remove' : 'add'}`}
       aria-pressed={atKey}
       data-automation-id={`${automationId}.toggle`}
     >
       <DiamondIcon filled={atKey} />
     </button>
-    <button type="button" className="kfx-nav__btn" disabled={nextTime === null} onClick={() => nextTime !== null && onSeek(nextTime)} title="Zum nächsten Keyframe" aria-label={`${label}: nächster Keyframe`} data-automation-id={`${automationId}.next`}>
+    <button type="button" className="kfx-nav__btn" disabled={nextTime === null} onClick={() => nextTime !== null && onSeek(nextTime)} title="Go to next keyframe" aria-label={`${label}: next keyframe`} data-automation-id={`${automationId}.next`}>
       <Arrow dir="right" />
     </button>
   </span>

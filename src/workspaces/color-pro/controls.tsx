@@ -56,7 +56,7 @@ export const ScrubNumber: React.FC<ScrubProps> = ({ value, onChange, min, max, s
       aria-valuenow={value}
       aria-valuemin={min}
       aria-valuemax={max}
-      title={title ?? 'Ziehen zum Ändern (⇧ fein), Klick zum Eingeben, Doppelklick setzt zurück'}
+      title={title ?? 'Drag to change (⇧ fine), click to type, double-click resets'}
       data-automation-id={automationId}
       onPointerDown={(event) => {
         event.preventDefault();
@@ -182,14 +182,14 @@ export const GradeWheel: React.FC<{
     <div className="cp-wheel">
       <div className="cp-wheel__head">
         <span>{label}</span>
-        <button type="button" className="cp-btn cp-btn--icon" title={`${label} zurücksetzen`} data-automation-id={`${automationId}.reset`} onClick={() => onPatch(wheelResetPatch(kind))}>↺</button>
+        <button type="button" className="cp-btn cp-btn--icon" title={`${label} reset`} data-automation-id={`${automationId}.reset`} onClick={() => onPatch(wheelResetPatch(kind))}>↺</button>
       </div>
       <div
         className="cp-wheel__disc"
         style={{ width: size, height: size }}
         tabIndex={0}
         role="slider"
-        aria-label={`${label} Farbrad`}
+        aria-label={`${label} color wheel`}
         data-automation-id={`${automationId}.disc`}
         onPointerDown={(event) => {
           event.preventDefault();
@@ -219,7 +219,7 @@ export const GradeWheel: React.FC<{
       </div>
       <Jog
         automationId={`${automationId}.jog`}
-        title={hasMaster ? `${label} Master (Y) – ziehen` : `${label} – alle Kanäle ziehen`}
+        title={hasMaster ? `${label} Master (Y) – drag` : `${label} – drag all channels`}
         sensitivity={kind === 'gain' ? 0.004 : 0.002}
         onDelta={(delta) => onPatch(hasMaster ? { [masterKey]: clamp(master + delta, lim.min, lim.max) } : wheelGangPatch(values, kind, delta))}
         onReset={() => onPatch(hasMaster ? { [masterKey]: base } : wheelResetPatch(kind))}
@@ -253,7 +253,7 @@ export const ChannelBar: React.FC<{ value: number; def: number; min: number; max
       role="slider"
       aria-label={label}
       aria-valuenow={value}
-      title={`${label}: ${value.toFixed(3)} (Doppelklick setzt zurück)`}
+      title={`${label}: ${value.toFixed(3)} (double-click to reset)`}
       data-automation-id={automationId}
       onPointerDown={(event) => {
         (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);

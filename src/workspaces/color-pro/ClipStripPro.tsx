@@ -39,8 +39,8 @@ const ClipStripPro: React.FC<Props> = ({ clips, tracks, mediaItems, selectedClip
   const total = Math.max(0.001, duration);
   return (
     <div className="cp-strip" data-automation-id="color.clips">
-      <div className="cp-strip__clips" role="listbox" aria-label="Clips der Timeline" tabIndex={0} data-automation-id="color.clips.list">
-        {ordered.length === 0 && <div className="cp-empty" style={{ height: 70 }}>Keine Bild- oder Videoclips in der Timeline.</div>}
+      <div className="cp-strip__clips" role="listbox" aria-label="Timeline clips" tabIndex={0} data-automation-id="color.clips.list">
+        {ordered.length === 0 && <div className="cp-empty" style={{ height: 70 }}>No image or video clips in the timeline.</div>}
         {ordered.map((clip, index) => {
           const media = mediaItems.find((item) => item.id === clip.mediaId);
           const summary = gradeSummary(clip);
@@ -58,7 +58,7 @@ const ClipStripPro: React.FC<Props> = ({ clips, tracks, mediaItems, selectedClip
               onClick={(event) => onSelect(clip, event.metaKey || event.ctrlKey || event.shiftKey)}
               onAuxClick={(event) => { if (event.button === 1) { event.preventDefault(); onApplyCurrentGrade(clip); } }}
               onContextMenu={(event) => { event.preventDefault(); onContextMenu(clip, event.clientX, event.clientY); }}
-              title={`${media?.name || 'Clip'} · ${formatTimecode(clip.start)} – Mittelklick: aktuellen Grade anwenden, Rechtsklick: Menü`}
+              title={`${media?.name || 'Clip'} · ${formatTimecode(clip.start)} – middle-click: apply current grade, right-click: menu`}
               data-automation-id={`color.clips.clip.${index + 1}`}
             >
               <span className="cp-clip__head">
@@ -69,7 +69,7 @@ const ClipStripPro: React.FC<Props> = ({ clips, tracks, mediaItems, selectedClip
               <span className="cp-clip__thumb">
                 {media?.type === 'image' && <img src={media.url} alt="" draggable={false} />}
                 {media?.type === 'video' && <video src={`${media.url}#t=${Math.max(0, clip.sourceIn ?? 0) + 0.05}`} muted preload="metadata" />}
-                {summary.active > 0 && <span className="cp-clip__badge" title={`${summary.gradeNodes} Farb-Node(s), ${summary.otherNodes} Effekt-Node(s)`}>{summary.gradeNodes + summary.otherNodes}N</span>}
+                {summary.active > 0 && <span className="cp-clip__badge" title={`${summary.gradeNodes} color node(s), ${summary.otherNodes} effect node(s)`}>{summary.gradeNodes + summary.otherNodes}N</span>}
                 {summary.legacy && <span className="cp-clip__badge cp-clip__badge--legacy" title="Look / LUT (CSS-Filter)">Look</span>}
               </span>
               <span className="cp-clip__foot">{clip.textConfig?.content || media?.name || 'Clip'}</span>
@@ -80,7 +80,7 @@ const ClipStripPro: React.FC<Props> = ({ clips, tracks, mediaItems, selectedClip
       <div
         className="cp-minitl"
         data-automation-id="color.clips.minitimeline"
-        title="Klicken, um den Abspielkopf zu setzen"
+        title="Click to set the playhead"
         onPointerDown={(event) => {
           const rect = event.currentTarget.getBoundingClientRect();
           (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);

@@ -39,10 +39,10 @@ export function nodeToolFlags(node: FxInstance): Array<{ id: string; label: stri
   const curves = ['curveY', 'curveR', 'curveG', 'curveB', 'hueHue', 'hueSat', 'hueLum'].some((id) => typeof p[id] === 'string' && (p[id] as string).trim() !== '');
   return [
     { id: 'primaries', label: 'Primaries', on: changed(primaries) },
-    { id: 'curves', label: 'Kurven', on: curves },
+    { id: 'curves', label: 'Curves', on: curves },
     { id: 'qualifier', label: 'Qualifier', on: p.qualEnabled === true },
-    { id: 'window', label: 'Fenster', on: typeof p.winType === 'number' && p.winType > 0 },
-    { id: 'blur', label: 'Weichzeichnen/Schärfen', on: changed(['blurRadius', 'sharpen']) },
+    { id: 'window', label: 'Window', on: typeof p.winType === 'number' && p.winType > 0 },
+    { id: 'blur', label: 'Blur/Sharpen', on: changed(['blurRadius', 'sharpen']) },
     { id: 'sizing', label: 'Sizing', on: changed(['sizePan', 'sizeTilt', 'sizeZoom', 'sizeRotate', 'sizeFlipH', 'sizeFlipV']) },
   ];
 }
@@ -59,33 +59,33 @@ const NodeEditor: React.FC<Props> = ({ stack, selected, thumbnail, effects, disa
     <div className="cp-panel" data-automation-id="color.nodes">
       <div className="cp-panel__head">
         <span className="cp-panel__title">Nodes</span>
-        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled} onClick={onAddSerial} title="Seriellen Node hinzufügen (⌥S)" data-automation-id="color.nodes.addSerial"><Plus /></button>
+        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled} onClick={onAddSerial} title="Add serial node (⌥S)" data-automation-id="color.nodes.addSerial"><Plus /></button>
         <select
           className="cp-select"
           value=""
           disabled={disabled}
           onChange={(event) => { if (event.target.value) onAddEffect(event.target.value); event.target.value = ''; }}
-          title="Effekt-Node hinzufügen"
+          title="Add effect node"
           data-automation-id="color.nodes.addEffect"
           style={{ maxWidth: 104 }}
         >
-          <option value="">+ Effekt…</option>
+          <option value="">+ Effect…</option>
           {effects.map((definition) => <option key={definition.id} value={definition.id}>{definition.name}</option>)}
         </select>
         <span className="cp-bar__spacer" />
-        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled || !current || selected === 0} onClick={() => onMove(selected, selected - 1)} title="Node nach links" data-automation-id="color.nodes.moveLeft"><ArrowLeft /></button>
-        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled || !current || selected >= stack.length - 1} onClick={() => onMove(selected, selected + 1)} title="Node nach rechts" data-automation-id="color.nodes.moveRight"><ArrowRight /></button>
+        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled || !current || selected === 0} onClick={() => onMove(selected, selected - 1)} title="Node left" data-automation-id="color.nodes.moveLeft"><ArrowLeft /></button>
+        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled || !current || selected >= stack.length - 1} onClick={() => onMove(selected, selected + 1)} title="Node right" data-automation-id="color.nodes.moveRight"><ArrowRight /></button>
         <button type="button" className={`cp-btn cp-btn--icon ${current && !current.enabled ? 'cp-btn--on' : ''}`} disabled={disabled || !current} onClick={() => onToggle(selected)} title="Node aktivieren/deaktivieren (⌘D)" data-automation-id="color.nodes.toggle"><Power /></button>
-        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled || !current || !isGradeNode(current)} onClick={() => onReset(selected)} title="Node-Grade zurücksetzen" data-automation-id="color.nodes.reset"><RotateCcw /></button>
-        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled || !current} onClick={() => onRemove(selected)} title="Node löschen (Entf)" data-automation-id="color.nodes.remove"><Trash2 /></button>
+        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled || !current || !isGradeNode(current)} onClick={() => onReset(selected)} title="Reset node grade" data-automation-id="color.nodes.reset"><RotateCcw /></button>
+        <button type="button" className="cp-btn cp-btn--icon" disabled={disabled || !current} onClick={() => onRemove(selected)} title="Delete node (Del)" data-automation-id="color.nodes.remove"><Trash2 /></button>
       </div>
       <div className="cp-nodes" tabIndex={0} data-automation-id="color.nodes.canvas" aria-label="Node-Editor">
         <div className="cp-nodes__row" style={{ gap: 0 }}>
-          <span className="cp-nodes__io" title="Quelle" />
+          <span className="cp-nodes__io" title="Source" />
           {(virtual ? [null] : stack).map((node, index) => {
             const definition = node ? getFxDefinition(node.effectId) : undefined;
             const grade = node ? isGradeNode(node) : true;
-            const fallback = grade ? '' : definition?.name ?? node?.effectId ?? 'Effekt';
+            const fallback = grade ? '' : definition?.name ?? node?.effectId ?? 'Effect';
             const flags = node ? nodeToolFlags(node) : [];
             return (
               <React.Fragment key={node?.id ?? 'virtual'}>
@@ -96,7 +96,7 @@ const NodeEditor: React.FC<Props> = ({ stack, selected, thumbnail, effects, disa
                   className={`cp-node ${index === selected ? 'cp-node--selected' : ''} ${node && !node.enabled ? 'cp-node--off' : ''} ${virtual ? 'cp-node--virtual' : ''}`}
                   onClick={() => onSelect(index)}
                   onDoubleClick={() => { if (node) setEditing(index); }}
-                  title={virtual ? 'Noch kein Grade – die erste Änderung legt Node 01 an' : `${pad(index + 1)} ${node ? nodeLabel(node, fallback) : ''} – Doppelklick zum Benennen`}
+                  title={virtual ? 'No grade yet – the first change creates node 01' : `${pad(index + 1)} ${node ? nodeLabel(node, fallback) : ''} – double-click to name`}
                   data-automation-id={`color.nodes.node.${index + 1}`}
                   aria-pressed={index === selected}
                 >
@@ -135,7 +135,7 @@ const NodeEditor: React.FC<Props> = ({ stack, selected, thumbnail, effects, disa
             );
           })}
           <span style={{ width: 18, height: 1, background: '#8a8a90', flex: 'none' }} />
-          <span className="cp-nodes__io" style={{ background: '#e6d15a' }} title="Ausgabe" />
+          <span className="cp-nodes__io" style={{ background: '#e6d15a' }} title="Output" />
         </div>
       </div>
     </div>

@@ -50,7 +50,7 @@ export type CommandOutput = { host: StageHost; result?: Record<string, unknown>;
 export type BlockingCommand = {
   id: string;
   label: string;
-  group: 'Grundriss' | 'Figur' | 'Kamera' | 'Objekt' | 'Zeit' | 'Shots' | 'Szene';
+  group: 'Floor plan' | 'Character' | 'Camera' | 'Object' | 'Time' | 'Shots' | 'Scene';
   shortcut?: string;
   description: string;
   params: Record<string, ParamSpec>;
@@ -71,7 +71,7 @@ const fail = (message: string): never => { throw new Error(message); };
 type Kind = 'camera' | 'character' | 'element';
 const findObject = (host: StageHost & { stage: StageState }, id: unknown, prefer?: Kind): { kind: Kind; id: string } => {
   const key = typeof id === 'string' ? id : '';
-  if (!key) fail('Objekt-ID fehlt.');
+  if (!key) fail('Object ID missing.');
   if (host.stage.cameras.some((c) => c.id === key)) return { kind: 'camera', id: key };
   if (host.stage.characters.some((c) => c.id === key)) return { kind: 'character', id: key };
   if (host.assets.some((a) => a.id === key)) return { kind: 'element', id: key };
@@ -82,12 +82,12 @@ const findObject = (host: StageHost & { stage: StageState }, id: unknown, prefer
   const cam = byName(host.stage.cameras);
   const chr = byName(host.stage.characters);
   const asset = host.assets.find((a) => (a.name || '').toLowerCase() === key.toLowerCase());
-  const hits = [cam && `Kamera ${cam.id}`, chr && `Figur ${chr.id}`, asset && `Element ${asset.id}`].filter(Boolean);
-  if (hits.length > 1) fail(`„${key}“ ist mehrdeutig (${hits.join(', ')}) – bitte die ID angeben.`);
+  const hits = [cam && `Camera ${cam.id}`, chr && `Character ${chr.id}`, asset && `Element ${asset.id}`].filter(Boolean);
+  if (hits.length > 1) fail(`”${key}” is ambiguous (${hits.join(', ')}) – please give the ID.`);
   if (cam) return { kind: 'camera', id: cam.id };
   if (chr) return { kind: 'character', id: chr.id };
   if (asset) return { kind: 'element', id: asset.id };
-  return fail(`Kein Objekt mit ID oder Name „${key}“.`);
+  return fail(`No object with ID or name “${key}”.`);
 };
 
 /** Current pose of any object at time t (animated if it has a track). */
@@ -223,10 +223,10 @@ export const otsCamera = (subject: StageCharacter, other: StageCharacter, focalL
 // ── templates ───────────────────────────────────────────────────────────────
 
 export const TEMPLATES: Array<{ id: string; label: string; description: string }> = [
-  { id: 'dialog-two', label: 'Dialog zu zweit', description: 'Zwei Figuren gegenüber, Master plus zwei Over-Shoulder, 180°-Linie.' },
-  { id: 'walk-talk', label: 'Walk & Talk', description: 'Zwei Figuren gehen nebeneinander, Kamera fährt rückwärts vor ihnen her.' },
-  { id: 'table-three', label: 'Dreier am Tisch', description: 'Drei Figuren um einen Tisch, Master und drei Einzel.' },
-  { id: 'interview', label: 'Interview', description: 'Eine Person, A-Kamera halbnah, B-Kamera seitlich lang.' },
+  { id: 'dialog-two', label: 'Two-person dialogue', description: 'Two characters facing each other, master plus two over-the-shoulders, 180° line.' },
+  { id: 'walk-talk', label: 'Walk & Talk', description: 'Two characters walk side by side, the camera tracks backward in front of them.' },
+  { id: 'table-three', label: 'Three at a table', description: 'Three characters around a table, master and three singles.' },
+  { id: 'interview', label: 'Interview', description: 'One person, A camera medium shot, B camera side long shot.' },
 ];
 
 const applyTemplate = (host: StageHost & { stage: StageState }, id: string, origin: { x: number; z: number }): StageHost & { stage: StageState } => {
@@ -287,7 +287,7 @@ const applyTemplate = (host: StageHost & { stage: StageState }, id: string, orig
     addCam({ ...cameraAround(p, 55, 3.2, 85), name: 'B' });
     assets = [...assets, createPlanAsset({ category: 'chair', x: origin.x, z: origin.z, yawDeg: 30 })];
   } else {
-    fail(`Unbekannte Vorlage „${id}“.`);
+    fail(`Unknown template “${id}”.`);
   }
   return { ...host, assets, stage: syncShots(stage) };
 };
@@ -300,27 +300,27 @@ const pickNumber = (p: Record<string, unknown>, key: string, fallback?: number, 
 export const BLOCKING_COMMANDS: BlockingCommand[] = [
   // Grundriss
   {
-    id: 'plan.addElement', label: 'Element hinzufügen', group: 'Grundriss',
-    description: 'Set-Element (Möbel, Tür, Fenster, Requisite) in den Grundriss setzen. Erscheint auch im 3D-Set-Design als Box.',
-    params: { category: text('Elementart', true, PLAN_CATEGORIES), x: num('Mitte x in m', true), z: num('Mitte z in m', true), w: num('Breite in m'), d: num('Tiefe in m'), h: num('Höhe in m'), yawDeg: num('Drehung in Grad'), label: text('Bezeichnung') },
+    id: 'plan.addElement', label: 'Add element', group: 'Floor plan',
+    description: 'Place a set element (furniture, door, window, prop) in the floor plan. Also appears in 3D Set Design as a box.',
+    params: { category: text('Element type', true, PLAN_CATEGORIES), x: num('Center x in m', true), z: num('Center z in m', true), w: num('Width in m'), d: num('Depth in m'), h: num('Height in m'), yawDeg: num('Rotation in degrees'), label: text('Name') },
     run: ({ host }, p) => {
       const asset = createPlanAsset({ category: String(p.category), x: finite(p.x, 0), z: finite(p.z, 0), w: pickNumber(p, 'w'), d: pickNumber(p, 'd'), h: pickNumber(p, 'h'), yawDeg: pickNumber(p, 'yawDeg'), label: typeof p.label === 'string' ? p.label : undefined });
       return { host: { ...host, assets: [...host.assets, asset] }, result: { id: asset.id }, select: [asset.id] };
     },
   },
   {
-    id: 'plan.addWall', label: 'Wand ziehen', group: 'Grundriss', shortcut: 'W',
-    description: 'Wand von Punkt 1 nach Punkt 2 (Meter). Mehrere Segmente = mehrere Aufrufe.',
-    params: { x1: num('Start x', true), z1: num('Start z', true), x2: num('Ende x', true), z2: num('Ende z', true), thickness: num('Wandstärke in m (0,15)'), height: num('Wandhöhe in m (2,6)') },
+    id: 'plan.addWall', label: 'Draw wall', group: 'Floor plan', shortcut: 'W',
+    description: 'Wall from point 1 to point 2 (meters). Several segments = several calls.',
+    params: { x1: num('Start x', true), z1: num('Start z', true), x2: num('End x', true), z2: num('End z', true), thickness: num('Wall thickness in m (0.15)'), height: num('Wall height in m (2.6)') },
     run: ({ host }, p) => {
       const wall = createWall(finite(p.x1, 0), finite(p.z1, 0), finite(p.x2, 1), finite(p.z2, 0), finite(p.thickness, 0.15, 0.02, 2), finite(p.height, 2.6, 0.1, 20));
       return { host: { ...host, assets: [...host.assets, wall] }, result: { id: wall.id }, select: [wall.id] };
     },
   },
   {
-    id: 'plan.addRoom', label: 'Raum anlegen', group: 'Grundriss',
-    description: 'Rechteckiger Raum aus vier Wänden um einen Mittelpunkt.',
-    params: { x: num('Mitte x'), z: num('Mitte z'), width: num('Breite in m', true), depth: num('Tiefe in m', true), height: num('Wandhöhe'), openSide: text('Offene Seite für die Kamera', false, ['none', 'south', 'north', 'east', 'west']) },
+    id: 'plan.addRoom', label: 'Create room', group: 'Floor plan',
+    description: 'Rectangular room of four walls around a center point.',
+    params: { x: num('Center x'), z: num('Center z'), width: num('Width in m', true), depth: num('Depth in m', true), height: num('Wall height'), openSide: text('Open side for the camera', false, ['none', 'south', 'north', 'east', 'west']) },
     run: ({ host }, p) => {
       const cx = finite(p.x, 0);
       const cz = finite(p.z, 0);
@@ -338,12 +338,12 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'plan.updateElement', label: 'Element ändern', group: 'Grundriss',
-    description: 'Maße, Lage, Drehung oder Beschriftung eines Set-Elements ändern.',
-    params: { id: text('Element-ID', true), x: num('x'), z: num('z'), w: num('Breite'), d: num('Tiefe'), h: num('Höhe'), yawDeg: num('Drehung'), label: text('Bezeichnung'), color: text('Farbe (#rrggbb)') },
+    id: 'plan.updateElement', label: 'Change element', group: 'Floor plan',
+    description: 'Change the size, position, rotation or label of a set element.',
+    params: { id: text('Element-ID', true), x: num('x'), z: num('z'), w: num('Width'), d: num('Depth'), h: num('Height'), yawDeg: num('Rotation'), label: text('Name'), color: text('Color (#rrggbb)') },
     run: ({ host }, p) => {
       const id = String(p.id || '');
-      if (!host.assets.some((a) => a.id === id)) fail(`Kein Element „${id}“.`);
+      if (!host.assets.some((a) => a.id === id)) fail(`No element “${id}”.`);
       return {
         host: { ...host, assets: host.assets.map((a) => (a.id === id ? updatePlanAsset(a, { x: pickNumber(p, 'x'), z: pickNumber(p, 'z'), w: pickNumber(p, 'w', undefined, 0.01, 500), d: pickNumber(p, 'd', undefined, 0.01, 500), h: pickNumber(p, 'h', undefined, 0.005, 100), yawDeg: pickNumber(p, 'yawDeg'), label: typeof p.label === 'string' ? p.label : undefined, color: typeof p.color === 'string' ? p.color : undefined }) : a)) },
         result: { id },
@@ -351,9 +351,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'plan.setBackground', label: 'Hintergrundplan', group: 'Grundriss',
-    description: 'Grundriss-Zeichnung als Hintergrund (Bild-URL oder data-URL) mit Maßstab in Meter pro Pixel. Leere URL entfernt ihn.',
-    params: { url: text('Bild-URL'), mPerPx: num('Meter pro Bildpixel (z. B. 0,01)'), opacity: num('Deckkraft 0–1'), x: num('Versatz x'), z: num('Versatz z') },
+    id: 'plan.setBackground', label: 'Background plan', group: 'Floor plan',
+    description: 'Floor plan drawing as background (image URL or data URL) with a scale in meters per pixel. An empty URL removes it.',
+    params: { url: text('Image URL'), mPerPx: num('Meter pro Bildpixel (z. B. 0,01)'), opacity: num('Opacity 0–1'), x: num('Offset x'), z: num('Offset z') },
     run: ({ host }, p) => {
       const plan = { ...(host.stage.plan || {}) };
       if (typeof p.url === 'string') plan.backgroundUrl = p.url || null;
@@ -365,9 +365,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
   },
   // Figur
   {
-    id: 'character.add', label: 'Figur hinzufügen', group: 'Figur', shortcut: 'F',
-    description: 'Figur in den Plan setzen. referenceId verknüpft eine Cast-Referenz des Projekts.',
-    params: { name: text('Name'), x: num('x', true), z: num('z', true), yawDeg: num('Blickrichtung in Grad (0 = nach oben/Norden)'), heightM: num('Körpergröße in m'), posture: text('Haltung', false, ['standing', 'sitting', 'lying']), referenceId: text('Cast-Referenz-ID'), color: text('Farbe') },
+    id: 'character.add', label: 'Add character', group: 'Character', shortcut: 'F',
+    description: 'Place a character in the plan. referenceId links a cast reference of the project.',
+    params: { name: text('Name'), x: num('x', true), z: num('z', true), yawDeg: num('Facing direction in degrees (0 = up/north)'), heightM: num('Body height in m'), posture: text('Pose', false, ['standing', 'sitting', 'lying']), referenceId: text('Cast-Referenz-ID'), color: text('Color') },
     run: ({ host }, p) => {
       const chr = createCharacter({
         name: typeof p.name === 'string' && p.name ? p.name : undefined,
@@ -382,12 +382,12 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'character.update', label: 'Figur ändern', group: 'Figur',
-    description: 'Name, Größe, Haltung, Farbe oder Cast-Verknüpfung einer Figur ändern.',
-    params: { id: text('Figur-ID oder Name', true), name: text('Name'), heightM: num('Körpergröße'), posture: text('Haltung', false, ['standing', 'sitting', 'lying']), referenceId: text('Cast-Referenz-ID'), color: text('Farbe') },
+    id: 'character.update', label: 'Change character', group: 'Character',
+    description: 'Change the name, height, pose, color or cast link of a character.',
+    params: { id: text('Character ID or name', true), name: text('Name'), heightM: num('Body height'), posture: text('Pose', false, ['standing', 'sitting', 'lying']), referenceId: text('Cast-Referenz-ID'), color: text('Color') },
     run: ({ host }, p) => {
       const target = findObject(host, p.id, 'character');
-      if (target.kind !== 'character') fail('Das Objekt ist keine Figur.');
+      if (target.kind !== 'character') fail('The object is not a character.');
       const characters = host.stage.characters.map((c) => (c.id === target.id ? {
         ...c,
         ...(typeof p.name === 'string' && p.name ? { name: p.name.slice(0, 120) } : {}),
@@ -401,9 +401,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
   },
   // Kamera
   {
-    id: 'camera.add', label: 'Kamera hinzufügen', group: 'Kamera', shortcut: 'C',
-    description: 'Kamera setzen. Mit aimAt (Figur-ID/Name) richtet sie sich auf die Figur aus. Erscheint auch im 3D-Set-Design.',
-    params: { x: num('x', true), z: num('z', true), yawDeg: num('Blickrichtung'), heightM: num('Objektivhöhe in m (1,6)'), pitchDeg: num('Neigung in Grad (+ = hoch)'), focalLengthMm: num('Brennweite in mm (35)'), name: text('Name, z. B. A'), aimAt: text('Auf Figur ausrichten (ID oder Name)'), follow: bool('Kamera schwenkt der Figur nach') },
+    id: 'camera.add', label: 'Add camera', group: 'Camera', shortcut: 'C',
+    description: 'Place a camera. With aimAt (character ID/name) it aims at the character. Also appears in 3D Set Design.',
+    params: { x: num('x', true), z: num('z', true), yawDeg: num('Facing direction'), heightM: num('Lens height in m (1.6)'), pitchDeg: num('Neigung in Grad (+ = hoch)'), focalLengthMm: num('Focal length in mm (35)'), name: text('Name, z. B. A'), aimAt: text('Aim at character (ID or name)'), follow: bool('Camera pans with the character') },
     run: ({ host, timeS }, p) => {
       const position = { x: finite(p.x, 0), y: finite(p.heightM, 1.6, 0, 100), z: finite(p.z, 4) };
       let yawDeg = finite(p.yawDeg, 0);
@@ -428,12 +428,12 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'camera.update', label: 'Kamera einstellen', group: 'Kamera',
-    description: 'Brennweite, Höhe, Neigung, Sensor oder Name einer Kamera. Brennweite/Neigung werden bei animierter Kamera als Key zur aktuellen Zeit gesetzt (Zoom).',
-    params: { id: text('Kamera-ID oder Name', true), focalLengthMm: num('Brennweite mm'), horizontalFovDeg: num('Alternativ: horizontaler Bildwinkel in Grad'), heightM: num('Objektivhöhe m'), pitchDeg: num('Neigung'), rollDeg: num('Rollen'), sensor: text('Sensor-Preset', false, SENSOR_PRESETS.map((s) => s.id)), name: text('Name'), color: text('Farbe') },
+    id: 'camera.update', label: 'Set camera', group: 'Camera',
+    description: 'Focal length, height, tilt, sensor or name of a camera. On an animated camera, focal length/tilt are keyed at the current time (zoom).',
+    params: { id: text('Camera ID or name', true), focalLengthMm: num('Focal length mm'), horizontalFovDeg: num('Alternative: horizontal field of view in degrees'), heightM: num('Lens height m'), pitchDeg: num('Tilt'), rollDeg: num('Roles'), sensor: text('Sensor-Preset', false, SENSOR_PRESETS.map((s) => s.id)), name: text('Name'), color: text('Color') },
     run: ({ host, timeS }, p) => {
       const target = findObject(host, p.id, 'camera');
-      if (target.kind !== 'camera') fail('Das Objekt ist keine Kamera.');
+      if (target.kind !== 'camera') fail('The object is not a camera.');
       const cam = host.stage.cameras.find((c) => c.id === target.id) as StageCamera;
       const preset = SENSOR_PRESETS.find((s) => s.id === p.sensor);
       let focal = pickNumber(p, 'focalLengthMm', undefined, 1, 2000);
@@ -457,12 +457,12 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'camera.aimAt', label: 'Kamera ausrichten', group: 'Kamera', shortcut: 'L',
-    description: 'Kamera auf eine Figur oder einen Punkt richten. follow=true: sie schwenkt der Figur über die Zeit nach.',
-    params: { id: text('Kamera-ID oder Name', true), targetId: text('Figur-ID oder Name'), x: num('oder Zielpunkt x'), z: num('Zielpunkt z'), follow: bool('Nachführen') },
+    id: 'camera.aimAt', label: 'Aim camera', group: 'Camera', shortcut: 'L',
+    description: 'Aim a camera at a character or a point. follow=true: it pans with the character over time.',
+    params: { id: text('Camera ID or name', true), targetId: text('Character ID or name'), x: num('or target point x'), z: num('Target point z'), follow: bool('Track') },
     run: ({ host, timeS }, p) => {
       const target = findObject(host, p.id, 'camera');
-      if (target.kind !== 'camera') fail('Das Objekt ist keine Kamera.');
+      if (target.kind !== 'camera') fail('The object is not a camera.');
       const cam = camerasAt(host.stage, timeS).find((c) => c.id === target.id) as StageCamera;
       let aimPoint: { x: number; y: number; z: number } | null = null;
       let followId: string | null | undefined;
@@ -479,7 +479,7 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
         aimPoint = { x: finite(p.x, 0), y: 1.5, z: finite(p.z, 0) };
         followId = null;
       }
-      if (!aimPoint) fail('Ziel fehlt (targetId oder x/z).');
+      if (!aimPoint) fail('Target missing (targetId or x/z).');
       const aim = aimAngles(cam.position, aimPoint as { x: number; y: number; z: number });
       let next = applyPose(host, target, timeS, { yawDeg: aim.yawDeg, pitchDeg: Math.round(aim.pitchDeg * 10) / 10 });
       if (followId !== undefined) next = withStage(next, { ...next.stage, cameras: next.stage.cameras.map((c) => (c.id === target.id ? { ...c, followId } : c)) });
@@ -487,31 +487,31 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'camera.setActive', label: 'Aktive Kamera', group: 'Kamera',
-    description: 'Kamera für Sucher, Storyboard und 3D-Kameraansicht wählen.',
-    params: { id: text('Kamera-ID oder Name', true) },
+    id: 'camera.setActive', label: 'Active camera', group: 'Camera',
+    description: 'Choose the camera for the viewfinder, storyboard and 3D camera view.',
+    params: { id: text('Camera ID or name', true) },
     run: ({ host }, p) => {
       const target = findObject(host, p.id, 'camera');
-      if (target.kind !== 'camera') fail('Das Objekt ist keine Kamera.');
+      if (target.kind !== 'camera') fail('The object is not a camera.');
       return { host: withStage(host, { ...host.stage, activeCameraId: target.id }), result: { id: target.id }, select: [target.id] };
     },
   },
   {
-    id: 'camera.cover', label: 'Abdeckung erzeugen', group: 'Kamera',
-    description: 'Kameras für eine Figur anlegen: single (frontal halbnah), ots (über die Schulter einer zweiten Figur), profile (seitlich).',
-    params: { targetId: text('Figur-ID oder Name', true), pattern: text('Muster', true, ['single', 'ots', 'profile', 'closeup']), otherId: text('Zweite Figur für OTS'), focalLengthMm: num('Brennweite') },
+    id: 'camera.cover', label: 'Create coverage', group: 'Camera',
+    description: 'Create cameras for a character: single (frontal medium shot), ots (over the shoulder of a second character), profile (side).',
+    params: { targetId: text('Character ID or name', true), pattern: text('Muster', true, ['single', 'ots', 'profile', 'closeup']), otherId: text('Second character for OTS'), focalLengthMm: num('Focal length') },
     run: ({ host, timeS }, p) => {
       const chars = charactersAt(host.stage, timeS);
       const t = findObject(host, p.targetId, 'character');
       const chr = chars.find((c) => c.id === t.id);
-      if (!chr) fail('Ziel ist keine Figur.');
+      if (!chr) fail('The target is not a character.');
       const subject = chr as StageCharacter;
       const pattern = String(p.pattern);
       let input: Partial<StageCamera>;
       if (pattern === 'ots') {
         const otherKey = p.otherId ? findObject(host, p.otherId, 'character').id : null;
         const other = chars.find((c) => c.id === otherKey) ?? chars.find((c) => c.id !== subject.id);
-        if (!other) fail('Für OTS fehlt eine zweite Figur.');
+        if (!other) fail('An OTS needs a second character.');
         const ref = camerasAt(host.stage, timeS).find((c) => c.id === host.stage.activeCameraId) ?? camerasAt(host.stage, timeS)[0];
         input = otsCamera(subject, other as StageCharacter, finite(p.focalLengthMm, 50, 1, 2000), ref?.position);
       } else if (pattern === 'profile') {
@@ -527,28 +527,28 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
   },
   // Objekt (alle Arten)
   {
-    id: 'object.move', label: 'Verschieben', group: 'Objekt', shortcut: 'G',
-    description: 'Figur, Kamera oder Element verschieben. Ist das Objekt animiert, wird die Position zur aktuellen Zeit als Key gesetzt.',
-    params: { id: text('Objekt-ID oder Name', true), x: num('x'), z: num('z'), dx: num('oder relativ dx'), dz: num('relativ dz'), timeS: num('Zeitpunkt (Standard: Playhead)') },
+    id: 'object.move', label: 'Move', group: 'Object', shortcut: 'G',
+    description: 'Move a character, camera or element. If the object is animated, the position is keyed at the current time.',
+    params: { id: text('Object ID or name', true), x: num('x'), z: num('z'), dx: num('or relative dx'), dz: num('relative dz'), timeS: num('Zeitpunkt (Standard: Playhead)') },
     run: ({ host, timeS }, p) => {
       const target = findObject(host, p.id);
       const t = pickNumber(p, 'timeS', timeS, 0, host.stage.animation.durationS) as number;
       const pose = poseAt(host, target.id, t);
-      if (!pose) fail('Objekt nicht gefunden.');
+      if (!pose) fail('Object not found.');
       const x = p.x !== undefined ? finite(p.x, 0) : (pose as StagePose).position.x + finite(p.dx, 0);
       const z = p.z !== undefined ? finite(p.z, 0) : (pose as StagePose).position.z + finite(p.dz, 0);
       return { host: applyPose(host, target, t, { x, z }), result: { id: target.id, x, z } };
     },
   },
   {
-    id: 'object.rotate', label: 'Drehen', group: 'Objekt', shortcut: 'R',
-    description: 'Blickrichtung/Drehung setzen (Grad, 0 = Norden/oben, positiv = gegen den Uhrzeigersinn) oder relativ um delta drehen.',
-    params: { id: text('Objekt-ID oder Name', true), yawDeg: num('Absolute Richtung'), delta: num('Relative Drehung'), timeS: num('Zeitpunkt') },
+    id: 'object.rotate', label: 'Rotate', group: 'Object', shortcut: 'R',
+    description: 'Set facing/rotation (degrees, 0 = north/up, positive = counterclockwise) or rotate relatively by delta.',
+    params: { id: text('Object ID or name', true), yawDeg: num('Absolute direction'), delta: num('Relative rotation'), timeS: num('Point in time') },
     run: ({ host, timeS }, p) => {
       const target = findObject(host, p.id);
       const t = pickNumber(p, 'timeS', timeS, 0, host.stage.animation.durationS) as number;
       const pose = poseAt(host, target.id, t);
-      if (!pose) fail('Objekt nicht gefunden.');
+      if (!pose) fail('Object not found.');
       const yaw = p.yawDeg !== undefined ? finite(p.yawDeg, 0) : (pose as StagePose).yawDeg + finite(p.delta, 0);
       let next = applyPose(host, target, t, { yawDeg: yaw });
       // Turning a following camera by hand releases the follow.
@@ -557,9 +557,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'object.delete', label: 'Löschen', group: 'Objekt', shortcut: 'Entf',
-    description: 'Objekt mit seiner Bewegungsspur löschen. Shots der Kamera verschwinden, außer sie sind abgelöst.',
-    params: { id: text('Objekt-ID oder Name', true) },
+    id: 'object.delete', label: 'Delete', group: 'Object', shortcut: 'Del',
+    description: 'Delete an object with its motion path. The camera shots disappear unless they are detached.',
+    params: { id: text('Object ID or name', true) },
     run: ({ host }, p) => {
       const target = findObject(host, p.id);
       let stage = setTrack(host.stage, target.id, []);
@@ -574,9 +574,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'object.duplicate', label: 'Duplizieren', group: 'Objekt', shortcut: 'Strg+D',
-    description: 'Objekt um 1 m versetzt kopieren (ohne Bewegungsspur).',
-    params: { id: text('Objekt-ID oder Name', true) },
+    id: 'object.duplicate', label: 'Duplicate', group: 'Object', shortcut: 'Ctrl+D',
+    description: 'Copy the object offset by 1 m (without motion path).',
+    params: { id: text('Object ID or name', true) },
     run: ({ host }, p) => {
       const target = findObject(host, p.id);
       if (target.kind === 'element') {
@@ -595,9 +595,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'object.setFlags', label: 'Sperren/Ausblenden', group: 'Objekt',
-    description: 'Figur oder Kamera sperren (nicht verschiebbar) oder ausblenden.',
-    params: { id: text('Objekt-ID oder Name', true), locked: bool('Gesperrt'), hidden: bool('Ausgeblendet') },
+    id: 'object.setFlags', label: 'Lock/Hide', group: 'Object',
+    description: 'Lock (not movable) or hide a character or camera.',
+    params: { id: text('Object ID or name', true), locked: bool('Locked'), hidden: bool('Hidden') },
     run: ({ host }, p) => {
       const target = findObject(host, p.id);
       const patch = (o: { locked?: boolean; hidden?: boolean }) => ({ ...o, ...(typeof p.locked === 'boolean' ? { locked: p.locked } : {}), ...(typeof p.hidden === 'boolean' ? { hidden: p.hidden } : {}) });
@@ -612,9 +612,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
   },
   // Zeit
   {
-    id: 'key.add', label: 'Position merken', group: 'Zeit', shortcut: 'K',
-    description: 'Neue Bewegungsmarke (Keyframe) für ein Objekt zum Zeitpunkt timeS. Ohne x/z wird die aktuelle Lage übernommen. Ist die Spur leer, entsteht zusätzlich die Startmarke bei 0 s.',
-    params: { id: text('Objekt-ID oder Name', true), timeS: num('Zeit in s (Standard: Playhead)'), x: num('x'), z: num('z'), yawDeg: num('Richtung'), pitchDeg: num('Kamera: Neigung'), focalLengthMm: num('Kamera: Brennweite (Zoom)'), easing: text('Übergang zur nächsten Marke', false, ['linear', 'smooth', 'hold']), label: text('Beschriftung') },
+    id: 'key.add', label: 'Remember position', group: 'Time', shortcut: 'K',
+    description: 'New motion key (keyframe) for an object at time timeS. Without x/z the current position is used. If the path is empty, a start key at 0 s is also created.',
+    params: { id: text('Object ID or name', true), timeS: num('Zeit in s (Standard: Playhead)'), x: num('x'), z: num('z'), yawDeg: num('Direction'), pitchDeg: num('Camera: tilt'), focalLengthMm: num('Camera: focal length (zoom)'), easing: text('Transition to the next key', false, ['linear', 'smooth', 'hold']), label: text('Label') },
     run: ({ host, timeS }, p) => {
       const target = findObject(host, p.id);
       const t = pickNumber(p, 'timeS', timeS, 0, host.stage.animation.durationS) as number;
@@ -640,14 +640,14 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'key.update', label: 'Marke ändern', group: 'Zeit',
-    description: 'Zeit, Lage oder Übergang einer Bewegungsmarke ändern.',
-    params: { id: text('Objekt-ID oder Name', true), keyId: text('Marken-ID', true), timeS: num('Neue Zeit'), x: num('x'), z: num('z'), yawDeg: num('Richtung'), pitchDeg: num('Neigung'), focalLengthMm: num('Brennweite'), easing: text('Übergang', false, ['linear', 'smooth', 'hold']) },
+    id: 'key.update', label: 'Change marker', group: 'Time',
+    description: 'Change the time, position or transition of a motion key.',
+    params: { id: text('Object ID or name', true), keyId: text('Marken-ID', true), timeS: num('New time'), x: num('x'), z: num('z'), yawDeg: num('Direction'), pitchDeg: num('Tilt'), focalLengthMm: num('Focal length'), easing: text('Transition', false, ['linear', 'smooth', 'hold']) },
     run: ({ host }, p) => {
       const target = findObject(host, p.id);
       const keys = host.stage.animation.tracks[target.id] || [];
       const key = keys.find((k) => k.id === p.keyId);
-      if (!key) fail('Marke nicht gefunden.');
+      if (!key) fail('Marker not found.');
       const k0 = key as StageKeyframe;
       const next = normalizeKeyframe({
         ...k0,
@@ -662,9 +662,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'key.delete', label: 'Marke löschen', group: 'Zeit',
-    description: 'Eine Bewegungsmarke löschen. Bleibt nur eine übrig, wird die Spur aufgelöst und die Lage zur Grundposition.',
-    params: { id: text('Objekt-ID oder Name', true), keyId: text('Marken-ID', true) },
+    id: 'key.delete', label: 'Delete marker', group: 'Time',
+    description: 'Delete a motion key. If only one is left, the path is removed and the position becomes the base position.',
+    params: { id: text('Object ID or name', true), keyId: text('Marken-ID', true) },
     run: ({ host }, p) => {
       const target = findObject(host, p.id);
       const keys = (host.stage.animation.tracks[target.id] || []).filter((k) => k.id !== p.keyId);
@@ -674,9 +674,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'track.clear', label: 'Bewegung entfernen', group: 'Zeit',
-    description: 'Alle Bewegungsmarken eines Objekts löschen; es bleibt an seiner Lage zur aktuellen Zeit stehen.',
-    params: { id: text('Objekt-ID oder Name', true) },
+    id: 'track.clear', label: 'Remove motion', group: 'Time',
+    description: 'Delete all motion keys of an object; it stays where it is at the current time.',
+    params: { id: text('Object ID or name', true) },
     run: ({ host, timeS }, p) => {
       const target = findObject(host, p.id);
       const pose = poseAt(host, target.id, timeS) as StagePose;
@@ -686,9 +686,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'track.retime', label: 'Tempo ändern', group: 'Zeit',
-    description: 'Bewegung schneller/langsamer: alle Marken eines Objekts (oder aller, ohne id) ab der ersten Marke mit factor strecken (0,5 = doppelt so schnell).',
-    params: { id: text('Objekt-ID oder Name (leer = alle)'), factor: num('Zeitfaktor', true) },
+    id: 'track.retime', label: 'Change speed', group: 'Time',
+    description: 'Faster/slower motion: stretch all keys of an object (or of all objects, without id) from the first key by factor (0.5 = twice as fast).',
+    params: { id: text('Object ID or name (empty = all)'), factor: num('Time factor', true) },
     run: ({ host }, p) => {
       const factor = finite(p.factor, 1, 0.05, 20);
       const ids = p.id ? [findObject(host, p.id).id] : Object.keys(host.stage.animation.tracks);
@@ -707,9 +707,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'anim.setDuration', label: 'Szenenlänge', group: 'Zeit',
-    description: 'Länge der Szene in Sekunden (und optional fps).',
-    params: { durationS: num('Länge in s', true), fps: num('Bilder pro Sekunde') },
+    id: 'anim.setDuration', label: 'Scene length', group: 'Time',
+    description: 'Scene length in seconds (and optionally fps).',
+    params: { durationS: num('Length in s', true), fps: num('Frames per second') },
     run: ({ host }, p) => {
       const durationS = finite(p.durationS, 10, 0.5, MAX_DURATION_S);
       const fps = Math.round(finite(p.fps, host.stage.animation.fps, 1, 240));
@@ -719,25 +719,25 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
   // Shots
   {
     id: 'shot.add', label: 'Shot-Version anlegen', group: 'Shots', shortcut: 'S',
-    description: 'Weitere Version (1B, 1C …) einer Kamera für einen Zeitbereich der Szene.',
-    params: { cameraId: text('Kamera-ID oder Name', true), startS: num('Beginn in s'), endS: num('Ende in s'), description: text('Beschreibung') },
+    description: 'Another version (1B, 1C …) of a camera for a time range of the scene.',
+    params: { cameraId: text('Camera ID or name', true), startS: num('Start in s'), endS: num('End in s'), description: text('Description') },
     run: ({ host, timeS }, p) => {
       const target = findObject(host, p.cameraId, 'camera');
-      if (target.kind !== 'camera') fail('Das Objekt ist keine Kamera.');
+      if (target.kind !== 'camera') fail('The object is not a camera.');
       const out = addShotVersion(host.stage, target.id, finite(p.startS, timeS, 0), pickNumber(p, 'endS'));
-      if (!out.shot) fail('Shot konnte nicht angelegt werden.');
+      if (!out.shot) fail('Shot could not be created.');
       let stage = out.stage;
       if (typeof p.description === 'string') stage = { ...stage, shots: stage.shots.map((s) => (s.id === out.shot?.id ? { ...s, description: String(p.description) } : s)) };
       return { host: withStage(host, stage), result: { id: out.shot?.id, code: `${out.shot?.number}${out.shot?.version}` } };
     },
   },
   {
-    id: 'shot.update', label: 'Shot bearbeiten', group: 'Shots',
-    description: 'Beschreibung, Zeitbereich, Einstellungsgröße, Bewegung, Objektiv, Requisiten, Technik, Crew oder Notizen eines Shots. null/leer setzt Überschreibungen zurück.',
+    id: 'shot.update', label: 'Edit shot', group: 'Shots',
+    description: 'Description, time range, shot size, movement, lens, props, technique, crew or notes of a shot. null/empty resets overrides.',
     params: {
-      id: text('Shot-ID oder Code wie 2B', true), description: text('Beschreibung'), startS: num('Beginn'), endS: num('Ende'),
-      size: text('Einstellungsgröße', false, [...SHOT_SIZES, 'auto']), move: text('Bewegung', false, [...CAMERA_MOVES, 'auto']), lensMm: num('Objektiv mm (0 = von Kamera)'),
-      props: text('Requisiten'), gear: text('Technik/Gerät'), crew: text('Crew'), notes: text('Notizen'),
+      id: text('Shot ID or code such as 2B', true), description: text('Description'), startS: num('Start'), endS: num('End'),
+      size: text('Shot size', false, [...SHOT_SIZES, 'auto']), move: text('Motion', false, [...CAMERA_MOVES, 'auto']), lensMm: num('Lens mm (0 = from camera)'),
+      props: text('Props'), gear: text('Technique/gear'), crew: text('Crew'), notes: text('Notes'),
     },
     run: ({ host }, p) => {
       const shot = findShot(host.stage, p.id);
@@ -753,27 +753,27 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'shot.delete', label: 'Shot löschen', group: 'Shots',
-    description: 'Shot entfernen. Hat die Kamera danach keinen Shot mehr, entsteht wieder ein Standard-Shot – ablösen oder Kamera löschen, um das zu vermeiden.',
-    params: { id: text('Shot-ID oder Code', true) },
+    id: 'shot.delete', label: 'Delete shot', group: 'Shots',
+    description: 'Remove a shot. If the camera then has no shot left, a default shot is created again – detach it or delete the camera to avoid that.',
+    params: { id: text('Shot ID or code', true) },
     run: ({ host }, p) => {
       const shot = findShot(host.stage, p.id);
       return { host: withStage(host, syncShots({ ...host.stage, shots: host.stage.shots.filter((s) => s.id !== shot.id) })) };
     },
   },
   {
-    id: 'shot.reorder', label: 'Drehreihenfolge', group: 'Shots',
-    description: 'Shot in der Drehreihenfolge an Position toIndex (0-basiert) schieben.',
-    params: { id: text('Shot-ID oder Code', true), toIndex: num('Neue Position (0 = zuerst)', true) },
+    id: 'shot.reorder', label: 'Shooting order', group: 'Shots',
+    description: 'Move a shot in the shooting order to position toIndex (0-based).',
+    params: { id: text('Shot ID or code', true), toIndex: num('New position (0 = first)', true) },
     run: ({ host }, p) => {
       const shot = findShot(host.stage, p.id);
       return { host: withStage(host, moveShotInOrder(host.stage, shot.id, finite(p.toIndex, 0, 0, 9999))) };
     },
   },
   {
-    id: 'shot.detach', label: 'Shot ablösen', group: 'Shots',
-    description: 'Abgelöste Shots bleiben bestehen, wenn ihre Kamera gelöscht wird (wie ein fertiges Storyboard-Panel).',
-    params: { id: text('Shot-ID oder Code', true), detached: bool('Abgelöst') },
+    id: 'shot.detach', label: 'Detach shot', group: 'Shots',
+    description: 'Detached shots remain when their camera is deleted (like a finished storyboard panel).',
+    params: { id: text('Shot ID or code', true), detached: bool('Detached') },
     run: ({ host }, p) => {
       const shot = findShot(host.stage, p.id);
       const detached = p.detached === undefined ? !shot.detached : p.detached === true;
@@ -781,9 +781,9 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'shot.link', label: 'Mit Storyboard verknüpfen', group: 'Shots',
-    description: 'Shot mit einem Storyboard-Shot (Nummer) verknüpfen oder Bild-Frame setzen. storyboardShot 0 löst die Verknüpfung.',
-    params: { id: text('Shot-ID oder Code', true), storyboardShot: num('Storyboard-Shot-Nummer'), frameUrl: text('Frame-Bild-URL') },
+    id: 'shot.link', label: 'Link to storyboard', group: 'Shots',
+    description: 'Link a shot to a storyboard shot (number) or set an image frame. storyboardShot 0 removes the link.',
+    params: { id: text('Shot ID or code', true), storyboardShot: num('Storyboard-Shot-Nummer'), frameUrl: text('Frame image URL') },
     run: ({ host }, p) => {
       const shot = findShot(host.stage, p.id);
       const patch: Record<string, unknown> = {};
@@ -794,27 +794,27 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
   },
   // Szene
   {
-    id: 'scene.setLineOfAction', label: '180°-Linie', group: 'Szene',
-    description: 'Handlungsachse zwischen zwei Figuren setzen (oder ohne Parameter entfernen). Shots, die sie überspringen, werden markiert.',
-    params: { aId: text('Figur 1'), bId: text('Figur 2') },
+    id: 'scene.setLineOfAction', label: '180°-Linie', group: 'Scene',
+    description: 'Set the line of action between two characters (or remove it without parameters). Shots that cross it are flagged.',
+    params: { aId: text('Character 1'), bId: text('Character 2') },
     run: ({ host }, p) => {
       if (!p.aId || !p.bId) return { host: withStage(host, { ...host.stage, lineOfAction: null }) };
       const a = findObject(host, p.aId, 'character');
       const b = findObject(host, p.bId, 'character');
-      if (a.kind !== 'character' || b.kind !== 'character' || a.id === b.id) fail('Die 180°-Linie braucht zwei verschiedene Figuren.');
+      if (a.kind !== 'character' || b.kind !== 'character' || a.id === b.id) fail('The 180° line needs two different characters.');
       return { host: withStage(host, { ...host.stage, lineOfAction: { aId: a.id, bId: b.id } }) };
     },
   },
   {
-    id: 'scene.applyTemplate', label: 'Vorlage einsetzen', group: 'Szene',
-    description: 'Fertige Auflösung einsetzen: dialog-two, walk-talk, table-three, interview.',
-    params: { templateId: text('Vorlage', true, TEMPLATES.map((t) => t.id)), x: num('Mitte x'), z: num('Mitte z') },
+    id: 'scene.applyTemplate', label: 'Insert template', group: 'Scene',
+    description: 'Insert a ready-made coverage: dialog-two, walk-talk, table-three, interview.',
+    params: { templateId: text('Template', true, TEMPLATES.map((t) => t.id)), x: num('Center x'), z: num('Center z') },
     run: ({ host }, p) => ({ host: applyTemplate(host, String(p.templateId), { x: finite(p.x, 0), z: finite(p.z, 0) }) }),
   },
   {
-    id: 'scene.freeze', label: 'Stand einfrieren', group: 'Szene',
-    description: 'Momentaufnahme der ganzen Szene speichern, um später dorthin zurückzukehren.',
-    params: { name: text('Name des Stands') },
+    id: 'scene.freeze', label: 'Freeze snapshot', group: 'Scene',
+    description: 'Save a snapshot of the whole scene to come back to later.',
+    params: { name: text('Snapshot name') },
     run: ({ host }, p) => {
       const { stage, ...rest } = host;
       const data = JSON.stringify({ assets: rest.assets, stage: { ...stage, snapshots: [] } });
@@ -823,22 +823,22 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
     },
   },
   {
-    id: 'scene.restore', label: 'Stand wiederherstellen', group: 'Szene',
-    description: 'Eingefrorenen Stand zurückholen (Rückgängig bleibt möglich).',
-    params: { id: text('Stand-ID oder Name', true) },
+    id: 'scene.restore', label: 'Restore snapshot', group: 'Scene',
+    description: 'Restore snapshot (undo stays possible).',
+    params: { id: text('Snapshot ID or name', true) },
     run: ({ host }, p) => {
       const snap = (host.stage.snapshots || []).find((s) => s.id === p.id || s.name === p.id);
-      if (!snap) fail('Stand nicht gefunden.');
+      if (!snap) fail('Snapshot not found.');
       let parsed: { assets?: PlanAsset[]; stage?: unknown } = {};
-      try { parsed = JSON.parse((snap as { data: string }).data); } catch { fail('Stand ist beschädigt.'); }
+      try { parsed = JSON.parse((snap as { data: string }).data); } catch { fail('Snapshot is damaged.'); }
       const restored = normalizeStage(parsed.stage);
       return { host: { ...host, assets: Array.isArray(parsed.assets) ? parsed.assets : host.assets, stage: { ...restored, snapshots: host.stage.snapshots } } };
     },
   },
   {
-    id: 'scene.setAspect', label: 'Bildformat', group: 'Szene',
-    description: 'Seitenverhältnis des Ausgabebildes (z. B. 1.7778, 2.39, 0.5625) für Sichtkegel, Sucher und Shot-Größen.',
-    params: { aspectRatio: num('Breite/Höhe', true) },
+    id: 'scene.setAspect', label: 'Image format', group: 'Scene',
+    description: 'Aspect ratio of the output image (e.g. 1.7778, 2.39, 0.5625) for view cones, viewfinder and shot sizes.',
+    params: { aspectRatio: num('Width/Height', true) },
     run: ({ host }, p) => ({ host: withStage(host, { ...host.stage, aspectRatio: finite(p.aspectRatio, 16 / 9, 0.2, 5) }) }),
   },
 ];
@@ -846,7 +846,7 @@ export const BLOCKING_COMMANDS: BlockingCommand[] = [
 const findShot = (stage: StageState, key: unknown) => {
   const k = typeof key === 'string' ? key.trim() : '';
   const shot = stage.shots.find((s) => s.id === k) ?? stage.shots.find((s) => `${s.number}${s.version}`.toUpperCase() === k.toUpperCase());
-  if (!shot) fail(`Kein Shot „${k}“.`);
+  if (!shot) fail(`No shot “${k}”.`);
   return shot as NonNullable<typeof shot>;
 };
 
@@ -868,13 +868,13 @@ export const runBlockingCommand = (
   timeS = 0,
 ): CommandResult => {
   const command = commandById(id);
-  if (!command) return { ok: false, error: `Unbekannter Befehl „${id}“. blocking_list_commands zeigt alle.` };
+  if (!command) return { ok: false, error: `Unknown command “${id}”. blocking_list_commands shows all.` };
   try {
     const host = ensureHost(raw);
     const p: Record<string, unknown> = {};
     for (const [key, spec] of Object.entries(command.params)) {
       const value = coerce(spec, params?.[key]);
-      if (spec.required && (value === undefined || value === null || value === '')) return { ok: false, error: `${command.label}: Parameter „${key}“ fehlt.` };
+      if (spec.required && (value === undefined || value === null || value === '')) return { ok: false, error: `${command.label}: Parameter “${key}” is missing.` };
       if (value !== undefined) p[key] = value;
     }
     const t = finite(timeS, 0, 0, host.stage.animation.durationS);
@@ -896,7 +896,7 @@ export const runBlockingBatch = (
   let select: string[] | undefined;
   for (const [i, step] of (Array.isArray(commands) ? commands : []).slice(0, 200).entries()) {
     const out = runBlockingCommand(host, String(step?.command || ''), step?.params || {}, timeS);
-    if (!out.ok) return { ok: false, error: `Schritt ${i + 1} (${step?.command}): ${out.error}` };
+    if (!out.ok) return { ok: false, error: `Step ${i + 1} (${step?.command}): ${out.error}` };
     host = out.host as StageHost;
     results.push(out.result || {});
     select = out.select ?? select;

@@ -79,7 +79,7 @@ const ColorViewer = forwardRef<ViewerHandle, Props>((props, ref) => {
         video.addEventListener('seeked', () => !disposed && requestRender());
         video.addEventListener('error', () => {
           if (disposed) return;
-          if (anonymous) { setTainted(true); load(false); } else setNotice('Video konnte nicht geladen werden.');
+          if (anonymous) { setTainted(true); load(false); } else setNotice('Video could not be loaded.');
         }, { once: true });
         video.src = media.url;
         try { video.currentTime = latest.current.sourceTime; } catch { /* not ready */ }
@@ -90,7 +90,7 @@ const ColorViewer = forwardRef<ViewerHandle, Props>((props, ref) => {
         image.onload = () => { if (!disposed) { setReady(true); requestRender(); } };
         image.onerror = () => {
           if (disposed) return;
-          if (anonymous) { setTainted(true); load(false); } else setNotice('Bild konnte nicht geladen werden.');
+          if (anonymous) { setTainted(true); load(false); } else setNotice('Image could not be loaded.');
         };
         image.src = media.url;
         sourceRef.current = image;
@@ -134,17 +134,17 @@ const ColorViewer = forwardRef<ViewerHandle, Props>((props, ref) => {
     let drawable: CanvasImageSource = source;
     let gpuNote: string | null = null;
     if (hasActiveFx(currentStack)) {
-      if (tainted) gpuNote = 'Die Medienquelle erlaubt keinen Pixelzugriff – GPU-Grade und Scopes sind hier nicht sichtbar (Export ist nicht betroffen).';
+      if (tainted) gpuNote = 'The media source allows no pixel access – GPU grades and scopes are not visible here (export is not affected).';
       else if (!rendererFailed.current) {
         try {
           if (!rendererRef.current) rendererRef.current = new FxRenderer();
           drawable = rendererRef.current.render(source, currentStack, { width: w, height: h, time, frameIndex: Math.floor(time * 24), quality: 'preview' }) as CanvasImageSource;
         } catch (error) {
           drawable = source;
-          gpuNote = `GPU-Grade übersprungen: ${error instanceof Error ? error.message.slice(0, 140) : String(error)}`;
+          gpuNote = `GPU grades skipped: ${error instanceof Error ? error.message.slice(0, 140) : String(error)}`;
           if (!rendererRef.current) rendererFailed.current = true;
         }
-      } else gpuNote = 'WebGL2 ist nicht verfügbar – GPU-Grade nicht sichtbar.';
+      } else gpuNote = 'WebGL2 is not available – GPU grades are not visible.';
     }
     gctx.clearRect(0, 0, w, h);
     const filterString = filters ? buildFilterString(filters) : '';
@@ -273,7 +273,7 @@ const ColorViewer = forwardRef<ViewerHandle, Props>((props, ref) => {
         const d = cctx?.getImageData(0, 0, 1, 1).data;
         if (d) onPick([d[0] / 255, d[1] / 255, d[2] / 255]);
       } catch {
-        setNotice('Pipette nicht möglich: die Medienquelle erlaubt keinen Pixelzugriff.');
+        setNotice('Eyedropper not possible: the media source allows no pixel access.');
       }
       return;
     }
@@ -309,7 +309,7 @@ const ColorViewer = forwardRef<ViewerHandle, Props>((props, ref) => {
           onPointerUp={() => { windowDrag.current = false; }}
         />
       ) : (
-        <div className="cp-empty">{media ? 'Audio-Clip – nichts zu graden' : 'Kein Clip ausgewählt'}</div>
+        <div className="cp-empty">{media ? 'Audio clip – nothing to grade' : 'No clip selected'}</div>
       )}
       {box && wipe && (
         <>

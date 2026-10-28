@@ -30,7 +30,7 @@ import {
 
 const DEG = Math.PI / 180;
 const OVERLAY_LAYER = 1;
-const VIEW_LABEL: Record<string, string> = { front: 'Vorne', back: 'Hinten', right: 'Rechts', left: 'Links', top: 'Oben', bottom: 'Unten' };
+const VIEW_LABEL: Record<string, string> = { front: 'Front', back: 'Back', right: 'Right', left: 'Left', top: 'Top', bottom: 'Bottom' };
 
 export type ViewportHandle = {
   startModal: (kind: ModalKind, duplicate?: boolean) => void;
@@ -459,9 +459,9 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
       t.set.sync(setDesignBus.getScene());
     }
     const ids = setDesignBus.getUi().selectedIds.filter((id) => isEditable(id) && rootOf(id));
-    if (!ids.length) { callbacks.current.onToast('Nichts auswählbar (ausgeblendet oder gesperrt).'); return; }
+    if (!ids.length) { callbacks.current.onToast('Nothing selectable (hidden or locked).'); return; }
     if (kind === 'scale' && ids.every((id) => findSceneObject(sceneRef.current, id)?.kind !== 'asset') && ids.length === 1) {
-      callbacks.current.onToast('Kameras und Lichter haben keine Skalierung. Brennweite bzw. Größe im Eigenschaften-Editor ändern.');
+      callbacks.current.onToast('Cameras and lights have no scale. Change focal length or size in the properties editor.');
       return;
     }
     const starts = captureStarts(ids);
@@ -470,7 +470,7 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
     center.divideScalar(starts.size);
     const centerScreen = project(center);
     const startMouse = pointer.current ? pointer.current.clone() : centerScreen.clone().add(new THREE.Vector2(60, 0));
-    setDesignBus.beginInteraction(kind === 'grab' ? (duplicate ? 'Duplizieren' : 'Verschieben') : kind === 'rotate' ? 'Drehen' : 'Skalieren');
+    setDesignBus.beginInteraction(kind === 'grab' ? (duplicate ? 'Duplicate' : 'Move') : kind === 'rotate' ? 'Rotate' : 'Scale');
     const angle = -Math.atan2(startMouse.y - centerScreen.y, startMouse.x - centerScreen.x);
     modal.current = { kind, ids, starts, center, centerScreen, startMouse, lastAngle: angle, angle: 0, constraint: FREE, typed: '', snap: uiRef.current.snap };
     if (!pointer.current) pointer.current = startMouse.clone();
@@ -507,7 +507,7 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
     const position = pose ? pose.position.clone() : view.current.position.clone();
     const target = pose ? pose.target.clone() : view.current.target.clone();
     const forward = target.clone().sub(position).normalize();
-    if (pose) setDesignBus.beginInteraction('Kamera gehen');
+    if (pose) setDesignBus.beginInteraction('Walk camera');
     walk.current = {
       keys: new Set(),
       yaw: Math.atan2(-forward.x, -forward.z),
@@ -520,7 +520,7 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
     };
     canvasRef.current?.requestPointerLock?.();
     callbacks.current.onStatusMode('walk');
-    setModalText(pose ? 'Gehen: bewegt die aktive Kamera' : 'Gehen');
+    setModalText(pose ? 'Walk: moves the active camera' : 'Walk');
   };
 
   const applyWalk = () => {
@@ -594,7 +594,7 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
     const set = createSetScene({
       mode: 'viewport',
       onChange: () => { dirty.current = true; },
-      onModelError: (asset, error) => callbacks.current.onToast(`${asset.name}: Modell konnte nicht geladen werden (${error instanceof Error ? error.message : String(error)}).`),
+      onModelError: (asset, error) => callbacks.current.onToast(`${asset.name}: Model could not be loaded (${error instanceof Error ? error.message : String(error)}).`),
     });
     set.prepareEnvironment(renderer);
     const persp = new THREE.PerspectiveCamera(45, 1, 0.05, 2000);
@@ -645,7 +645,7 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
       if ((event as unknown as { value: boolean }).value) {
         const ids = setDesignBus.getUi().selectedIds.filter((id) => isEditable(id) && rootOf(id));
         gizmoDrag.current = { ids, starts: captureStarts(ids), pivot: { position: pivot.position.clone(), quaternion: pivot.quaternion.clone(), scale: pivot.scale.clone() } };
-        setDesignBus.beginInteraction(transform.mode === 'translate' ? 'Verschieben' : transform.mode === 'rotate' ? 'Drehen' : 'Skalieren');
+        setDesignBus.beginInteraction(transform.mode === 'translate' ? 'Move' : transform.mode === 'rotate' ? 'Rotate' : 'Scale');
       } else if (gizmoDrag.current) {
         const { ids } = gizmoDrag.current;
         gizmoDrag.current = null;
@@ -847,7 +847,7 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
         const mode: Nav['mode'] = event.shiftKey ? 'pan' : (event.ctrlKey || event.metaKey) ? 'zoom' : 'orbit';
         const u = uiRef.current;
         const cameraNav = u.lookThroughCamera && u.lockCameraToView;
-        if (cameraNav) setDesignBus.beginInteraction('Kamera bewegen');
+        if (cameraNav) setDesignBus.beginInteraction('Move camera');
         nav.current = { mode, x: event.clientX, y: event.clientY, camera: cameraNav, interaction: cameraNav };
         return;
       }
@@ -939,11 +939,11 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
       if (modal.current) return;
-      if (walk.current) { walk.current.speed = Math.min(20, Math.max(0.2, walk.current.speed * (event.deltaY < 0 ? 1.2 : 1 / 1.2))); setModalText(`Gehen: ${walk.current.speed.toFixed(1).replace('.', ',')} m/s`); return; }
+      if (walk.current) { walk.current.speed = Math.min(20, Math.max(0.2, walk.current.speed * (event.deltaY < 0 ? 1.2 : 1 / 1.2))); setModalText(`Walk: ${walk.current.speed.toFixed(1).replace('.', ',')} m/s`); return; }
       const u = uiRef.current;
       const isMouseWheel = event.deltaMode !== 0 || (event.deltaX === 0 && Number.isInteger(event.deltaY) && Math.abs(event.deltaY) >= 40);
       const cameraNav = u.lookThroughCamera && u.lockCameraToView;
-      if (cameraNav && !wheelInteractionTimer.current) setDesignBus.beginInteraction('Kamera bewegen');
+      if (cameraNav && !wheelInteractionTimer.current) setDesignBus.beginInteraction('Move camera');
       if (cameraNav) {
         if (wheelInteractionTimer.current) clearTimeout(wheelInteractionTimer.current);
         wheelInteractionTimer.current = setTimeout(() => {
@@ -1029,10 +1029,10 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
   const active = getActiveCamera(scene);
   const activeObject = ui.activeId ? findSceneObject(scene, ui.activeId) : null;
   const viewName = ui.lookThroughCamera
-    ? 'Kameraperspektive'
+    ? 'Camera angle'
     : ui.viewPreset !== 'user'
-      ? `${VIEW_LABEL[ui.viewPreset]} ${ui.ortho ? 'Orthografisch' : 'Perspektive'}`
-      : ui.ortho ? 'Benutzer Orthografisch' : 'Benutzerperspektive';
+      ? `${VIEW_LABEL[ui.viewPreset]} ${ui.ortho ? 'Orthographic' : 'Perspective'}`
+      : ui.ortho ? 'User orthographic' : 'User perspective';
   const passepartout = ui.overlays.passepartout;
   const objectCount = scene.assets.length;
 
@@ -1067,14 +1067,14 @@ const Viewport3D = forwardRef<ViewportHandle, Props>(({ scene, ui, onToast, onCo
       {boxRect && <div className="sdx-boxsel" style={{ left: boxRect.x, top: boxRect.y, width: boxRect.w, height: boxRect.h }} />}
       <div className="sdx-vp-info">
         <div>{viewName}</div>
-        <div>(1) Szenensammlung | {activeObject?.object.name || (objectCount ? '–' : 'leer – Shift+A zum Hinzufügen')}</div>
+        <div>(1) Scene collection | {activeObject?.object.name || (objectCount ? '–' : 'empty – Shift+A to add')}</div>
       </div>
       {modalText && <div className="sdx-vp-modal" data-automation-id="setdesign-modal-text">{modalText}</div>}
       <div className="sdx-navgizmo">
         <NavGizmo ref={gizmoRef} onPreset={(viewPreset) => setDesignBus.run('view.preset', { view: viewPreset })} onDrag={(dx, dy) => navigate('orbit', dx, dy)} />
-        <NavDragButton title="Zoomen (ziehen)" mode="zoom" onDrag={navigate}><ZoomIn size={15} /></NavDragButton>
-        <NavDragButton title="Verschieben (ziehen)" mode="pan" onDrag={navigate}><Hand size={15} /></NavDragButton>
-        <button type="button" className={`sdx-navgizmo__btn${ui.lookThroughCamera ? ' is-on' : ''}`} title="Durch Kamera schauen (Num0)" data-automation-id="setdesign-view-camera" onClick={() => setDesignBus.run('view.camera')}><Video size={15} /></button>
+        <NavDragButton title="Zoom (drag)" mode="zoom" onDrag={navigate}><ZoomIn size={15} /></NavDragButton>
+        <NavDragButton title="Move (drag)" mode="pan" onDrag={navigate}><Hand size={15} /></NavDragButton>
+        <button type="button" className={`sdx-navgizmo__btn${ui.lookThroughCamera ? ' is-on' : ''}`} title="Look through camera (Num0)" data-automation-id="setdesign-view-camera" onClick={() => setDesignBus.run('view.camera')}><Video size={15} /></button>
         <button type="button" className={`sdx-navgizmo__btn${ui.ortho ? ' is-on' : ''}`} title="Perspektive/Orthografisch (Num5)" data-automation-id="setdesign-view-ortho" onClick={() => setDesignBus.run('view.toggle_ortho')}><Grid3x3 size={15} /></button>
       </div>
       {children}

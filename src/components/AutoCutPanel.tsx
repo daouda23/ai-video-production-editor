@@ -1037,7 +1037,7 @@ const AutoCutPanel: React.FC<AutoCutPanelProps> = ({
                                     <p className="pk-hint">
                                         {localMode === 'silence' && 'Keeps speech, drops dead air — adaptive loudness threshold, no API needed.'}
                                         {localMode === 'scenes' && 'Finds hard cuts from frame differences, ignores camera moves — no API needed.'}
-                                        {localMode === 'filler' && 'Transcribes with word timings and removes ums, ähs and long pauses (needs a Gemini key).'}
+                                        {localMode === 'filler' && 'Transcribes with word timings and removes ums, uhs and long pauses (needs a Gemini key).'}
                                     </p>
                                     {localMode === 'silence' && (
                                         <div className="pk-inline">

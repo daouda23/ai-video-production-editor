@@ -38,7 +38,7 @@ export const useSceneMapBridge = (input: SceneMapBridgeInput, enabled = true) =>
       getSceneMap: () => ref.current.sceneMap,
       setSceneMap: (next: SceneMapState) => { ref.current = { ...ref.current, sceneMap: next }; ref.current.setSceneMap(next); },
       getProjectPath: () => ref.current.projectPath ?? null,
-      getProjectName: () => ref.current.projectName || 'Kameraplan',
+      getProjectName: () => ref.current.projectName || 'Camera plan',
       openSceneMap: () => ref.current.openSceneMap?.(),
     };
     const previous = getBridge();

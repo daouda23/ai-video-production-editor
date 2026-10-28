@@ -21,13 +21,13 @@ export type SequenceMarker = {
 };
 
 export const MARKER_COLORS: Array<{ id: MarkerColorId; label: string; hex: string }> = [
-    { id: 'green', label: 'Grün', hex: '#3fb26b' },
+    { id: 'green', label: 'Green', hex: '#3fb26b' },
     { id: 'red', label: 'Rot', hex: '#e0524a' },
-    { id: 'violet', label: 'Violett', hex: '#a46be0' },
+    { id: 'violet', label: 'Violet', hex: '#a46be0' },
     { id: 'orange', label: 'Orange', hex: '#e8913a' },
-    { id: 'yellow', label: 'Gelb', hex: '#e3cb3b' },
-    { id: 'white', label: 'Weiß', hex: '#e8e8ea' },
-    { id: 'blue', label: 'Blau', hex: '#4d8fe8' },
+    { id: 'yellow', label: 'Yellow', hex: '#e3cb3b' },
+    { id: 'white', label: 'White', hex: '#e8e8ea' },
+    { id: 'blue', label: 'Blue', hex: '#4d8fe8' },
     { id: 'cyan', label: 'Cyan', hex: '#3fc6d0' },
 ];
 
@@ -163,4 +163,4 @@ export function normalizeMarkers(raw: unknown): SequenceMarker[] {
 }
 
 /** Label for lists and tooltips. */
-export const markerLabel = (marker: SequenceMarker, index: number): string => marker.name.trim() || `Marke ${index + 1}`;
+export const markerLabel = (marker: SequenceMarker, index: number): string => marker.name.trim() || `Marker ${index + 1}`;

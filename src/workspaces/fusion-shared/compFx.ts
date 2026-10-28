@@ -46,14 +46,14 @@ const radiusFor = (values: Record<string, unknown>, width: number) => {
 export const COMP_BLUR_FX: FxDefinition = {
   id: BLUR_FX_ID,
   scope: 'compositing',
-  name: 'Weichzeichner',
+  name: 'Blur',
   vendor: 'AVPE',
   version: '1.0',
   category: 'stylize',
-  description: 'Gaußscher Weichzeichner (separierbar, vormultipliziert) für Fusion-Knoten.',
+  description: 'Gaussian blur (separable, premultiplied) for Fusion nodes.',
   params: [
-    { id: 'size', label: 'Größe', type: 'float', default: 8, min: 0, max: 200, displayMax: 64, step: 0.1, unit: 'px', hint: 'Radius bezogen auf ein 1920 Pixel breites Bild.' },
-    { id: 'aspect', label: 'Seitenverhältnis', type: 'float', default: 1, min: 0, max: 4, step: 0.01, hint: '>1 = stärker horizontal, <1 = stärker vertikal.' },
+    { id: 'size', label: 'Size', type: 'float', default: 8, min: 0, max: 200, displayMax: 64, step: 0.1, unit: 'px', hint: 'Radius relative to an image 1920 pixels wide.' },
+    { id: 'aspect', label: 'Aspect ratio', type: 'float', default: 1, min: 0, max: 4, step: 0.01, hint: '>1 = more horizontal, <1 = more vertical.' },
   ],
   passes: [
     {

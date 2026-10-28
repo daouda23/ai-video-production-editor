@@ -87,7 +87,7 @@ export type JsonSchema = {
 export type SoundCommand = {
   id: string;
   label: string;
-  group: 'Mixer' | 'Bus' | 'Clip' | 'Bearbeiten' | 'Automation' | 'Ansicht' | 'Transport' | 'ADR' | 'Studio';
+  group: 'Mixer' | 'Bus' | 'Clip' | 'Edit' | 'Automation' | 'View' | 'Transport' | 'ADR' | 'Studio';
   description: string;
   shortcut?: string;
   params: JsonSchema;
@@ -106,7 +106,7 @@ const num = (p: Record<string, unknown>, key: string, min: number, max: number, 
   const value = typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : raw;
   if (typeof value === 'number' && Number.isFinite(value)) return clamp(value, min, max);
   if (fallback !== undefined) return fallback;
-  return fail(`Parameter „${key}“ fehlt oder ist keine Zahl.`);
+  return fail(`Parameter “${key}” is missing or not a number.`);
 };
 const optNum = (p: Record<string, unknown>, key: string, min: number, max: number): number | undefined =>
   p[key] === undefined || p[key] === null ? undefined : num(p, key, min, max);
@@ -114,7 +114,7 @@ const text = (p: Record<string, unknown>, key: string, fallback?: string): strin
   const raw = p[key];
   if (typeof raw === 'string' && raw.length) return raw.slice(0, 2000);
   if (fallback !== undefined) return fallback;
-  return fail(`Parameter „${key}“ fehlt.`);
+  return fail(`Parameter “${key}” is missing.`);
 };
 const bool = (p: Record<string, unknown>, key: string, fallback?: boolean): boolean => {
   const raw = p[key];
@@ -122,35 +122,35 @@ const bool = (p: Record<string, unknown>, key: string, fallback?: boolean): bool
   if (raw === 'true') return true;
   if (raw === 'false') return false;
   if (fallback !== undefined) return fallback;
-  return fail(`Parameter „${key}“ fehlt.`);
+  return fail(`Parameter “${key}” is missing.`);
 };
 const pick = <T extends string>(p: Record<string, unknown>, key: string, allowed: readonly T[], fallback?: T): T => {
   const raw = p[key];
   if (typeof raw === 'string' && (allowed as readonly string[]).includes(raw)) return raw as T;
   if (fallback !== undefined && (raw === undefined || raw === null)) return fallback;
-  return fail(`Parameter „${key}“ muss einer von ${allowed.join(', ')} sein.`);
+  return fail(`Parameter “${key}” must be one of ${allowed.join(', ')} sein.`);
 };
 const ids = (p: Record<string, unknown>, key: string): string[] => {
   const raw = p[key];
   if (typeof raw === 'string') return [raw];
   if (Array.isArray(raw)) return raw.filter((x): x is string => typeof x === 'string').slice(0, 5000);
-  return fail(`Parameter „${key}“ fehlt.`);
+  return fail(`Parameter “${key}” is missing.`);
 };
 
 const requireTrack = (state: SoundState, trackId: string): TimelineTrack =>
-  state.tracks.find((t) => t.id === trackId) ?? fail(`Spur „${trackId}“ gibt es nicht.`);
+  state.tracks.find((t) => t.id === trackId) ?? fail(`Track “${trackId}” does not exist.`);
 const requireClip = (state: SoundState, clipId: string): TimelineClip =>
-  state.clips.find((c) => c.id === clipId) ?? fail(`Clip „${clipId}“ gibt es nicht.`);
+  state.clips.find((c) => c.id === clipId) ?? fail(`Clip “${clipId}” does not exist.`);
 /** Locked tracks refuse clip edits (move, trim, split, delete, gain, fades). */
 const assertUnlocked = (state: SoundState, trackIds: Array<string | undefined>): void => {
   for (const id of trackIds) {
     const track = id ? state.tracks.find((t) => t.id === id) : undefined;
-    if (track?.isLocked) fail(`Spur „${track.name ?? track.id}“ ist gesperrt. Erst mit sound_mixer_toggle_lock entsperren.`);
+    if (track?.isLocked) fail(`Track “${track.name ?? track.id}” is locked. Unlock it first with sound_mixer_toggle_lock.`);
   }
 };
 const clipTracks = (state: SoundState, clipIds: string[]) => clipIds.map((id) => state.clips.find((c) => c.id === id)?.trackId);
 
-const requireBus = (mix: SoundMix, busId: string) => mix.buses.find((b) => b.id === busId) ?? fail(`Bus „${busId}“ gibt es nicht.`);
+const requireBus = (mix: SoundMix, busId: string) => mix.buses.find((b) => b.id === busId) ?? fail(`Bus “${busId}” does not exist.`);
 const mediaDuration = (state: SoundState) => (mediaId: string) => {
   const d = state.media.find((m) => m.id === mediaId)?.duration;
   return typeof d === 'number' && d > 0 ? d : undefined;
@@ -177,7 +177,7 @@ const insertsOf = (state: SoundState, target: string): InsertSlot[] =>
 const s = (type: string, description: string, extra: Record<string, unknown> = {}) => ({ type, description, ...extra });
 const schema = (properties: JsonSchema['properties'], required: string[] = []): JsonSchema => ({ type: 'object', properties, required });
 
-const TRACK = s('string', 'Spur-ID (TimelineTrack.id)');
+const TRACK = s('string', 'Track ID (TimelineTrack.id)');
 const CLIP = s('string', 'Clip-ID (TimelineClip.id)');
 const AUTOMATION_MODES: AutomationMode[] = ['off', 'read', 'touch', 'latch', 'write'];
 const EDIT_MODES: EditMode[] = ['shuffle', 'slip', 'spot', 'grid'];
@@ -189,7 +189,7 @@ const INSERT_KINDS: InsertKind[] = ['eq', 'compressor', 'gate', 'limiter', 'dela
 const parseParam = (p: Record<string, unknown>): AutomationParam => {
   const raw = text(p, 'param');
   if (raw === 'volume' || raw === 'pan' || raw === 'mute' || /^send:[\w-]{1,80}$/.test(raw)) return raw as AutomationParam;
-  return fail('Parameter „param“ muss volume, pan, mute oder send:<busId> sein.');
+  return fail('Parameter “param” must be volume, pan, mute or send:<busId>.');
 };
 
 /* ─── role detection (Studio view) ─── */
@@ -244,9 +244,9 @@ export const duckingAutomation = (dialog: Array<[number, number]>, baseDb: numbe
 export const SOUND_COMMANDS: SoundCommand[] = [
   /* Mixer */
   {
-    id: 'mixer.setFader', label: 'Fader setzen', group: 'Mixer',
-    description: 'Setzt den Spur-Fader in dB (−144 = −∞, max. +12).',
-    params: schema({ trackId: TRACK, db: s('number', 'Pegel in dB') }, ['trackId', 'db']),
+    id: 'mixer.setFader', label: 'Set fader', group: 'Mixer',
+    description: 'Sets the track fader in dB (−144 = −∞, max. +12).',
+    params: schema({ trackId: TRACK, db: s('number', 'Level in dB') }, ['trackId', 'db']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
       requireTrack(st, trackId);
@@ -254,9 +254,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.nudgeFader', label: 'Fader schrittweise', group: 'Mixer',
-    description: 'Ändert den Spur-Fader um deltaDb.',
-    params: schema({ trackId: TRACK, deltaDb: s('number', 'Änderung in dB') }, ['trackId', 'deltaDb']),
+    id: 'mixer.nudgeFader', label: 'Fader step', group: 'Mixer',
+    description: 'Changes the track fader by deltaDb.',
+    params: schema({ trackId: TRACK, deltaDb: s('number', 'Change in dB') }, ['trackId', 'deltaDb']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
       requireTrack(st, trackId);
@@ -265,8 +265,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.setPan', label: 'Panorama setzen', group: 'Mixer',
-    description: 'Panorama −1 (links) … +1 (rechts).',
+    id: 'mixer.setPan', label: 'Set pan', group: 'Mixer',
+    description: 'Pan −1 (left) … +1 (right).',
     params: schema({ trackId: TRACK, pan: s('number', '−1 … +1') }, ['trackId', 'pan']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
@@ -275,8 +275,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.toggleMute', label: 'Stumm', group: 'Mixer', shortcut: 'M',
-    description: 'Schaltet die Spur stumm oder wieder hörbar (gleiches Feld wie im Editor).',
+    id: 'mixer.toggleMute', label: 'Mute', group: 'Mixer', shortcut: 'M',
+    description: 'Mutes or unmutes the track (same field as in the editor).',
     params: schema({ trackId: TRACK, muted: s('boolean', 'optional: fester Zustand') }, ['trackId']),
     run: (st, p) => {
       const track = requireTrack(st, text(p, 'trackId'));
@@ -285,7 +285,7 @@ export const SOUND_COMMANDS: SoundCommand[] = [
   },
   {
     id: 'mixer.toggleSolo', label: 'Solo', group: 'Mixer', shortcut: 'S',
-    description: 'Solo-Schaltung der Spur (gleiches Feld wie im Editor).',
+    description: 'Solo the track (same field as in the editor).',
     params: schema({ trackId: TRACK, solo: s('boolean', 'optional: fester Zustand') }, ['trackId']),
     run: (st, p) => {
       const track = requireTrack(st, text(p, 'trackId'));
@@ -293,8 +293,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.toggleLock', label: 'Spur sperren', group: 'Mixer',
-    description: 'Sperrt die Spur gegen Bearbeitung oder hebt die Sperre auf (gleiches Feld wie im Editor). Gesperrte Spuren lehnen Verschieben, Trimmen, Teilen, Löschen, Clip-Gain und Fades ab.',
+    id: 'mixer.toggleLock', label: 'Lock track', group: 'Mixer',
+    description: 'Locks or unlocks the track for editing (same field as in the editor). Locked tracks refuse move, trim, split, delete, clip gain and fades.',
     params: schema({ trackId: TRACK, locked: s('boolean', 'optional: fester Zustand') }, ['trackId']),
     run: (st, p) => {
       const track = requireTrack(st, text(p, 'trackId'));
@@ -302,14 +302,14 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.clearSolo', label: 'Alle Solos aus', group: 'Mixer',
-    description: 'Hebt alle Solo-Schaltungen auf.',
+    id: 'mixer.clearSolo', label: 'All solos off', group: 'Mixer',
+    description: 'Clears all solos.',
     params: schema({}),
     run: (st) => ({ trackUpdates: st.tracks.filter((t) => t.isSolo).map((t) => ({ trackId: t.id, updates: { isSolo: false } })) }),
   },
   {
-    id: 'mixer.togglePhase', label: 'Phase drehen', group: 'Mixer', shortcut: 'Ø',
-    description: 'Invertiert die Polarität der Spur.',
+    id: 'mixer.togglePhase', label: 'Invert phase', group: 'Mixer', shortcut: 'Ø',
+    description: 'Inverts the polarity of the track.',
     params: schema({ trackId: TRACK }, ['trackId']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
@@ -318,8 +318,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.toggleRecordArm', label: 'Aufnahmebereit', group: 'Mixer',
-    description: 'Markiert die Spur als aufnahmebereit (ADR).',
+    id: 'mixer.toggleRecordArm', label: 'Record ready', group: 'Mixer',
+    description: 'Arms the track for recording (ADR).',
     params: schema({ trackId: TRACK }, ['trackId']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
@@ -328,9 +328,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.setOutputBus', label: 'Ausgang zuweisen', group: 'Mixer',
-    description: 'Leitet die Spur auf einen Bus (Main, Submix oder Aux).',
-    params: schema({ trackId: TRACK, busId: s('string', 'Ziel-Bus-ID') }, ['trackId', 'busId']),
+    id: 'mixer.setOutputBus', label: 'Assign output', group: 'Mixer',
+    description: 'Routes the track to a bus (main, submix or aux).',
+    params: schema({ trackId: TRACK, busId: s('string', 'Target bus ID') }, ['trackId', 'busId']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
       requireTrack(st, trackId);
@@ -339,8 +339,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.setRole', label: 'Stem-Rolle setzen', group: 'Mixer',
-    description: 'Ordnet die Spur einer Stem-Rolle zu (dialog, music, effects, ambience) und leitet sie auf den passenden Submix.',
+    id: 'mixer.setRole', label: 'Set stem role', group: 'Mixer',
+    description: 'Assigns the track to a stem role (dialog, music, effects, ambience) and routes it to the matching submix.',
     params: schema({ trackId: TRACK, role: s('string', 'dialog | music | effects | ambience | none') }, ['trackId', 'role']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
@@ -357,13 +357,13 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.addInsert', label: 'Insert hinzufügen', group: 'Mixer',
-    description: 'Fügt einer Spur oder einem Bus ein Insert hinzu (eq, compressor, gate, limiter, delay); max. 5.',
-    params: schema({ target: s('string', 'Spur- oder Bus-ID'), kind: s('string', INSERT_KINDS.join(' | ')), index: s('number', 'optional: Position 0–4') }, ['target', 'kind']),
+    id: 'mixer.addInsert', label: 'Add insert', group: 'Mixer',
+    description: 'Adds an insert to a track or bus (eq, compressor, gate, limiter, delay); max. 5.',
+    params: schema({ target: s('string', 'Track or bus ID'), kind: s('string', INSERT_KINDS.join(' | ')), index: s('number', 'optional: Position 0–4') }, ['target', 'kind']),
     run: (st, p) => {
       const target = text(p, 'target');
       const kind = pick(p, 'kind', INSERT_KINDS);
-      if (insertsOf(st, target).length >= MAX_INSERTS) fail('Alle fünf Insert-Plätze sind belegt.');
+      if (insertsOf(st, target).length >= MAX_INSERTS) fail('All five insert slots are in use.');
       const slot = createInsert(kind);
       const index = optNum(p, 'index', 0, MAX_INSERTS - 1);
       return {
@@ -377,9 +377,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.removeInsert', label: 'Insert entfernen', group: 'Mixer',
-    description: 'Entfernt ein Insert.',
-    params: schema({ target: s('string', 'Spur- oder Bus-ID'), insertId: s('string', 'Insert-ID') }, ['target', 'insertId']),
+    id: 'mixer.removeInsert', label: 'Remove insert', group: 'Mixer',
+    description: 'Removes an insert.',
+    params: schema({ target: s('string', 'Track or bus ID'), insertId: s('string', 'Insert-ID') }, ['target', 'insertId']),
     run: (st, p) => {
       const target = text(p, 'target');
       const id = text(p, 'insertId');
@@ -387,9 +387,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.bypassInsert', label: 'Insert umgehen', group: 'Mixer',
-    description: 'Schaltet ein Insert auf Bypass oder wieder aktiv.',
-    params: schema({ target: s('string', 'Spur- oder Bus-ID'), insertId: s('string', 'Insert-ID'), bypass: s('boolean', 'optional') }, ['target', 'insertId']),
+    id: 'mixer.bypassInsert', label: 'Bypass insert', group: 'Mixer',
+    description: 'Bypasses or re-enables an insert.',
+    params: schema({ target: s('string', 'Track or bus ID'), insertId: s('string', 'Insert-ID'), bypass: s('boolean', 'optional') }, ['target', 'insertId']),
     run: (st, p) => {
       const target = text(p, 'target');
       const id = text(p, 'insertId');
@@ -397,24 +397,24 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.setInsertParams', label: 'Insert einstellen', group: 'Mixer',
-    description: 'Setzt Parameter eines Inserts (Teilobjekt, z. B. {thresholdDb:-20, ratio:4} oder {bands:[…]}). Werte werden geklemmt.',
-    params: schema({ target: s('string', 'Spur- oder Bus-ID'), insertId: s('string', 'Insert-ID'), params: s('object', 'Parameter') }, ['target', 'insertId', 'params']),
+    id: 'mixer.setInsertParams', label: 'Set insert', group: 'Mixer',
+    description: 'Sets parameters of an insert (partial object, e.g. {thresholdDb:-20, ratio:4} or {bands:[…]}). Values are clamped.',
+    params: schema({ target: s('string', 'Track or bus ID'), insertId: s('string', 'Insert-ID'), params: s('object', 'Parameter') }, ['target', 'insertId', 'params']),
     run: (st, p) => {
       const target = text(p, 'target');
       const id = text(p, 'insertId');
-      const changes = typeof p.params === 'object' && p.params !== null ? (p.params as Record<string, unknown>) : fail('params muss ein Objekt sein.');
-      const slot = insertsOf(st, target).find((x) => x.id === id) ?? fail(`Insert „${id}“ gibt es nicht.`);
+      const changes = typeof p.params === 'object' && p.params !== null ? (p.params as Record<string, unknown>) : fail('params must be an object.');
+      const slot = insertsOf(st, target).find((x) => x.id === id) ?? fail(`Insert “${id}” does not exist.`);
       const merged = normalizeInsert({ ...slot, params: { ...slot.params, ...changes } });
-      if (!merged) fail('Ungültige Insert-Parameter.');
+      if (!merged) fail('Invalid insert parameters.');
       return { mix: withInserts(st, target, (slots) => slots.map((x) => (x.id === id ? (merged as InsertSlot) : x))) };
     },
   },
   {
-    id: 'mixer.setEqBand', label: 'EQ-Band einstellen', group: 'Mixer',
-    description: 'Stellt ein Band des ersten EQ-Inserts ein; legt den EQ an, wenn er fehlt. Bänder: 0 HPF, 1 Low-Shelf, 2 Mitte 1, 3 Mitte 2, 4 High-Shelf, 5 LPF.',
+    id: 'mixer.setEqBand', label: 'Set EQ band', group: 'Mixer',
+    description: 'Sets a band of the first EQ insert; creates the EQ if missing. Bands: 0 HPF, 1 low shelf, 2 mid 1, 3 mid 2, 4 high shelf, 5 LPF.',
     params: schema({
-      target: s('string', 'Spur- oder Bus-ID'), band: s('number', '0–5'),
+      target: s('string', 'Track or bus ID'), band: s('number', '0–5'),
       enabled: s('boolean', 'optional'), freq: s('number', 'Hz, optional'), gainDb: s('number', 'dB, optional'), q: s('number', 'optional'),
     }, ['target', 'band']),
     run: (st, p) => {
@@ -423,14 +423,14 @@ export const SOUND_COMMANDS: SoundCommand[] = [
       let mix = st.mix;
       let slot: InsertSlot | undefined = insertsOf(st, target).find((x) => x.kind === 'eq');
       if (!slot) {
-        if (insertsOf(st, target).length >= MAX_INSERTS) fail('Kein Platz für einen EQ.');
+        if (insertsOf(st, target).length >= MAX_INSERTS) fail('No room for an EQ.');
         slot = createInsert('eq');
         mix = withInserts(st, target, (slots) => [slot as InsertSlot, ...slots]);
       }
       const eqSlot = slot;
       if (eqSlot.kind !== 'eq') return {};
       const bands = eqSlot.params.bands.slice();
-      if (!bands[band]) fail(`EQ-Band ${band} gibt es nicht.`);
+      if (!bands[band]) fail(`EQ-Band ${band} does not exist.`);
       bands[band] = {
         ...bands[band],
         enabled: bool(p, 'enabled', bands[band].enabled),
@@ -443,21 +443,21 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.setSend', label: 'Send einstellen', group: 'Mixer',
-    description: 'Legt einen Send auf einen Bus an oder ändert ihn (Pegel in dB, pre/post Fader, an/aus); max. 5 pro Spur.',
+    id: 'mixer.setSend', label: 'Set send', group: 'Mixer',
+    description: 'Creates or changes a send to a bus (level in dB, pre/post fader, on/off); max. 5 per track.',
     params: schema({
-      trackId: TRACK, busId: s('string', 'Ziel-Bus'), levelDb: s('number', 'optional'),
+      trackId: TRACK, busId: s('string', 'Target bus'), levelDb: s('number', 'optional'),
       preFader: s('boolean', 'optional'), enabled: s('boolean', 'optional'),
     }, ['trackId', 'busId']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
       requireTrack(st, trackId);
       const bus = requireBus(st.mix, text(p, 'busId'));
-      if (bus.kind === 'main') fail('Sends gehen auf Submix- oder Aux-Busse, nicht auf den Main-Bus.');
+      if (bus.kind === 'main') fail('Sends go to submix or aux buses, not to the main bus.');
       return {
         mix: withTrack(st.mix, trackId, (t) => {
           const existing = t.sends.find((x) => x.busId === bus.id);
-          if (!existing && t.sends.length >= MAX_SENDS) fail('Alle fünf Send-Plätze sind belegt.');
+          if (!existing && t.sends.length >= MAX_SENDS) fail('All five send slots are in use.');
           const send = {
             busId: bus.id,
             levelDb: optNum(p, 'levelDb', MIN_DB, MAX_FADER_DB) ?? existing?.levelDb ?? -10,
@@ -470,8 +470,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.removeSend', label: 'Send entfernen', group: 'Mixer',
-    description: 'Entfernt den Send auf einen Bus.',
+    id: 'mixer.removeSend', label: 'Remove send', group: 'Mixer',
+    description: 'Removes the send to a bus.',
     params: schema({ trackId: TRACK, busId: s('string', 'Bus-ID') }, ['trackId', 'busId']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
@@ -480,8 +480,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mixer.resetTrack', label: 'Kanalzug zurücksetzen', group: 'Mixer',
-    description: 'Setzt Fader, Pan, Inserts, Sends und Automation der Spur zurück.',
+    id: 'mixer.resetTrack', label: 'Reset channel strip', group: 'Mixer',
+    description: 'Resets the fader, pan, inserts, sends and automation of the track.',
     params: schema({ trackId: TRACK }, ['trackId']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
@@ -491,16 +491,16 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'track.add', label: 'Audiospur hinzufügen', group: 'Mixer',
-    description: 'Legt eine neue Audiospur im gemeinsamen Timeline-Modell an.',
+    id: 'track.add', label: 'Add audio track', group: 'Mixer',
+    description: 'Creates a new audio track in the shared timeline model.',
     params: schema({}),
     run: () => ({ addTrack: 'audio' }),
   },
 
   /* Busse */
   {
-    id: 'bus.add', label: 'Bus anlegen', group: 'Bus',
-    description: 'Legt einen Submix- oder Aux-Bus an, der in den Main-Bus läuft.',
+    id: 'bus.add', label: 'Create bus', group: 'Bus',
+    description: 'Creates a submix or aux bus that feeds the main bus.',
     params: schema({ kind: s('string', 'sub | aux | main'), name: s('string', 'Name') }, ['kind']),
     run: (st, p) => {
       const kind = pick(p, 'kind', ['sub', 'aux', 'main'] as BusKind[]);
@@ -517,12 +517,12 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'bus.remove', label: 'Bus entfernen', group: 'Bus',
-    description: 'Entfernt einen Bus; Spuren, Sends und Busse darauf gehen an den Main-Bus.',
+    id: 'bus.remove', label: 'Remove bus', group: 'Bus',
+    description: 'Removes a bus; tracks, sends and buses on it go to the main bus.',
     params: schema({ busId: s('string', 'Bus-ID') }, ['busId']),
     run: (st, p) => {
       const bus = requireBus(st.mix, text(p, 'busId'));
-      if (bus.kind === 'main' && st.mix.buses.filter((b) => b.kind === 'main').length === 1) fail('Der letzte Main-Bus bleibt.');
+      if (bus.kind === 'main' && st.mix.buses.filter((b) => b.kind === 'main').length === 1) fail('The last main bus stays.');
       const buses = st.mix.buses.filter((b) => b.id !== bus.id);
       const main = buses.find((b) => b.kind === 'main')!.id;
       const tracks: SoundMix['tracks'] = {};
@@ -533,8 +533,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'bus.set', label: 'Bus einstellen', group: 'Bus',
-    description: 'Ändert Pegel, Pan, Mute, Solo, Name oder Ausgang eines Busses.',
+    id: 'bus.set', label: 'Set bus', group: 'Bus',
+    description: 'Changes the level, pan, mute, solo, name or output of a bus.',
     params: schema({
       busId: s('string', 'Bus-ID'), gainDb: s('number', 'optional'), pan: s('number', 'optional'),
       mute: s('boolean', 'optional'), solo: s('boolean', 'optional'), name: s('string', 'optional'), outputBusId: s('string', 'optional'),
@@ -554,8 +554,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'master.set', label: 'Master einstellen', group: 'Bus',
-    description: 'Master-Pegel, Limiter, Loudness-Ziel (LUFS) und True-Peak-Grenze.',
+    id: 'master.set', label: 'Set master', group: 'Bus',
+    description: 'Master level, limiter, loudness target (LUFS) and true peak ceiling.',
     params: schema({
       gainDb: s('number', 'optional'), limiterEnabled: s('boolean', 'optional'), ceilingDb: s('number', 'optional'),
       targetLufs: s('number', 'optional, z. B. −23 (EBU R128), −16, −14'), truePeakLimitDb: s('number', 'optional'),
@@ -578,8 +578,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
 
   /* Clips */
   {
-    id: 'clip.setGain', label: 'Clip-Gain setzen', group: 'Clip',
-    description: 'Setzt den Clip-Gain in dB (schreibt clip.volume, wie der Editor).',
+    id: 'clip.setGain', label: 'Set clip gain', group: 'Clip',
+    description: 'Sets the clip gain in dB (writes clip.volume, like the editor).',
     params: schema({ clipIds: s('array', 'Clip-IDs', { items: { type: 'string' } }), db: s('number', 'dB') }, ['clipIds', 'db']),
     run: (st, p) => {
       const list = ids(p, 'clipIds');
@@ -590,7 +590,7 @@ export const SOUND_COMMANDS: SoundCommand[] = [
   },
   {
     id: 'clip.nudgeGain', label: 'Clip-Gain schrittweise', group: 'Clip', shortcut: '⌃⇧↑/↓',
-    description: 'Ändert den Clip-Gain um deltaDb.',
+    description: 'Changes the clip gain by deltaDb.',
     params: schema({ clipIds: s('array', 'Clip-IDs', { items: { type: 'string' } }), deltaDb: s('number', 'dB') }, ['clipIds', 'deltaDb']),
     run: (st, p) => {
       const list = ids(p, 'clipIds');
@@ -606,9 +606,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'clip.setFade', label: 'Fade setzen', group: 'Clip',
-    description: 'Setzt Fade-In oder Fade-Out eines Clips (Sekunden, Kurve linear | equal-power | exponential | s-curve).',
-    params: schema({ clipIds: s('array', 'Clip-IDs', { items: { type: 'string' } }), side: s('string', 'in | out'), duration: s('number', 'Sekunden'), curve: s('string', 'optional') }, ['clipIds', 'side', 'duration']),
+    id: 'clip.setFade', label: 'Set fade', group: 'Clip',
+    description: 'Sets the fade-in or fade-out of a clip (seconds, curve linear | equal-power | exponential | s-curve).',
+    params: schema({ clipIds: s('array', 'Clip-IDs', { items: { type: 'string' } }), side: s('string', 'in | out'), duration: s('number', 'Seconds'), curve: s('string', 'optional') }, ['clipIds', 'side', 'duration']),
     run: (st, p) => {
       const list = ids(p, 'clipIds');
       assertUnlocked(st, clipTracks(st, list));
@@ -628,8 +628,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'clip.removeFades', label: 'Fades entfernen', group: 'Clip',
-    description: 'Entfernt Fade-In und Fade-Out.',
+    id: 'clip.removeFades', label: 'Remove fades', group: 'Clip',
+    description: 'Removes fade-in and fade-out.',
     params: schema({ clipIds: s('array', 'Clip-IDs', { items: { type: 'string' } }) }, ['clipIds']),
     run: (st, p) => {
       const clipsMix = { ...st.mix.clips };
@@ -639,14 +639,14 @@ export const SOUND_COMMANDS: SoundCommand[] = [
   },
   {
     id: 'clip.crossfade', label: 'Crossfade', group: 'Clip', shortcut: '⌘F',
-    description: 'Überblendet den Schnitt zwischen einem Clip und dem direkt folgenden Clip derselben Spur (Länge in Sekunden).',
-    params: schema({ clipId: CLIP, duration: s('number', 'Sekunden'), curve: s('string', 'optional') }, ['clipId', 'duration']),
+    description: 'Crossfades the cut between a clip and the directly following clip on the same track (length in seconds).',
+    params: schema({ clipId: CLIP, duration: s('number', 'Seconds'), curve: s('string', 'optional') }, ['clipId', 'duration']),
     run: (st, p) => {
       const clipId = text(p, 'clipId');
       assertUnlocked(st, [requireClip(st, clipId).trackId]);
       const curve = pick(p, 'curve', CURVES, 'equal-power');
       const res = crossfadeClips(st.clips, clipId, num(p, 'duration', 0.001, 30), mediaDuration(st));
-      if (!res.rightId || res.fade <= 0) fail('Kein direkt anschließender Clip mit genug Material für einen Crossfade.');
+      if (!res.rightId || res.fade <= 0) fail('No directly adjacent clip with enough media for a crossfade.');
       const clipsMix = { ...st.mix.clips };
       const left = clipsMix[clipId] ?? defaultClipMix();
       const right = clipsMix[res.rightId as string] ?? defaultClipMix();
@@ -656,9 +656,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'clip.move', label: 'Clip verschieben', group: 'Bearbeiten',
-    description: 'Verschiebt einen Clip nach Edit-Modus (shuffle, slip, spot, grid); optional auf eine andere Spur.',
-    params: schema({ clipId: CLIP, start: s('number', 'neue Startzeit, Sekunden'), trackId: s('string', 'optional: Zielspur'), mode: s('string', 'optional: Edit-Modus') }, ['clipId', 'start']),
+    id: 'clip.move', label: 'Move clip', group: 'Edit',
+    description: 'Moves a clip according to the edit mode (shuffle, slip, spot, grid); optionally to another track.',
+    params: schema({ clipId: CLIP, start: s('number', 'new start time, seconds'), trackId: s('string', 'optional: target track'), mode: s('string', 'optional: Edit-Modus') }, ['clipId', 'start']),
     run: (st, p) => {
       const clip = requireClip(st, text(p, 'clipId'));
       const trackId = typeof p.trackId === 'string' ? requireTrack(st, p.trackId).id : clip.trackId;
@@ -668,9 +668,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'clip.trim', label: 'Clip trimmen', group: 'Bearbeiten',
-    description: 'Trimmt Anfang oder Ende eines Clips auf eine Zeit (Edit-Modus beachtet; Shuffle verschiebt Folgeclips).',
-    params: schema({ clipId: CLIP, edge: s('string', 'start | end'), time: s('number', 'Sekunden'), mode: s('string', 'optional') }, ['clipId', 'edge', 'time']),
+    id: 'clip.trim', label: 'Trim clip', group: 'Edit',
+    description: 'Trims the start or end of a clip to a time (respects the edit mode; shuffle moves the following clips).',
+    params: schema({ clipId: CLIP, edge: s('string', 'start | end'), time: s('number', 'Seconds'), mode: s('string', 'optional') }, ['clipId', 'edge', 'time']),
     run: (st, p) => {
       const clip = requireClip(st, text(p, 'clipId'));
       assertUnlocked(st, [clip.trackId]);
@@ -679,9 +679,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'clip.split', label: 'Clip teilen', group: 'Bearbeiten', shortcut: 'B',
-    description: 'Teilt Clips an einer Zeit (Standard: Abspielposition). Ohne clipIds alle Clips unter der Zeit auf der gewählten Spur.',
-    params: schema({ clipIds: s('array', 'optional', { items: { type: 'string' } }), time: s('number', 'optional, Sekunden') }),
+    id: 'clip.split', label: 'Split clip', group: 'Edit', shortcut: 'B',
+    description: 'Splits clips at a time (default: playhead). Without clipIds, all clips under that time on the chosen track.',
+    params: schema({ clipIds: s('array', 'optional', { items: { type: 'string' } }), time: s('number', 'optional, seconds') }),
     run: (st, p) => {
       const time = optNum(p, 'time', 0, 1e6) ?? st.playhead;
       const list = p.clipIds !== undefined ? ids(p, 'clipIds')
@@ -703,8 +703,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'clip.delete', label: 'Clips löschen', group: 'Bearbeiten', shortcut: '⌫',
-    description: 'Löscht Clips; im Shuffle-Modus rücken Folgeclips nach.',
+    id: 'clip.delete', label: 'Delete clips', group: 'Edit', shortcut: '⌫',
+    description: 'Deletes clips; in shuffle mode the following clips move up.',
     params: schema({ clipIds: s('array', 'Clip-IDs', { items: { type: 'string' } }), mode: s('string', 'optional') }, ['clipIds']),
     run: (st, p) => {
       const list = ids(p, 'clipIds');
@@ -719,21 +719,21 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'edit.deleteSelection', label: 'Auswahl löschen', group: 'Bearbeiten',
-    description: 'Löscht den mit dem Selector gewählten Zeitbereich auf den gewählten Spuren (Shuffle schließt die Lücke).',
-    params: schema({ trackIds: s('array', 'optional: Spuren', { items: { type: 'string' } }), start: s('number', 'optional'), end: s('number', 'optional') }),
+    id: 'edit.deleteSelection', label: 'Delete selection', group: 'Edit',
+    description: 'Deletes the time range chosen with the selector on the chosen tracks (shuffle closes the gap).',
+    params: schema({ trackIds: s('array', 'optional: tracks', { items: { type: 'string' } }), start: s('number', 'optional'), end: s('number', 'optional') }),
     run: (st, p) => {
       const sel = st.mix.ui.selection;
-      const start = optNum(p, 'start', 0, 1e6) ?? sel?.start ?? fail('Kein Bereich ausgewählt.');
-      const end = optNum(p, 'end', 0, 1e6) ?? sel?.end ?? fail('Kein Bereich ausgewählt.');
+      const start = optNum(p, 'start', 0, 1e6) ?? sel?.start ?? fail('No range selected.');
+      const end = optNum(p, 'end', 0, 1e6) ?? sel?.end ?? fail('No range selected.');
       const trackIds = p.trackIds !== undefined ? ids(p, 'trackIds') : st.mix.ui.selectedTrackId ? [st.mix.ui.selectedTrackId] : st.tracks.filter((t) => !t.isLocked).map((t) => t.id);
       assertUnlocked(st, trackIds);
       return { clips: deleteRange(st.clips, trackIds, start, end, st.mix.ui.editMode, () => makeId('clip')) };
     },
   },
   {
-    id: 'clip.nudge', label: 'Clips verschieben (Nudge)', group: 'Bearbeiten', shortcut: '+ / −',
-    description: 'Verschiebt Clips um den Nudge-Wert (direction −1 oder +1) oder um deltaSec.',
+    id: 'clip.nudge', label: 'Nudge clips', group: 'Edit', shortcut: '+ / −',
+    description: 'Moves clips by the nudge value (direction −1 or +1) or by deltaSec.',
     params: schema({ clipIds: s('array', 'Clip-IDs', { items: { type: 'string' } }), direction: s('number', '−1 | +1'), deltaSec: s('number', 'optional') }, ['clipIds']),
     run: (st, p) => {
       assertUnlocked(st, clipTracks(st, ids(p, 'clipIds')));
@@ -744,8 +744,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
 
   /* Automation */
   {
-    id: 'automation.setMode', label: 'Automationsmodus', group: 'Automation',
-    description: 'Automationsmodus der Spur: off, read, touch, latch, write.',
+    id: 'automation.setMode', label: 'Automation mode', group: 'Automation',
+    description: 'Track automation mode: off, read, touch, latch, write.',
     params: schema({ trackId: TRACK, mode: s('string', AUTOMATION_MODES.join(' | ')) }, ['trackId', 'mode']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
@@ -754,9 +754,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'automation.addPoint', label: 'Automationspunkt setzen', group: 'Automation',
-    description: 'Setzt einen Punkt auf einer Automationsspur (volume in dB, pan −1…1, mute 0/1, send:<busId> in dB).',
-    params: schema({ trackId: TRACK, param: s('string', 'volume | pan | mute | send:<busId>'), time: s('number', 'Sekunden'), value: s('number', 'Wert') }, ['trackId', 'param', 'time', 'value']),
+    id: 'automation.addPoint', label: 'Set automation point', group: 'Automation',
+    description: 'Sets a point on an automation lane (volume in dB, pan −1…1, mute 0/1, send:<busId> in dB).',
+    params: schema({ trackId: TRACK, param: s('string', 'volume | pan | mute | send:<busId>'), time: s('number', 'Seconds'), value: s('number', 'Wert') }, ['trackId', 'param', 'time', 'value']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
       requireTrack(st, trackId);
@@ -772,8 +772,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'automation.removePoints', label: 'Automationspunkte löschen', group: 'Automation',
-    description: 'Löscht Punkte einer Automationsspur im Bereich [start, end] (ohne Bereich: alle).',
+    id: 'automation.removePoints', label: 'Delete automation points', group: 'Automation',
+    description: 'Deletes points of an automation lane in the range [start, end] (without a range: all).',
     params: schema({ trackId: TRACK, param: s('string', 'volume | pan | mute | send:<busId>'), start: s('number', 'optional'), end: s('number', 'optional') }, ['trackId', 'param']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
@@ -792,9 +792,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'automation.writeRange', label: 'Wert in Bereich schreiben', group: 'Automation',
-    description: 'Schreibt einen festen Wert über den Bereich [start, end] (wie „Write to Selection“); der Rest der Spur bleibt.',
-    params: schema({ trackId: TRACK, param: s('string', 'volume | pan | mute | send:<busId>'), start: s('number', 'Sekunden'), end: s('number', 'Sekunden'), value: s('number', 'Wert') }, ['trackId', 'param', 'start', 'end', 'value']),
+    id: 'automation.writeRange', label: 'Write value to range', group: 'Automation',
+    description: 'Writes a fixed value over the range [start, end] (like “Write to Selection”); the rest of the track stays.',
+    params: schema({ trackId: TRACK, param: s('string', 'volume | pan | mute | send:<busId>'), start: s('number', 'Seconds'), end: s('number', 'Seconds'), value: s('number', 'Wert') }, ['trackId', 'param', 'start', 'end', 'value']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
       requireTrack(st, trackId);
@@ -802,7 +802,7 @@ export const SOUND_COMMANDS: SoundCommand[] = [
       const [min, max] = automationRange(param);
       const start = num(p, 'start', 0, 1e6);
       const end = num(p, 'end', 0, 1e6);
-      if (!(end > start)) fail('end muss nach start liegen.');
+      if (!(end > start)) fail('end must come after start.');
       const value = num(p, 'value', min, max);
       return {
         mix: withTrack(st.mix, trackId, (t) => ({
@@ -813,8 +813,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'automation.commitPass', label: 'Automationsdurchgang übernehmen', group: 'Automation',
-    description: 'Übernimmt einen aufgenommenen Durchgang: samples = [{time, value, touched}] im Modus der Spur (touch/latch/write).',
+    id: 'automation.commitPass', label: 'Commit automation pass', group: 'Automation',
+    description: 'Commits a recorded pass: samples = [{time, value, touched}] in the track mode (touch/latch/write).',
     params: schema({ trackId: TRACK, param: s('string', 'volume | pan | mute | send:<busId>'), samples: s('array', '[{time, value, touched}]'), stopTime: s('number', 'Transport-Stopp') }, ['trackId', 'param', 'samples', 'stopTime']),
     run: (st, p) => {
       const trackId = text(p, 'trackId');
@@ -837,27 +837,27 @@ export const SOUND_COMMANDS: SoundCommand[] = [
 
   /* Ansicht */
   {
-    id: 'view.set', label: 'Ansicht wechseln', group: 'Ansicht',
-    description: 'Wechselt die Ansicht: fairlight, protools oder studio.',
+    id: 'view.set', label: 'Switch view', group: 'View',
+    description: 'Switches the view: fairlight, protools or studio.',
     params: schema({ view: s('string', VIEWS.join(' | ')) }, ['view']),
     run: (st, p) => ({ mix: withUi(st.mix, { view: pick(p, 'view', VIEWS) }) }),
   },
   {
-    id: 'view.toggleMixWindow', label: 'Edit-/Mix-Fenster', group: 'Ansicht', shortcut: '⌘=',
-    description: 'Pro-Tools-Ansicht: wechselt zwischen Edit- und Mix-Fenster.',
+    id: 'view.toggleMixWindow', label: 'Edit-/Mix-Fenster', group: 'View', shortcut: '⌘=',
+    description: 'Pro Tools view: switches between the Edit and Mix windows.',
     params: schema({ window: s('string', 'optional: edit | mix') }),
     run: (st, p) => ({ mix: withUi(st.mix, { proToolsWindow: pick(p, 'window', ['edit', 'mix'] as const, st.mix.ui.proToolsWindow === 'edit' ? 'mix' : 'edit') }) }),
   },
   {
-    id: 'view.toggleAutomation', label: 'Automation zeigen', group: 'Ansicht', shortcut: 'A',
-    description: 'Blendet Automationsspuren ein oder aus.',
+    id: 'view.toggleAutomation', label: 'Show automation', group: 'View', shortcut: 'A',
+    description: 'Shows or hides automation lanes.',
     params: schema({}),
     run: (st) => ({ mix: withUi(st.mix, { showAutomation: !st.mix.ui.showAutomation }) }),
   },
   {
-    id: 'view.zoom', label: 'Zoom', group: 'Ansicht', shortcut: 'R / T',
-    description: 'Setzt den horizontalen Zoom (Faktor) oder ändert ihn (factor).',
-    params: schema({ zoom: s('number', 'optional: absoluter Wert'), factor: s('number', 'optional: Multiplikator') }),
+    id: 'view.zoom', label: 'Zoom', group: 'View', shortcut: 'R / T',
+    description: 'Sets the horizontal zoom (factor) or changes it (factor).',
+    params: schema({ zoom: s('number', 'optional: absoluter Wert'), factor: s('number', 'optional: multiplier') }),
     run: (st, p) => {
       const abs = optNum(p, 'zoom', 0.05, 64);
       const factor = optNum(p, 'factor', 0.1, 10) ?? 1;
@@ -865,26 +865,26 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'edit.setMode', label: 'Edit-Modus', group: 'Bearbeiten', shortcut: 'F1–F4',
+    id: 'edit.setMode', label: 'Edit-Modus', group: 'Edit', shortcut: 'F1–F4',
     description: 'Edit-Modus: shuffle (F1), slip (F2), spot (F3), grid (F4).',
     params: schema({ mode: s('string', EDIT_MODES.join(' | ')) }, ['mode']),
     run: (st, p) => ({ mix: withUi(st.mix, { editMode: pick(p, 'mode', EDIT_MODES) }) }),
   },
   {
-    id: 'edit.setTool', label: 'Werkzeug', group: 'Bearbeiten', shortcut: 'F5–F8',
+    id: 'edit.setTool', label: 'Tool', group: 'Edit', shortcut: 'F5–F8',
     description: 'Werkzeug: smart, trimmer, selector, grabber.',
     params: schema({ tool: s('string', TOOLS.join(' | ')) }, ['tool']),
     run: (st, p) => ({ mix: withUi(st.mix, { tool: pick(p, 'tool', TOOLS) }) }),
   },
   {
-    id: 'edit.setGrid', label: 'Raster', group: 'Bearbeiten',
-    description: 'Rasterweite und Nudge-Wert in Sekunden.',
+    id: 'edit.setGrid', label: 'Raster', group: 'Edit',
+    description: 'Grid size and nudge value in seconds.',
     params: schema({ gridSec: s('number', 'optional'), nudgeSec: s('number', 'optional') }),
     run: (st, p) => ({ mix: withUi(st.mix, { gridSec: optNum(p, 'gridSec', 0.001, 60) ?? st.mix.ui.gridSec, nudgeSec: optNum(p, 'nudgeSec', 0.0001, 60) ?? st.mix.ui.nudgeSec }) }),
   },
   {
-    id: 'edit.setSelection', label: 'Zeitbereich wählen', group: 'Bearbeiten',
-    description: 'Setzt den Selector-Bereich (start/end in Sekunden); ohne Werte wird er aufgehoben.',
+    id: 'edit.setSelection', label: 'Choose time range', group: 'Edit',
+    description: 'Sets the selector range (start/end in seconds); without values it is cleared.',
     params: schema({ start: s('number', 'optional'), end: s('number', 'optional') }),
     run: (st, p) => {
       const start = optNum(p, 'start', 0, 1e6);
@@ -893,14 +893,14 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'select.track', label: 'Spur wählen', group: 'Bearbeiten',
-    description: 'Wählt eine Spur (oder keine).',
-    params: schema({ trackId: s('string', 'Spur-ID oder leer') }),
+    id: 'select.track', label: 'Choose track', group: 'Edit',
+    description: 'Selects a track (or none).',
+    params: schema({ trackId: s('string', 'Track ID or empty') }),
     run: (st, p) => ({ mix: withUi(st.mix, { selectedTrackId: typeof p.trackId === 'string' && st.tracks.some((t) => t.id === p.trackId) ? p.trackId : null }) }),
   },
   {
-    id: 'select.clips', label: 'Clips wählen', group: 'Bearbeiten',
-    description: 'Wählt Clips (ersetzt oder ergänzt die Auswahl).',
+    id: 'select.clips', label: 'Select clips', group: 'Edit',
+    description: 'Selects clips (replaces or extends the selection).',
     params: schema({ clipIds: s('array', 'Clip-IDs', { items: { type: 'string' } }), add: s('boolean', 'optional') }, ['clipIds']),
     run: (st, p) => {
       const list = ids(p, 'clipIds').filter((id) => st.clips.some((c) => c.id === id));
@@ -911,23 +911,23 @@ export const SOUND_COMMANDS: SoundCommand[] = [
 
   /* Transport */
   {
-    id: 'transport.toggle', label: 'Wiedergabe / Stopp', group: 'Transport', shortcut: 'Leertaste',
-    description: 'Startet oder stoppt die Wiedergabe.',
+    id: 'transport.toggle', label: 'Play / Stop', group: 'Transport', shortcut: 'Space',
+    description: 'Starts or stops playback.',
     params: schema({}),
     run: () => ({ transport: 'toggle' }),
   },
   {
-    id: 'transport.locate', label: 'Position setzen', group: 'Transport', shortcut: 'Pos1 / Ende',
-    description: 'Setzt die Abspielposition (Sekunden).',
-    params: schema({ time: s('number', 'Sekunden') }, ['time']),
+    id: 'transport.locate', label: 'Set position', group: 'Transport', shortcut: 'Home / End',
+    description: 'Sets the playhead (seconds).',
+    params: schema({ time: s('number', 'Seconds') }, ['time']),
     run: (_st, p) => ({ playhead: num(p, 'time', 0, 1e6) }),
   },
 
   /* ADR */
   {
-    id: 'adr.addCue', label: 'ADR-Cue anlegen', group: 'ADR',
-    description: 'Legt einen ADR-Cue an (Rolle, Text, Bereich; Standard: Selector-Bereich oder 2 s ab Abspielposition).',
-    params: schema({ character: s('string', 'Rolle'), line: s('string', 'Text'), start: s('number', 'optional'), end: s('number', 'optional'), trackId: s('string', 'optional') }),
+    id: 'adr.addCue', label: 'Create ADR cue', group: 'ADR',
+    description: 'Creates an ADR cue (role, text, range; default: selector range or 2 s from the playhead).',
+    params: schema({ character: s('string', 'Role'), line: s('string', 'Text'), start: s('number', 'optional'), end: s('number', 'optional'), trackId: s('string', 'optional') }),
     run: (st, p) => {
       const sel = st.mix.ui.selection;
       const start = optNum(p, 'start', 0, 1e6) ?? sel?.start ?? st.playhead;
@@ -945,12 +945,12 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'adr.updateCue', label: 'ADR-Cue ändern', group: 'ADR',
-    description: 'Ändert Rolle, Text, Notiz, Bereich oder Status eines Cues.',
+    id: 'adr.updateCue', label: 'Change ADR cue', group: 'ADR',
+    description: 'Changes the role, text, note, range or status of a cue.',
     params: schema({ cueId: s('string', 'Cue-ID'), character: s('string', 'optional'), line: s('string', 'optional'), note: s('string', 'optional'), done: s('boolean', 'optional'), start: s('number', 'optional'), end: s('number', 'optional') }, ['cueId']),
     run: (st, p) => {
       const id = text(p, 'cueId');
-      const cue = st.mix.adrCues.find((c) => c.id === id) ?? fail(`Cue „${id}“ gibt es nicht.`);
+      const cue = st.mix.adrCues.find((c) => c.id === id) ?? fail(`Cue “${id}” does not exist.`);
       const start = optNum(p, 'start', 0, 1e6) ?? cue.start;
       const next = {
         ...cue,
@@ -965,17 +965,17 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'adr.removeCue', label: 'ADR-Cue löschen', group: 'ADR',
-    description: 'Löscht einen ADR-Cue.',
+    id: 'adr.removeCue', label: 'Delete ADR cue', group: 'ADR',
+    description: 'Deletes an ADR cue.',
     params: schema({ cueId: s('string', 'Cue-ID') }, ['cueId']),
     run: (st, p) => ({ mix: { ...st.mix, adrCues: st.mix.adrCues.filter((c) => c.id !== text(p, 'cueId')) } }),
   },
 
   /* Studio */
   {
-    id: 'studio.autoRoute', label: 'Stems automatisch zuordnen', group: 'Studio',
-    description: 'Ordnet jede Spur ohne Rolle anhand von Name und Medien einer Stem-Rolle zu und leitet sie auf den passenden Submix.',
-    params: schema({ overwrite: s('boolean', 'optional: auch Spuren mit Rolle neu zuordnen') }),
+    id: 'studio.autoRoute', label: 'Assign stems automatically', group: 'Studio',
+    description: 'Assigns every track without a role to a stem role based on its name and media, and routes it to the matching submix.',
+    params: schema({ overwrite: s('boolean', 'optional: also reassign tracks that already have a role') }),
     run: (st, p) => {
       const overwrite = bool(p, 'overwrite', false);
       let mix = ensureStemBuses(st.mix);
@@ -993,9 +993,9 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'studio.duckMusic', label: 'Musik unter Dialog absenken', group: 'Studio',
-    description: 'Schreibt Volume-Automation auf alle Musik-Spuren: während Dialog-Clips laufen um amountDb leiser (editierbar).',
-    params: schema({ amountDb: s('number', 'Absenkung, Standard −10'), attack: s('number', 'Sekunden, Standard 0.3'), release: s('number', 'Sekunden, Standard 0.6') }),
+    id: 'studio.duckMusic', label: 'Duck music under dialogue', group: 'Studio',
+    description: 'Writes volume automation on all music tracks: amountDb quieter while dialogue clips play (editable).',
+    params: schema({ amountDb: s('number', 'Ducking, default −10'), attack: s('number', 'Seconds, default 0.3'), release: s('number', 'Seconds, default 0.6') }),
     run: (st, p) => {
       const amount = -Math.abs(num(p, 'amountDb', -40, 40, -10));
       const attack = num(p, 'attack', 0, 5, 0.3);
@@ -1003,8 +1003,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
       const roleOf = (id: string) => st.mix.tracks[id]?.role ?? null;
       const dialog = st.clips.filter((c) => roleOf(c.trackId) === 'dialog' && !st.tracks.find((t) => t.id === c.trackId)?.isMuted).map<[number, number]>((c) => [c.start, c.end]);
       const musicTracks = st.tracks.filter((t) => roleOf(t.id) === 'music');
-      if (!musicTracks.length) fail('Keine Spur mit der Rolle „Musik“. Erst „Stems automatisch zuordnen“ ausführen.');
-      if (!dialog.length) fail('Keine Dialog-Clips gefunden.');
+      if (!musicTracks.length) fail('No track with the role “Music”. Run “Assign stems automatically” first.');
+      if (!dialog.length) fail('No dialogue clips found.');
       let mix = st.mix;
       for (const t of musicTracks) {
         const base = mix.tracks[t.id]?.gainDb ?? 0;
@@ -1014,8 +1014,8 @@ export const SOUND_COMMANDS: SoundCommand[] = [
     },
   },
   {
-    id: 'mix.reset', label: 'Mischung zurücksetzen', group: 'Studio',
-    description: 'Setzt das gesamte Mischdokument zurück (Clips und Spuren bleiben).',
+    id: 'mix.reset', label: 'Reset mix', group: 'Studio',
+    description: 'Resets the whole mix document (clips and tracks stay).',
     params: schema({}),
     run: (st) => ({ mix: { ...createSoundMix(), ui: st.mix.ui } }),
   },
@@ -1059,14 +1059,14 @@ export const applySoundPatch = (state: SoundState, patch: SoundPatch): SoundStat
 
 export const runSoundCommand = (state: SoundState, id: string, params: Record<string, unknown> = {}): CommandOutcome => {
   const command = COMMAND_INDEX.get(id);
-  if (!command) return { ok: false, error: `Unbekannter Befehl „${id}“. sound_list_commands zeigt alle.` };
+  if (!command) return { ok: false, error: `Unknown command “${id}”. sound_list_commands shows all.` };
   try {
     const patch = command.run(state, params && typeof params === 'object' ? params : {});
     if (patch.mix) patch.mix = normalizeSoundMix(patch.mix);
     return { ok: true, patch, state: applySoundPatch(state, patch) };
   } catch (error) {
     if (error instanceof CommandError) return { ok: false, error: error.message };
-    return { ok: false, error: `Befehl „${id}“ fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}` };
+    return { ok: false, error: `Command “${id}” failed: ${error instanceof Error ? error.message : String(error)}` };
   }
 };
 

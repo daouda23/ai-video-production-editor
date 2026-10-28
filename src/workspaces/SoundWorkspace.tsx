@@ -43,9 +43,9 @@ interface SoundWorkspaceProps extends SharedSequenceProps {
 }
 
 const VIEWS: Array<[SoundView, string, string]> = [
-  ['fairlight', 'Fairlight', 'Konsole mit EQ, Dynamik, Bus-Zuweisung und Loudness'],
-  ['protools', 'Pro Tools', 'Edit- und Mix-Fenster, Werkzeuge, Edit-Modi, Automation'],
-  ['studio', 'Studio', 'Eigene Ansicht: KI-Ton, Stems, Mischung prüfen, Ausgabe'],
+  ['fairlight', 'Fairlight', 'Console with EQ, dynamics, bus assignment and loudness'],
+  ['protools', 'Pro Tools', 'Edit and Mix windows, tools, edit modes, automation'],
+  ['studio', 'Studio', 'Own view: AI sound, stems, mix check, output'],
 ];
 
 const SoundWorkspace: React.FC<SoundWorkspaceProps> = (props) => {
@@ -108,7 +108,7 @@ const SoundWorkspace: React.FC<SoundWorkspaceProps> = (props) => {
   }), []);
   const callTool = useCallback(async (name: string, args: Record<string, unknown>) => {
     const tool = SOUND_TOOLS.find((t) => t.name === name);
-    if (!tool) return { ok: false, message: `Tool ${name} fehlt.` };
+    if (!tool) return { ok: false, message: `Tool ${name} is missing.` };
     try {
       return { ok: true, ...(await tool.handler(args, toolContext)) };
     } catch (error) {
@@ -206,18 +206,18 @@ const SoundWorkspace: React.FC<SoundWorkspaceProps> = (props) => {
     <div className={`snd snd--${view} studio-workspace`} data-automation-id="sound-workspace" data-sound-view={view}>
       <div className="snd-bar">
         <span className="snd-bar__title"><MusicNoteIcon className="w-4 h-4" />Sound</span>
-        <div className="snd-seg" role="group" aria-label="Ansicht">
+        <div className="snd-seg" role="group" aria-label="View">
           {VIEWS.map(([id, label, hint]) => (
             <button key={id} type="button" aria-pressed={view === id} title={hint} data-automation-id={`sound-view-${id}`} onClick={() => run('view.set', { view: id })}>{label}</button>
           ))}
         </div>
-        <button type="button" className={`snd-btn ${isPlaying ? 'snd-btn--on' : ''}`} data-automation-id="sound-transport-toggle" title="Wiedergabe / Stopp (Leertaste)" onClick={() => run('transport.toggle')}>
+        <button type="button" className={`snd-btn ${isPlaying ? 'snd-btn--on' : ''}`} data-automation-id="sound-transport-toggle" title="Play / Stop (Space)" onClick={() => run('transport.toggle')}>
           {isPlaying ? <PauseIcon className="w-3.5 h-3.5" /> : <PlayIcon className="w-3.5 h-3.5" />}
         </button>
         <span className="snd-bar__tc" data-automation-id="sound-timecode">{formatTime(playheadPosition)}</span>
-        <button type="button" className="snd-btn" data-automation-id="sound-track-add" onClick={() => run('track.add')}>+ Spur</button>
+        <button type="button" className="snd-btn" data-automation-id="sound-track-add" onClick={() => run('track.add')}>+ Track</button>
         {loading.pending && <span className="snd-hint">Lade Audio…</span>}
-        {loading.missing.length > 0 && <span className="snd-error" title={loading.missing.join(', ')}>{loading.missing.length} Audiodatei(en) nicht ladbar</span>}
+        {loading.missing.length > 0 && <span className="snd-error" title={loading.missing.join(', ')}>{loading.missing.length}Audio file(s) could not be loaded</span>}
         {audioError && <span className="snd-error">{audioError}</span>}
         {lastError && <span className="snd-error" role="alert" onClick={clearError} title={lastError}>{lastError}</span>}
         <span className="snd-bar__spacer" />

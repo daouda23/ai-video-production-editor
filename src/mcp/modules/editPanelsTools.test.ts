@@ -33,7 +33,7 @@ test('edit panel tools: page actions, paid confirm, service tools, AI effect map
       assert.match(byName.get(paid)!.description, /KOSTET CREDITS/, paid);
       assert.ok((byName.get(paid)!.inputSchema as { properties: Record<string, unknown> }).properties.confirm, `${paid} confirm`);
     }
-    assert.match(byName.get('edit_subtitle_merge')!.description, /LÖSCHT/);
+    assert.match(byName.get('edit_subtitle_merge')!.description, /DELETES/);
 
     await mcp.call('edit_apply_transition', { type: 'Cross Fade' });
     assert.equal((await mcp.call('edit_agent_plan', { objective: 'tighter' })).ok, false);
