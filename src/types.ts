@@ -18,6 +18,7 @@ export type Workspace =
   | 'UPSCALE'
   | 'PHOTO'
   | 'SOUND'
+  | 'SOUND_GEN'
   | 'TRIM'
   | 'POST'
   | 'COMPOSITING'

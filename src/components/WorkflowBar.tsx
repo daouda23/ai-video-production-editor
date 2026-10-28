@@ -5,8 +5,9 @@ import { ChevronRightIcon, SettingsIcon } from './icons';
 
 /**
  * Workflow bar docked at the bottom of the window, in the spirit of DaVinci
- * Resolve's page bar but built on this app's own stages: Project → Create →
- * Edit → Review → Deliver. Each stage is a group of modules; picking a stage
+ * Resolve's page bar but built on the stages of making a film: Development →
+ * Pre-production → Shoot → Edit → Finishing → Delivery. Each stage is a group
+ * of modules; picking a stage
  * reopens the module last used in it, and the sidebar then lists only that
  * stage's modules.
  */
@@ -24,14 +25,14 @@ const WorkflowBar: React.FC<{
   onOpenSettings?: () => void;
   summary?: string;
 }> = ({ nav, lastByGroup, onSelect, onOpenSettings, summary }) => {
-  if (nav.groups.length <= 1) return null;
+  if (nav.stages.length <= 1) return null;
   return (
     <nav className="workflow-bar" aria-label="Workflow stages">
       <div className="workflow-bar__side">
         <div className="workflow-bar__summary">{summary}</div>
       </div>
       <ol className="workflow-bar__stages" role="tablist">
-        {nav.groups.map((group, index) => {
+        {nav.stages.map((group, index) => {
           const Icon = group.icon;
           const isActive = group.id === nav.activeGroup?.id;
           return (

@@ -7817,7 +7817,7 @@ function App() {
             } else if (event.shiftKey && !isTyping && /^Digit[1-9]$/.test(event.code)) {
                 // event.code, not event.key: with Shift held the key reports "!", "@"… on most layouts.
                 const stages = workspaceStagesRef.current;
-                const stage = stages?.nav.groups[Number(event.code.slice(5)) - 1];
+                const stage = stages?.nav.stages[Number(event.code.slice(5)) - 1];
                 if (stages && stage) {
                     event.preventDefault();
                     setActiveWorkspace(resolveStageTarget(stage, stages.lastByStage));
@@ -8929,8 +8929,11 @@ function App() {
                     onConsumeSeed={() => setVideoGenSeed(null)}
                 />
             );
-            case 'SOUND': return (
+            case 'SOUND':
+            case 'SOUND_GEN': return (
                 <SoundWorkspace
+                    key={activeWorkspace}
+                    entryView={activeWorkspace === 'SOUND_GEN' ? 'studio' : 'mix'}
                     {...commonProps}
                     soundMix={mcpExtras.soundMix}
                     onSoundMixChange={handleSoundMixChange}

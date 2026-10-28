@@ -27,6 +27,8 @@ import './sound-pro/sound.css';
  */
 
 interface SoundWorkspaceProps extends SharedSequenceProps {
+  /** Which side of the page the nav entry opens: AI generation (Studio view) or mixing (Fairlight/Pro Tools). */
+  entryView?: 'studio' | 'mix';
   onAddGeneratedMedia: (item: MediaItem) => void;
   /** Places a generated clip on the timeline at the playhead. */
   onAddToTimeline?: (item: MediaItem) => void;
@@ -68,6 +70,14 @@ const SoundWorkspace: React.FC<SoundWorkspaceProps> = (props) => {
     setMix, setClips: onBatchUpdateClips, updateTrack: onUpdateTrack, addTrack: onAddTrack,
     setPlayhead: onPlayheadUpdate, togglePlayback: onTogglePlayback,
   });
+
+  /* Voice & Music opens the Studio view; Mix opens the last mixing view (Fairlight by default). */
+  useEffect(() => {
+    const current = mix.ui.view;
+    if (props.entryView === 'studio' && current !== 'studio') run('view.set', { view: 'studio' });
+    if (props.entryView === 'mix' && current === 'studio') run('view.set', { view: 'fairlight' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.entryView]);
 
   const engineDoc = useMemo(() => ({ tracks: timelineTracks, clips: timelineClips, media: mediaItems, mix }), [timelineTracks, timelineClips, mediaItems, mix]);
   const { meters, loading, audioError } = useSoundPlayback({ doc: engineDoc, media: mediaItems, isPlaying, playhead: playheadPosition });

@@ -717,6 +717,10 @@ body[data-theme="light"] .app-sidebar {
   margin-top: 0.85rem;
 }
 
+/* Studio tools sit at the bottom of the list, apart from the stage modules. */
+.app-sidebar__scroll { display: flex; flex-direction: column; }
+.app-sidebar__group--utility { margin-top: auto !important; padding-top: 0.6rem; border-top: 1px solid var(--app-border); }
+
 .app-sidebar__label {
   display: flex;
   align-items: center;

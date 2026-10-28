@@ -42,12 +42,15 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
       aria-label="Workspaces"
     >
       <div className="app-sidebar__scroll">
-        {(nav.activeGroup ? [nav.activeGroup] : nav.groups).map((group) => {
+        {[
+          ...(nav.activeGroup ? [nav.activeGroup] : nav.stages),
+          ...(nav.utility && nav.activeGroup !== nav.utility ? [nav.utility] : []),
+        ].map((group) => {
           const groupActive = group.items.some((item) => item.id === activeWorkspace);
           return (
             <section
               key={group.id}
-              className={`app-sidebar__group ${groupActive ? 'app-sidebar__group--active' : ''}`}
+              className={`app-sidebar__group ${groupActive ? 'app-sidebar__group--active' : ''} ${group.utility ? 'app-sidebar__group--utility' : ''}`}
               aria-label={group.name}
             >
               <div className="app-sidebar__label" title={group.description}>

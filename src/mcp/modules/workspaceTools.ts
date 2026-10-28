@@ -1,6 +1,6 @@
 /**
- * MCP tools: navigation between pages (sidebar groups Project, Create, Edit,
- * Review, Deliver) and an index of every MCP tool module, so an agent can see
+ * MCP tools: navigation between pages (production stages Development,
+ * Pre-production, Shoot, Edit, Finishing, Delivery, plus the Studio tools) and an index of every MCP tool module, so an agent can see
  * which page a tool belongs to and which tools spend credits or delete data.
  */
 import type { Workspace } from '../../types';
@@ -28,6 +28,7 @@ export const WORKSPACE_TOOL_PREFIXES: Partial<Record<Workspace, string[]>> = {
   WORLD_GEN: ['world_'],
   AVATAR: ['avatar_'],
   SOUND: ['sound_'],
+  SOUND_GEN: ['sound_'],
   EDIT: ['timeline_', 'effect_controls_', 'keyframe_', 'fx_', 'ofx_'],
   PHOTO: ['photo_'],
   UPSCALE: ['upscale_'],
@@ -48,7 +49,7 @@ export const WORKSPACE_TOOL_MODULE: StudioToolModule = {
   tools: [
     {
       name: 'workspace_list',
-      description: 'List the pages of the editor by sidebar group (Project, Create, Edit, Review, Deliver), which one is open, which ones the current UI mode and role allow, and the MCP tool prefixes that operate each page.',
+      description: 'List the pages of the editor by production stage (Development, Pre-production, Shoot, Edit, Finishing, Delivery) and the Studio tools, which one is open, which ones the current UI mode and role allow, and the MCP tool prefixes that operate each page.',
       parameters: { type: 'object', properties: {} },
       handler: async (_args, ctx) => {
         const { groups } = await navigation.get();

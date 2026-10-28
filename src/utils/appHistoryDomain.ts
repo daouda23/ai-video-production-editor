@@ -27,6 +27,7 @@ const getWorkspacePriority = (workspace: Workspace): AppHistoryDomain[] => {
     workspace === 'VIDEO_GEN' ||
     workspace === 'PHOTO' ||
     workspace === 'SOUND' ||
+    workspace === 'SOUND_GEN' ||
     workspace === 'AVATAR' ||
     workspace === 'UPSCALE'
   ) {
