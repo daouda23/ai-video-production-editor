@@ -179,7 +179,7 @@ html[data-platform="mac"][data-runtime="electron"] {
 }
 
 .app-logo {
-  color: var(--app-accent);
+  color: var(--app-text);
 }
 
 /* Toolbar --------------------------------------------------------- */
@@ -243,7 +243,8 @@ body[data-theme="light"] .app-toolbar {
   flex: 0 0 auto;
   margin-left: 0.15rem;
   border-radius: 0.45rem;
-  background: rgb(var(--app-accent-rgb) / 0.12);
+  background: var(--app-card);
+  box-shadow: inset 0 0 0 1px var(--app-border);
 }
 
 .app-toolbar__crumbs {

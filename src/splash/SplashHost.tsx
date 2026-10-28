@@ -6,10 +6,10 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { registerLiveCommands } from '../mcp/liveCommands.ts';
-import SplashOverlay from './SplashOverlay.tsx';
+import BrandIntro from './BrandIntro.tsx';
 import { SPLASH_VARIANTS, splashDuration, type SplashVariant } from './renderSplashFrame.ts';
 import { SPLASH_BACKGROUNDS, loadSplashSettings, markSplashPlayed, resolveSplashBackground, splashAlreadyPlayed, type SplashBackground } from './splashSettings.ts';
-import { playStartSound, warmStartSound } from './startSoundPlayer.ts';
+import { playStartSound } from './startSoundPlayer.ts';
 
 type Run = { id: number; variant: SplashVariant; sound: boolean; volume: number; reducedMotion?: boolean; background: 'dark' | 'light' };
 
@@ -23,8 +23,6 @@ const decideBootRun = (): Run | null => {
   } else {
     markSplashPlayed();
     bootRun = { id: 1, variant: settings.variant, sound: settings.sound, volume: settings.volume, background: resolveSplashBackground(settings.background) };
-    const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (settings.sound && !reduced) warmStartSound();
   }
   return bootRun;
 };
@@ -58,11 +56,8 @@ export default function SplashHost() {
 
   if (!run) return null;
   return (
-    <SplashOverlay
+    <BrandIntro
       key={run.id}
-      variant={run.variant}
-      sound={run.sound}
-      volume={run.volume}
       reducedMotion={run.reducedMotion}
       background={run.background}
       onDone={() => setRun(null)}

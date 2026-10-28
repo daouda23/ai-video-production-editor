@@ -3,22 +3,11 @@
 import React from 'react';
 
 export const AppLogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-        {/* Abstract Lens/Aperture Background */}
-        <path d="M20 4L34 12V28L20 36L6 28V12L20 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-20" />
-
-        {/* Circuit Lines connecting to the center */}
-        <path d="M20 4V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="opacity-50" />
-        <path d="M6 28L11 25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="opacity-50" />
-        <path d="M34 28L29 25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="opacity-50" />
-
-        {/* Central Play Button fusing with AI Nodes */}
-        <path d="M16 14L28 20L16 26V14Z" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-
-        {/* Data Points / AI Nodes */}
-        <circle cx="16" cy="14" r="2" fill="white" />
-        <circle cx="16" cy="26" r="2" fill="white" />
-        <circle cx="28" cy="20" r="2" fill="white" />
+    <svg viewBox="4 8 56 48" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        {/* AI Film Maker Studio mark: viewfinder corners, play button, AI spark (same geometry as build/icon.svg) */}
+        <path d="M8 20V12H16M48 12H56V20M56 44V52H48M16 52H8V44" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M26 22L43 32L26 42Z" fill="var(--app-accent, #e8892f)" stroke="var(--app-accent, #e8892f)" strokeWidth="3" strokeLinejoin="round" />
+        <path d="M47 13Q47.9 18.1 53 19Q47.9 19.9 47 25Q46.1 19.9 41 19Q46.1 18.1 47 13Z" fill="var(--app-accent-strong, #f2a55c)" />
     </svg>
 );
 
