@@ -128,7 +128,7 @@ const BEGINNER_GROUP_LABELS: Record<string, string> = {
 const ADVANCED_GROUP_LABELS: Record<string, string> = {
     PROJECTS: 'Project',
     CREATE: 'Build',
-    EDITING: 'Post',
+    EDITING: 'Edit',
     REVIEW: 'Review',
     DELIVERY: 'Ship',
 };

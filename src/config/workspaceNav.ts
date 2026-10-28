@@ -85,15 +85,23 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
   {
     id: 'EDITING',
     name: 'Edit',
-    description: 'Cut, enhance, finish',
+    description: 'Cut and assemble',
     icon: EditIcon,
     items: [
       { id: 'EDIT', name: 'Timeline', description: 'Assemble the main timeline', icon: EditIcon },
+      { id: 'TRIM', name: 'Trim', description: 'Tighten selected clips', icon: TrimIcon },
+      { id: 'COMPOSITING', name: 'Composite', description: 'Layer, key, and blend shots', icon: LayersIcon },
+    ],
+  },
+  {
+    id: 'RETOUCH',
+    name: 'Retouch',
+    description: 'Grade, retouch, upscale',
+    icon: ColorIcon,
+    items: [
+      { id: 'POST', name: 'Color', description: 'Grade and polish the look', icon: ColorIcon },
       { id: 'PHOTO', name: 'Photo', description: 'Retouch and prepare stills', icon: ApertureIcon },
       { id: 'UPSCALE', name: 'Upscale', description: 'Improve resolution and detail', icon: SparklesIcon },
-      { id: 'COMPOSITING', name: 'Composite', description: 'Layer, key, and blend shots', icon: LayersIcon },
-      { id: 'TRIM', name: 'Trim', description: 'Tighten selected clips', icon: TrimIcon },
-      { id: 'POST', name: 'Color', description: 'Grade and polish the look', icon: ColorIcon },
     ],
   },
   {
