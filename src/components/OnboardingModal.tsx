@@ -59,13 +59,13 @@ const MODE_CARDS: Array<{
   bullets: string[];
 }> = [
   {
-    id: 'beginner',
+    id: 'advanced',
     emoji: '🎬',
     title: 'Just getting started',
-    subtitle: 'Simple & guided',
+    subtitle: 'Standard: the core pipeline',
     bullets: [
-      'Create images & videos with AI',
-      'Simple timeline editor',
+      'Script, storyboard and AI images & videos',
+      'Timeline editing, color and sound',
       'AI assistant guides you',
     ],
   },
@@ -82,14 +82,6 @@ const MODE_CARDS: Array<{
   },
 ];
 
-const BEGINNER_TOOLS: Array<{ emoji: string; label: string; description: string }> = [
-  { emoji: '🖼️', label: 'Create Images', description: 'Turn text descriptions into cinematic images.' },
-  { emoji: '🎥', label: 'Create Videos', description: 'Animate your images into short video clips.' },
-  { emoji: '✂️', label: 'Edit Timeline', description: 'Arrange your clips and add music.' },
-  { emoji: '🎵', label: 'Add Sound', description: 'Generate or upload background audio.' },
-  { emoji: '📤', label: 'Export', description: 'Download your finished video.' },
-];
-
 const OnboardingModal: React.FC<OnboardingModalProps> = ({
   isOpen,
   theme,
@@ -102,7 +94,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onOpenAssistant,
   onNavigateWorkspace,
   onComplete,
-  uiMode = 'beginner',
+  uiMode = 'advanced',
   onSelectUIMode,
 }) => {
   const [step, setStep] = useState(0);
@@ -399,35 +391,19 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="text-5xl mb-3">🚀</div>
                 <h3 className="text-lg font-bold text-white">You're all set!</h3>
                 <p className="text-sm app-muted mt-1">
-                  {selectedMode === 'beginner'
-                    ? 'Here\'s what you can do in Simple Mode:'
-                    : 'Here\'s a quick overview of the studio:'}
+                  Here's a quick overview of the studio:
                 </p>
               </div>
 
-              {selectedMode === 'beginner' ? (
-                <div className="grid grid-cols-1 gap-2">
-                  {BEGINNER_TOOLS.map((tool) => (
-                    <div key={tool.label} className="app-card p-3 flex items-center gap-3">
-                      <span className="text-xl">{tool.emoji}</span>
-                      <div>
-                        <div className="text-sm font-semibold text-white">{tool.label}</div>
-                        <div className="text-xs app-muted">{tool.description}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="app-card p-4">
-                  <ul className="text-xs text-gray-300 space-y-1.5">
-                    <li>🖼️ <strong>Image Gen</strong> — Generate concept art and storyboard shots</li>
-                    <li>🎥 <strong>Video Gen</strong> — Animate images into full clips</li>
-                    <li>🗂️ <strong>Project Hub</strong> — Manage scripts, storyboards, concepts</li>
-                    <li>✂️ <strong>Edit Timeline</strong> — Arrange clips and add music</li>
-                    <li>🤖 <strong>Assistant</strong> — Ask for help or run full workflows</li>
-                  </ul>
-                </div>
-              )}
+              <div className="app-card p-4">
+                <ul className="text-xs text-gray-300 space-y-1.5">
+                  <li>🖼️ <strong>Image Gen</strong> — Generate concept art and storyboard shots</li>
+                  <li>🎥 <strong>Video Gen</strong> — Animate images into full clips</li>
+                  <li>🗂️ <strong>Project Hub</strong> — Manage scripts, storyboards, concepts</li>
+                  <li>✂️ <strong>Edit Timeline</strong> — Arrange clips and add music</li>
+                  <li>🤖 <strong>Assistant</strong> — Ask for help or run full workflows</li>
+                </ul>
+              </div>
 
               <div className="flex items-center gap-3 flex-wrap">
                 <button

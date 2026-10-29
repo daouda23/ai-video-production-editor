@@ -98,12 +98,12 @@ export const WORKSPACE_TOOL_MODULE: StudioToolModule = {
     },
     {
       name: 'workspace_set_ui_mode',
-      description: 'Switch the interface mode (Simple = beginner, Standard = advanced, Pro = pro), as the mode switch in the header. Pages like Nodes, World, Avatar, Set Design or Analysis need advanced or pro.',
+      description: 'Switch the interface mode (Standard = advanced, Pro = pro), as the mode switch in the header. Pages like Nodes, World, Avatar, Set Design or Analysis need advanced or pro.',
       writes: true,
-      parameters: { type: 'object', properties: { mode: { type: 'string', enum: ['beginner', 'advanced', 'pro'] } }, required: ['mode'] },
+      parameters: { type: 'object', properties: { mode: { type: 'string', enum: ['advanced', 'pro'] } }, required: ['mode'] },
       handler: (args, ctx) => {
         const mode = str(args, 'mode');
-        if (!['beginner', 'advanced', 'pro'].includes(mode)) throw new Error('mode must be beginner, advanced or pro.');
+        if (!['advanced', 'pro'].includes(mode)) throw new Error('mode must be advanced or pro.');
         ctx.actions.setExtra('uiMode', mode);
         return { uiMode: mode };
       },

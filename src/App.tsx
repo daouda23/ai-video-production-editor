@@ -1113,7 +1113,6 @@ function App() {
     const activeRole = activeProfile?.role || 'artist';
     const canViewPricing = costSettings.visibility?.[activeRole] ?? true;
     const canOpenDesignSystem = uiMode === 'pro';
-    const showLiveConversationTool = uiMode !== 'beginner';
     const sceneWallFeatureAvailable = uiMode === 'pro';
     const sceneWallEnabled = Boolean(sceneWallState && sceneWallState.enabled !== false);
     const baseAllowedWorkspaces = useMemo(
@@ -2612,11 +2611,6 @@ function App() {
         }
     }, [showOnboarding, startupPreferences]);
 
-    useEffect(() => {
-        if (!showLiveConversationTool && isLiveVisible) {
-            setIsLiveVisible(false);
-        }
-    }, [isLiveVisible, showLiveConversationTool]);
 
     useEffect(() => {
         if (!canOpenDesignSystem && showDesignSystem) {
@@ -9368,7 +9362,7 @@ function App() {
             <FloatingActionButton
                 onAssistantClick={() => setIsAssistantVisible(true)}
                 onLiveClick={() => setIsLiveVisible(true)}
-                showLiveAction={showLiveConversationTool}
+                showLiveAction
             />
 
             {isAssistantVisible && (

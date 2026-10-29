@@ -859,7 +859,6 @@ const ImageGenerationWorkspace: React.FC<ImageGenerationWorkspaceProps> = ({
   onAnimateImage,
   productionFormatId,
 }) => {
-  const isBeginnerMode = uiMode === 'beginner';
   const isProMode = uiMode === 'pro';
   const uiPrefsScope = useMemo(
     () => buildWorkspaceUiPrefsScope(currentProjectPath, currentProjectName),
@@ -3372,9 +3371,7 @@ const ImageGenerationWorkspace: React.FC<ImageGenerationWorkspaceProps> = ({
                         <span className="text-gray-600">3. Create</span>
                       </div>
                       <p className="mt-2 text-sm text-gray-300">
-                        {isBeginnerMode
-                          ? 'Fastest setup: write what you want, keep the suggested engine, and press Create Image.'
-                          : 'Start simple. Use the advanced section only when you need tighter control over look, framing, or references.'}
+                        Start simple. Use the advanced section only when you need tighter control over look, framing, or references.
                       </p>
                     </div>
 

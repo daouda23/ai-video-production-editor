@@ -155,7 +155,6 @@ const Header: React.FC<HeaderProps> = ({
         { id: 'light', label: 'Light' },
     ];
     const uiModeOptions: Array<{ id: UIMode; label: string; description: string }> = [
-        { id: 'beginner', label: UI_MODE_META.beginner.label, description: UI_MODE_META.beginner.description },
         { id: 'advanced', label: UI_MODE_META.advanced.label, description: UI_MODE_META.advanced.description },
         { id: 'pro', label: UI_MODE_META.pro.label, description: UI_MODE_META.pro.description },
     ];

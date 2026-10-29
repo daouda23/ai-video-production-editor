@@ -1,16 +1,11 @@
 import { Workspace } from '../types';
 
-export type UIMode = 'beginner' | 'advanced' | 'pro';
+export type UIMode = 'advanced' | 'pro';
 
 export const UI_MODE_STORAGE_KEY = 'ui_mode_v1';
-export const DEFAULT_UI_MODE: UIMode = 'beginner';
+export const DEFAULT_UI_MODE: UIMode = 'advanced';
 
 export const UI_MODE_META: Record<UIMode, { label: string; description: string; emoji: string }> = {
-    beginner: {
-        label: 'Simple',
-        description: 'Perfect to get started — just the tools you need.',
-        emoji: '🎬',
-    },
     advanced: {
         label: 'Standard',
         description: 'Balanced tools for most projects.',
@@ -24,21 +19,6 @@ export const UI_MODE_META: Record<UIMode, { label: string; description: string; 
 };
 
 const MODE_WORKSPACES: Record<UIMode, Workspace[]> = {
-    beginner: [
-        'PROJECT',
-        'MICRODRAMA',
-        'IMPORT',
-        'DESIGN',
-        'IMAGE_GEN',
-        'VIDEO_GEN',
-        'EDIT',
-        'SOUND_GEN',
-        'SOUND',
-        'EXPORT',
-        'PLUGINS',
-        'LOCAL_AI',
-        'TEAM',
-    ],
     advanced: [
         'PROJECT',
         'MICRODRAMA',
@@ -102,9 +82,10 @@ const MODE_WORKSPACES: Record<UIMode, Workspace[]> = {
 };
 
 export const normalizeUIMode = (value: unknown): UIMode => {
-    if (value === 'beginner' || value === 'advanced' || value === 'pro') {
+    if (value === 'advanced' || value === 'pro') {
         return value;
     }
+    // The retired Simple mode ('beginner') opens as Standard.
     return DEFAULT_UI_MODE;
 };
 

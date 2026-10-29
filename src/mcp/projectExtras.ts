@@ -43,7 +43,7 @@ export type ProjectExtras = {
   avatars: AvatarProfile[];
   setDesign: SetDesignState | null;
   analysis: AnalysisExtra;
-  uiMode: 'beginner' | 'advanced' | 'pro';
+  uiMode: 'advanced' | 'pro';
   isDirector: boolean;
   allowedWorkspaces: Workspace[];
 };
