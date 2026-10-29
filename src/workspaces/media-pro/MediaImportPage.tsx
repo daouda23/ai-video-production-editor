@@ -694,7 +694,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
         switch (source.type) {
             case 'fs': return baseName(source.path) || source.path;
             case 'picked': return 'Selected files';
-            case 'library': return 'Library';
+            case 'library': return 'Other projects';
             case 'project': return source.bin ? `Bin: ${source.bin}` : 'Project media';
             default: return 'Media bin';
         }
@@ -1029,7 +1029,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                     <section className="mpx-places__group">
                         <h4>This app</h4>
                         {placeButton('picked', `Selected files (${pickedEntries.length})`, <Upload className="w-3.5 h-3.5" />, source.type === 'picked', () => setSource({ type: 'picked' }))}
-                        {placeButton('library', `Library (${libraryEntries.length})`, <Library className="w-3.5 h-3.5" />, source.type === 'library', () => setSource({ type: 'library' }), undefined, 'Media from recently opened projects')}
+                        {placeButton('library', `Other projects (${libraryEntries.length})`, <Library className="w-3.5 h-3.5" />, source.type === 'library', () => setSource({ type: 'library' }), undefined, 'Media from your other recent projects. Everything, frames included, is in Studio › Library.')}
                         {placeButton('project', `Project media (${mediaItems.length})`, <Layers className="w-3.5 h-3.5" />, source.type === 'project' && !source.bin, () => setSource({ type: 'project', bin: null }))}
                         {binNames.map((name) => placeButton(`bin-${name}`, `${name} (${liveBins[name].length})`, <Folder className="w-3.5 h-3.5" />, source.type === 'project' && source.bin === name, () => setSource({ type: 'project', bin: name }), (
                             <button type="button" className="mpx-place__x" aria-label="Remove bin" title="Remove bin (media stay in the project)" onClick={() => setBins((prev) => { const next = { ...prev }; delete next[name]; saveBins(binKey, next); return next; })}><X className="w-3 h-3" /></button>
@@ -1176,7 +1176,7 @@ const MediaImportPage: React.FC<MediaImportPageProps> = ({
                                 {!(source.type === 'fs' && (listing.loading || listing.error)) && (
                                     <>
                                         <Upload className="w-6 h-6" strokeWidth={1.4} />
-                                        <strong>{query ? 'No results' : source.type === 'picked' ? 'No files selected yet' : source.type === 'library' ? (libraryLoading ? 'Loading library…' : 'Library is empty') : 'No media'}</strong>
+                                        <strong>{query ? 'No results' : source.type === 'picked' ? 'No files selected yet' : source.type === 'library' ? (libraryLoading ? 'Loading other projects…' : 'No media in other projects') : 'No media'}</strong>
                                         <span>{source.type === 'library' && libraryError ? libraryError : 'Drag files here or use “Choose files…”.'}</span>
                                         {source.type === 'picked' && <button type="button" className="mpx-btn mpx-btn--primary" onClick={() => fileInputRef.current?.click()}><Plus className="w-3.5 h-3.5" />Choose files…</button>}
                                     </>

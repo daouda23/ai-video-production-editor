@@ -9,6 +9,8 @@ export type LibraryAsset = {
   name: string;
   kind: LibraryAssetKind;
   url?: string | null;
+  /** Set on frames and clips that belong to a storyboard shot. */
+  category?: 'shot';
   duration?: number;
   trimInSeconds?: number;
   trimOutSeconds?: number;
@@ -185,7 +187,7 @@ const mapShotAssets = (
       });
     }
   });
-  return assets;
+  return assets.map((asset) => ({ ...asset, category: 'shot' as const }));
 };
 
 export const useLibraryAssets = ({

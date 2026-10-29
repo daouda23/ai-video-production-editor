@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MediaItem, RecentProject, ReferenceItem, ShotPrompt } from '../types';
-import { loadProjectFromFolder } from '../services/projectService';
+import { useLibraryAssets, type LibraryAsset, type LibraryAssetKind } from '../hooks/useLibraryAssets';
 import {
   BUILTIN_ASSET_PACKS,
   buildAssetPackManifest,
@@ -30,29 +30,12 @@ import { BoxIcon, ImageIcon, VideoIcon, MusicNoteIcon, TagIcon, SearchIcon, Down
  * look on double-click or space.
  */
 
-type LibraryAssetKind = 'image' | 'video' | 'audio' | 'reference';
-
 const ASSET_PACK_TYPE_LABELS: Record<AssetPackItemType, string> = {
   hdri: 'HDRI',
   model: 'Model',
   material: 'Material',
   'render-preset': 'Render preset',
   'stock-preset': 'Stock preset',
-};
-
-type LibraryAsset = {
-  id: string;
-  name: string;
-  kind: LibraryAssetKind;
-  url?: string | null;
-  category?: 'shot';
-  projectName: string;
-  projectPath?: string | null;
-  origin: 'current' | 'recent';
-  source?: string;
-  detail?: string;
-  generatedBy?: string;
-  createdAt?: string;
 };
 
 interface AssetLibraryWorkspaceProps {
@@ -65,68 +48,16 @@ interface AssetLibraryWorkspaceProps {
   onEditImage?: (asset: LibraryAsset) => void;
   onEditVideo?: (asset: LibraryAsset) => void;
   onAddStockImage?: (item: MediaItem) => void;
+  /** Copies an asset (a frame, a reference, media from another project) into this project's media. */
+  onAddToProject?: (asset: LibraryAsset) => Promise<void> | void;
+  /** Opens the Import page to bring in files from disk. */
+  onOpenImport?: () => void;
 }
 
 type Collection = 'all' | 'image' | 'video' | 'audio' | 'reference' | 'shots' | 'generated' | 'stock' | 'packs';
 type Density = 'small' | 'medium' | 'large';
 type Sort = 'recent' | 'name' | 'project';
-
-const toAssetIdSegment = (value: string) =>
-  value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 120) || 'project';
-
-const buildAssetIdPrefix = (origin: LibraryAsset['origin'], projectName: string, projectPath: string | null) =>
-  `${origin}-${toAssetIdSegment(projectPath || projectName)}`;
-
-const mapMediaAssets = (items: MediaItem[], projectName: string, projectPath: string | null, origin: LibraryAsset['origin']): LibraryAsset[] => {
-  const idPrefix = buildAssetIdPrefix(origin, projectName, projectPath);
-  return items.map((item, index) => ({
-    id: `${idPrefix}-media-${item.id || index}`,
-    name: item.name || `media_${index + 1}`,
-    kind: item.type,
-    url: item.url,
-    projectName,
-    projectPath,
-    origin,
-    source: item.source,
-    generatedBy: item.generatedBy,
-  }));
-};
-
-const mapReferenceAssets = (references: ReferenceItem[], projectName: string, projectPath: string | null, origin: LibraryAsset['origin']): LibraryAsset[] => {
-  const idPrefix = buildAssetIdPrefix(origin, projectName, projectPath);
-  return references.map((ref, index) => ({
-    id: `${idPrefix}-ref-${ref.id || index}`,
-    name: ref.name || `reference_${index + 1}`,
-    kind: 'reference',
-    url: ref.imageUrl,
-    projectName,
-    projectPath,
-    origin,
-    detail: ref.type,
-    generatedBy: ref.generatedBy,
-  }));
-};
-
-const mapShotAssets = (shots: ShotPrompt[], projectName: string, projectPath: string | null, origin: LibraryAsset['origin']): LibraryAsset[] => {
-  const assets: LibraryAsset[] = [];
-  const idPrefix = buildAssetIdPrefix(origin, projectName, projectPath);
-  shots.forEach((shot, index) => {
-    const shotLabel = shot.shot || index + 1;
-    const baseId = `${idPrefix}-shot-${shotLabel}-${index}`;
-    const description = shot.description ? ` · ${shot.description.slice(0, 32)}` : '';
-    const push = (suffix: string, name: string, kind: LibraryAssetKind, url: string | undefined, detail: string) => {
-      if (!url) return;
-      assets.push({ id: `${baseId}-${suffix}`, name: `Shot ${shotLabel} ${name}${description}`, kind, url, projectName, projectPath, origin, category: 'shot', detail, generatedBy: shot.generatedBy });
-    };
-    push('storyboard', 'Storyboard', 'image', shot.imageUrl, 'storyboard');
-    push('sketch', 'Sketch', 'image', shot.sketchUrl, 'sketch');
-    push('start-frame', 'Start frame', 'image', shot.startFrameUrl, 'start frame');
-    push('end-frame', 'End frame', 'image', shot.endFrameUrl, 'end frame');
-    push('motion-ref', 'Motion ref', 'video', shot.motionReferenceUrl, 'motion ref');
-    push('video', 'Video', 'video', shot.videoUrl, 'storyboard video');
-  });
-  return assets;
-};
+type Scope = 'all' | 'current' | 'recent';
 
 const isLikelyImageUrl = (url: string) => {
   if (!url) return false;
@@ -158,14 +89,15 @@ const AssetLibraryWorkspace: React.FC<AssetLibraryWorkspaceProps> = ({
   onEditImage,
   onEditVideo,
   onAddStockImage,
+  onAddToProject,
+  onOpenImport,
 }) => {
-  const [remoteAssets, setRemoteAssets] = useState<LibraryAsset[]>([]);
+  const [scope, setScope] = useState<Scope>('all');
+  const [addingId, setAddingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [collection, setCollection] = useState<Collection>('all');
   const [density, setDensity] = useState<Density>('medium');
   const [sort, setSort] = useState<Sort>('recent');
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [quickLook, setQuickLook] = useState<{ url: string; name: string; kind: LibraryAssetKind } | null>(null);
   const [stockQuery, setStockQuery] = useState('cinematic production design');
@@ -180,54 +112,14 @@ const AssetLibraryWorkspace: React.FC<AssetLibraryWorkspaceProps> = ({
   const packImportInputRef = useRef<HTMLInputElement | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
 
-  const currentAssets = useMemo(() => {
-    const projectLabel = currentProjectName || 'Current project';
-    return [
-      ...mapMediaAssets(mediaItems, projectLabel, currentProjectPath || null, 'current'),
-      ...mapReferenceAssets(references, projectLabel, currentProjectPath || null, 'current'),
-      ...mapShotAssets(shotPrompts, projectLabel, currentProjectPath || null, 'current'),
-    ];
-  }, [currentProjectName, currentProjectPath, mediaItems, references, shotPrompts]);
-
-  useEffect(() => {
-    let isActive = true;
-    const loadAssets = async () => {
-      if (recentProjects.length === 0) {
-        setRemoteAssets([]);
-        setLoadError(null);
-        return;
-      }
-      if (typeof window !== 'undefined' && !window.electron?.project) {
-        setLoadError('Assets from other projects are available in the desktop app.');
-        setRemoteAssets([]);
-        return;
-      }
-      setIsLoading(true);
-      setLoadError(null);
-      const candidates = recentProjects.filter((project) => project.path && project.path !== currentProjectPath);
-      const results = await Promise.allSettled(candidates.map(async (project) => {
-        const loaded = await loadProjectFromFolder(project.path);
-        const projectName = loaded.name || project.name || 'Untitled project';
-        return [
-          ...mapMediaAssets(loaded.mediaItems || [], projectName, project.path, 'recent'),
-          ...mapReferenceAssets(loaded.references || [], projectName, project.path, 'recent'),
-          ...mapShotAssets(loaded.projectHub?.shotPrompts || [], projectName, project.path, 'recent'),
-        ];
-      }));
-      if (!isActive) return;
-      const next: LibraryAsset[] = [];
-      results.forEach((result) => { if (result.status === 'fulfilled') next.push(...result.value); });
-      if (results.some((r) => r.status === 'rejected') && next.length === 0) setLoadError('Could not load assets from recent projects.');
-      setRemoteAssets(next);
-      setIsLoading(false);
-    };
-    loadAssets().catch((error) => {
-      if (!isActive) return;
-      setLoadError(error instanceof Error ? error.message : 'Failed to load assets.');
-      setIsLoading(false);
-    });
-    return () => { isActive = false; };
-  }, [recentProjects, currentProjectPath]);
+  const { assets: allAssets, isLoading, error: loadError } = useLibraryAssets({
+    currentProjectName: currentProjectName || 'Current project',
+    currentProjectPath,
+    mediaItems,
+    references,
+    shotPrompts,
+    recentProjects,
+  });
 
   useEffect(() => {
     const update = () => setUnsplashReady(hasUnsplashAccessKey());
@@ -239,19 +131,31 @@ const AssetLibraryWorkspace: React.FC<AssetLibraryWorkspaceProps> = ({
     };
   }, []);
 
-  const allAssets = useMemo(() => [...currentAssets, ...remoteAssets], [currentAssets, remoteAssets]);
+  const projectMediaUrls = useMemo(() => new Set(mediaItems.flatMap((item) => [item.url, item.originUrl].filter(Boolean) as string[])), [mediaItems]);
+  const isInProjectMedia = (asset: LibraryAsset) => Boolean(asset.url && projectMediaUrls.has(asset.url));
+  const handleAddToProject = async (asset: LibraryAsset) => {
+    if (!onAddToProject || !asset.url) return;
+    setAddingId(asset.id);
+    try { await onAddToProject(asset); } finally { setAddingId(null); }
+  };
+  const scopeCounts = useMemo(() => ({
+    all: allAssets.length,
+    current: allAssets.filter((asset) => asset.origin === 'current').length,
+    recent: allAssets.filter((asset) => asset.origin === 'recent').length,
+  }), [allAssets]);
+  const scopedAssets = useMemo(() => (scope === 'all' ? allAssets : allAssets.filter((asset) => asset.origin === scope)), [allAssets, scope]);
 
-  const counts = useMemo(() => allAssets.reduce((acc, asset) => {
+  const counts = useMemo(() => scopedAssets.reduce((acc, asset) => {
     acc.all += 1;
     acc[asset.kind] += 1;
     if (asset.category === 'shot') acc.shots += 1;
     if (asset.source === 'generated' || asset.generatedBy) acc.generated += 1;
     return acc;
-  }, { all: 0, image: 0, video: 0, audio: 0, reference: 0, shots: 0, generated: 0 }), [allAssets]);
+  }, { all: 0, image: 0, video: 0, audio: 0, reference: 0, shots: 0, generated: 0 }), [scopedAssets]);
 
   const filteredAssets = useMemo(() => {
     const term = search.trim().toLowerCase();
-    const list = allAssets.filter((asset) => {
+    const list = scopedAssets.filter((asset) => {
       if (collection === 'shots') { if (asset.category !== 'shot') return false; }
       else if (collection === 'generated') { if (!(asset.source === 'generated' || asset.generatedBy)) return false; }
       else if (collection !== 'all' && collection !== 'stock' && collection !== 'packs' && asset.kind !== collection) return false;
@@ -261,7 +165,7 @@ const AssetLibraryWorkspace: React.FC<AssetLibraryWorkspaceProps> = ({
     if (sort === 'name') return list.sort((a, b) => a.name.localeCompare(b.name));
     if (sort === 'project') return list.sort((a, b) => a.projectName.localeCompare(b.projectName) || a.name.localeCompare(b.name));
     return list;
-  }, [allAssets, collection, search, sort]);
+  }, [scopedAssets, collection, search, sort]);
 
   const selected = useMemo(() => filteredAssets.find((asset) => asset.id === selectedId) || allAssets.find((asset) => asset.id === selectedId) || null, [allAssets, filteredAssets, selectedId]);
 
@@ -511,6 +415,22 @@ const AssetLibraryWorkspace: React.FC<AssetLibraryWorkspaceProps> = ({
             </li>
           ))}
         </ul>
+        <div className="lib-sidebar__label">Projects</div>
+        <ul className="lib-sidebar__list" role="list">
+          {([
+            { id: 'all', label: 'All projects', icon: GridIcon },
+            { id: 'current', label: 'This project', icon: BoxIcon },
+            { id: 'recent', label: 'Other projects', icon: ListIcon },
+          ] as Array<{ id: Scope; label: string; icon: React.FC<{ className?: string }> }>).map((entry) => (
+            <li key={entry.id}>
+              <button type="button" className={`lib-sidebar__item ${scope === entry.id ? 'lib-sidebar__item--active' : ''}`} onClick={() => { setScope(entry.id); if (collection === 'stock' || collection === 'packs') setCollection('all'); }}>
+                <entry.icon className="lib-sidebar__icon" />
+                <span className="lib-sidebar__text">{entry.label}</span>
+                <span className="lib-sidebar__count">{scopeCounts[entry.id]}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
         <div className="lib-sidebar__label">Sources</div>
         <ul className="lib-sidebar__list" role="list">
           <li><button type="button" className={`lib-sidebar__item ${collection === 'stock' ? 'lib-sidebar__item--active' : ''}`} onClick={() => setCollection('stock')}><SearchIcon className="lib-sidebar__icon" /><span className="lib-sidebar__text">Unsplash stock</span></button></li>
@@ -530,6 +450,7 @@ const AssetLibraryWorkspace: React.FC<AssetLibraryWorkspaceProps> = ({
             <span className="lib-toolbar__count">{collection === 'stock' ? stockResults.length : collection === 'packs' ? assetPacks.length : filteredAssets.length}</span>
           </div>
           <div className="lib-toolbar__controls">
+            {onOpenImport && <button type="button" className="app-button app-secondary text-xs" onClick={onOpenImport} title="Bring files from disk into this project"><UploadIcon className="w-3.5 h-3.5" /> Import files…</button>}
             {collection !== 'stock' && collection !== 'packs' && (
               <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="app-select app-select--compact" aria-label="Sort">
                 <option value="recent">Recent first</option>
@@ -575,6 +496,7 @@ const AssetLibraryWorkspace: React.FC<AssetLibraryWorkspaceProps> = ({
                           <div className="lib-card__hover">
                             {(asset.kind === 'image' || asset.kind === 'reference') && asset.url && onEditImage && <button type="button" className="lib-card__action" onClick={(e) => { e.stopPropagation(); onEditImage(asset); }} title="Edit in Photo"><EditIcon className="w-3.5 h-3.5" /></button>}
                             {asset.kind === 'video' && asset.url && !isArchiveAsset(asset) && onEditVideo && <button type="button" className="lib-card__action" onClick={(e) => { e.stopPropagation(); onEditVideo(asset); }} title="Open in Edit"><EditIcon className="w-3.5 h-3.5" /></button>}
+                            {asset.url && onAddToProject && !isInProjectMedia(asset) && <button type="button" className="lib-card__action" disabled={addingId === asset.id} onClick={(e) => { e.stopPropagation(); void handleAddToProject(asset); }} title="Add to project media"><UploadIcon className="w-3.5 h-3.5" /></button>}
                             {asset.url && <a href={asset.url} download className="lib-card__action" onClick={(e) => e.stopPropagation()} title="Download"><DownloadIcon className="w-3.5 h-3.5" /></a>}
                           </div>
                         </div>
@@ -600,6 +522,7 @@ const AssetLibraryWorkspace: React.FC<AssetLibraryWorkspaceProps> = ({
             <dl className="lib-inspector__facts">
               <dt>Type</dt><dd>{selected.detail || selected.kind}</dd>
               <dt>Project</dt><dd>{selected.projectName}</dd>
+              <dt>In project media</dt><dd>{isInProjectMedia(selected) ? 'Yes' : 'No'}</dd>
               {selected.generatedBy && <><dt>Made with</dt><dd>{selected.generatedBy}</dd></>}
               {selected.source && <><dt>Source</dt><dd>{selected.source}</dd></>}
               {selected.origin === 'recent' && selected.projectPath && <><dt>Path</dt><dd className="truncate" title={selected.projectPath}>{selected.projectPath}</dd></>}
@@ -608,6 +531,7 @@ const AssetLibraryWorkspace: React.FC<AssetLibraryWorkspaceProps> = ({
               {selected.url && <button type="button" className="app-button app-primary text-xs" onClick={() => setQuickLook({ url: selected.url!, name: selected.name, kind: selected.kind })}>Quick look</button>}
               {(selected.kind === 'image' || selected.kind === 'reference') && selected.url && onEditImage && <button type="button" className="app-button app-secondary text-xs" onClick={() => onEditImage(selected)}>Edit in Photo</button>}
               {selected.kind === 'video' && selected.url && !isArchiveAsset(selected) && onEditVideo && <button type="button" className="app-button app-secondary text-xs" onClick={() => onEditVideo(selected)}>Open in Edit</button>}
+              {selected.url && onAddToProject && !isInProjectMedia(selected) && <button type="button" className="app-button app-secondary text-xs" disabled={addingId === selected.id} onClick={() => void handleAddToProject(selected)}>{addingId === selected.id ? 'Adding…' : 'Add to project media'}</button>}
               {selected.url && <a href={selected.url} download className="app-button app-tertiary text-xs">Download</a>}
             </div>
           </div>

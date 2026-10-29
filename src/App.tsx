@@ -8840,6 +8840,8 @@ function App() {
                         setActiveWorkspace('COMPOSITING');
                     }}
                     onAddStockImage={(item) => setMediaItems((prev) => [...prev, item])}
+                    onAddToProject={(asset) => handleImportLibraryAsset(asset)}
+                    onOpenImport={() => handleManualWorkspaceSwitch('IMPORT')}
                 />
             );
             case 'IMPORT': return (
