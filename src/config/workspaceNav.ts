@@ -76,7 +76,7 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
       { id: 'PROJECT', phase: 'overview', name: 'Overview', description: 'Where the film stands and what to do next', icon: ClapperboardIcon },
       { id: 'PROJECT', phase: 'script', name: 'Script', description: 'Write the story base', icon: ScriptIcon },
       { id: 'PROJECT', phase: 'worldbuilding', name: 'Lore', description: 'World rules and history of the story', icon: MapIcon },
-      { id: 'MICRODRAMA', name: 'Microdrama', description: 'Mobile-first 9:16 series pipeline', icon: FilmIcon },
+      { id: 'MICRODRAMA', name: 'Microdrama Kit', description: '9:16 series tools: archetypes, hooks, vertical looks (Microdrama format only)', icon: FilmIcon },
       { id: 'NOTEBOOKLM', name: 'Research', description: 'Source notes and context', icon: BrainIcon },
       { id: 'MOODBOARD', name: 'Moodboard', description: 'Visual direction and references', icon: PaletteIcon },
     ],
@@ -166,6 +166,8 @@ export type ResolveWorkspaceNavParams = {
   activeWorkspace: Workspace;
   /** Active Project hub phase, so hub entries can be highlighted. */
   activeHubPhase?: string | null;
+  /** Project format; format kits (Microdrama) only show for their format. */
+  productionFormat?: string | null;
   uiMode: UIMode;
   allowedWorkspaces?: Workspace[];
   showReview?: boolean;
@@ -194,6 +196,7 @@ export type ResolvedWorkspaceNav = {
 export const resolveWorkspaceNav = ({
   activeWorkspace,
   activeHubPhase,
+  productionFormat,
   allowedWorkspaces,
   showReview = true,
   showRequests = true,
@@ -205,6 +208,7 @@ export const resolveWorkspaceNav = ({
       const items = group.items
         .filter((item) => {
           if (allowed && !allowed.has(item.id)) return false;
+          if (item.id === 'MICRODRAMA' && productionFormat !== 'microdrama') return false;
           if (!showReview && item.id === 'REVIEW') return false;
           if (!showRequests && item.id === 'REQUESTS') return false;
           return true;

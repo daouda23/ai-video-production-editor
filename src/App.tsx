@@ -9112,6 +9112,7 @@ function App() {
     const workspaceNav = resolveWorkspaceNav({
         activeWorkspace,
         activeHubPhase: projectHubActivePhase,
+        productionFormat: storyBible.productionFormat,
         uiMode,
         allowedWorkspaces,
         showReview: isDirector,

@@ -14399,6 +14399,11 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
                                 </select>
                                 <span className="project-hub__format-hint">{getProductionFormat(storyBible.productionFormat).tagline} — {getProductionFormat(storyBible.productionFormat).description}</span>
                             </label>
+                            {storyBible.productionFormat === 'microdrama' && onOpenWorkspace && (
+                                <button type="button" className="app-button app-tertiary text-xs" onClick={() => onOpenWorkspace('MICRODRAMA')} data-studio-action="open-microdrama-kit">
+                                    Open the Microdrama kit ›
+                                </button>
+                            )}
 
 
                             <div className={`project-hub__next ${nextReadinessItem ? 'project-hub__next--attention' : 'project-hub__next--ready'}`}>
