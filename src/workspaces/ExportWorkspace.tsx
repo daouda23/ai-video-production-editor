@@ -1,8 +1,7 @@
 /**
- * Export page (EXPORT workspace, bottom bar "Deliver"). Two switchable layouts over one model
- * and one render queue (src/workspaces/export-pro):
- *   - "Premiere": Ziele | Einstellungen | Vorschau, bottom bar with Exportieren / Warteschlange
- *   - "DaVinci":  Render-Einstellungen | Viewer | Render-Warteschlange, timeline bar with range
+ * Export page (EXPORT workspace, Delivery stage). One layout over the export model and render
+ * queue (src/workspaces/export-pro): Destinations | Settings | Preview with range, bottom bar
+ * with Export / Send to queue / Render queue.
  * This file owns the side effects: preview playback, the queue runner (FFmpeg via IPC with the
  * GPU FX bake, browser canvas recording, interchange downloads) and the MCP live commands.
  */
@@ -36,7 +35,6 @@ import type { ExportDispatch } from './export-pro/ExportFields';
 import type { ExportViewModel } from './export-pro/ExportViewShared';
 import ExportViewer from './export-pro/ExportViewer';
 import PremiereExportView from './export-pro/PremiereExportView';
-import DavinciDeliverView from './export-pro/DavinciDeliverView';
 import './export-pro/exportPro.css';
 
 interface ExportWorkspaceProps {
@@ -569,20 +567,16 @@ const ExportWorkspace: React.FC<ExportWorkspaceProps> = ({ mediaItems, timelineC
     const summary = queueSummary(state.queue);
 
     return (
-        <div className="xp-root" data-automation-id="export.page" data-view={state.view} tabIndex={-1} onKeyDown={onKeyDown}>
+        <div className="xp-root" data-automation-id="export.page" tabIndex={-1} onKeyDown={onKeyDown}>
             <div className="xp-topbar">
                 <span className="xp-topbar__title">Export</span>
                 <span className="xp-topbar__meta">
-                    {timelineName} · {timelineClips.length} Clips · {outputFileName(state.view === 'davinci' ? state.davinciKind : state.selectedDestination, settings, settings.interchange.formats[0])}
-                    {summary.running > 0 ? ` · rendering (${summary.overallProgress} %)` : summary.pending > 0 ? ` · ${summary.pending} wartend` : ''}
+                    {timelineName} · {timelineClips.length} Clips · {outputFileName(state.selectedDestination, settings, settings.interchange.formats[0])}
+                    {summary.running > 0 ? ` · rendering (${summary.overallProgress} %)` : summary.pending > 0 ? ` · ${summary.pending} waiting` : ''}
                 </span>
                 <span className="xp-topbar__spacer" />
-                <div className="xp-seg" role="group" aria-label="View">
-                    <button type="button" className="xp-seg__btn" aria-pressed={state.view === 'premiere'} data-automation-id="export.view.premiere" onClick={() => dispatch('export.view.set', { view: 'premiere' })}>Premiere</button>
-                    <button type="button" className="xp-seg__btn" aria-pressed={state.view === 'davinci'} data-automation-id="export.view.davinci" onClick={() => dispatch('export.view.set', { view: 'davinci' })}>DaVinci</button>
-                </div>
             </div>
-            {state.view === 'davinci' ? <DavinciDeliverView vm={vm} /> : <PremiereExportView vm={vm} />}
+            <PremiereExportView vm={vm} />
         </div>
     );
 };

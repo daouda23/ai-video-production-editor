@@ -31,7 +31,6 @@
   font-size: 12px;
   user-select: none;
 }
-.snd--protools { --snd-accent: #6f9be8; --snd-clip: #3b4f78; --snd-clip-sel: #5776b3; }
 .snd--studio { --snd-accent: #e0a35a; }
 
 .snd button { font: inherit; color: inherit; }

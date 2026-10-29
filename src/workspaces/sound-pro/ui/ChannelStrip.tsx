@@ -1,7 +1,6 @@
 /**
  * Channel strip used by all views. Sections depend on the view:
- *  - fairlight: EQ curve + dynamics, bus assign, pan, fader, meter
- *  - protools:  inserts A–E, sends A–E, I/O, automation mode, pan, fader
+ *  - fairlight: EQ curve, dynamics, other effects, sends, automation mode, bus assign, pan, fader, meter
  *  - studio:    role, pan, fader, meter (no inserts)
  */
 import React from 'react';
@@ -15,9 +14,9 @@ export type InsertTarget = { target: string; insertId: string } | null;
 
 const INSERT_LABEL: Record<InsertSlot['kind'], string> = { eq: 'EQ', compressor: 'Comp', gate: 'Gate', limiter: 'Limit', delay: 'Delay' };
 const SLOT_LETTERS = ['A', 'B', 'C', 'D', 'E'];
-const AUTOMATION_LABEL: Record<AutomationMode, string> = { off: 'Aus', read: 'Read', touch: 'Touch', latch: 'Latch', write: 'Write' };
+const AUTOMATION_LABEL: Record<AutomationMode, string> = { off: 'Off', read: 'Read', touch: 'Touch', latch: 'Latch', write: 'Write' };
 
-type Variant = 'fairlight' | 'protools' | 'studio';
+type Variant = 'fairlight' | 'studio';
 
 const InsertSlots: React.FC<{ target: string; inserts: InsertSlot[]; run: RunCommand; onEdit: (t: InsertTarget) => void; editing: InsertTarget; idPrefix: string }> = ({ target, inserts, run, onEdit, editing, idPrefix }) => (
   <div className="snd-strip__section">
@@ -83,6 +82,45 @@ export const TrackStrip: React.FC<{
   const outputs = mix.buses.filter((b) => b.kind !== 'aux' || b.id === t.outputBusId);
   const auxes = mix.buses.filter((b) => b.kind !== 'main');
   const roleColor = t.role ? `var(--snd-role-${t.role})` : undefined;
+  const sendsAndAuto = (
+    <>
+          <div className="snd-strip__section">
+            <span className="snd-strip__label">Sends</span>
+            {Array.from({ length: MAX_SENDS }, (_, i) => {
+              const send = t.sends[i];
+              if (!send) {
+                return (
+                  <select key={i} className="snd-strip__slot snd-strip__slot--empty" value="" data-automation-id={`${id}-send-add-${SLOT_LETTERS[i]}`} aria-label={`Send ${SLOT_LETTERS[i]}`} onChange={(e) => run('mixer.setSend', { trackId: track.id, busId: e.target.value, levelDb: -10 })}>
+                    <option value="">{SLOT_LETTERS[i]} ·</option>
+                    {auxes.filter((b) => !t.sends.some((s) => s.busId === b.id)).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                );
+              }
+              const bus = mix.buses.find((b) => b.id === send.busId);
+              return (
+                <div key={send.busId} className={`snd-strip__slot ${send.enabled ? '' : 'snd-strip__slot--bypass'}`} data-automation-id={`${id}-send-${SLOT_LETTERS[i]}`}
+                  title="Wheel: level · Click: on/off · ⌥-click: remove · ⇧-click: pre/post"
+                  onClick={(e) => {
+                    if (e.altKey) run('mixer.removeSend', { trackId: track.id, busId: send.busId });
+                    else if (e.shiftKey) run('mixer.setSend', { trackId: track.id, busId: send.busId, preFader: !send.preFader });
+                    else run('mixer.setSend', { trackId: track.id, busId: send.busId, enabled: !send.enabled });
+                  }}
+                  onWheel={(e) => run('mixer.setSend', { trackId: track.id, busId: send.busId, levelDb: Math.max(-60, Math.min(12, send.levelDb + (e.deltaY < 0 ? 1 : -1))) })}
+                >
+                  <b>{SLOT_LETTERS[i]}</b> {bus?.name ?? send.busId} {formatDb(send.levelDb, 0)}{send.preFader ? ' pre' : ''}
+                </div>
+              );
+            })}
+          </div>
+          <div className="snd-strip__section">
+            <span className="snd-strip__label">Auto</span>
+            <select className="snd-select" data-automation-id={`${id}-automation-mode`} value={t.automationMode} onChange={(e) => run('automation.setMode', { trackId: track.id, mode: e.target.value })}>
+              {(Object.keys(AUTOMATION_LABEL) as AutomationMode[]).map((m) => <option key={m} value={m}>{AUTOMATION_LABEL[m]}</option>)}
+            </select>
+          </div>
+    </>
+  );
+  const extraInserts = t.inserts.filter((x) => x.kind !== 'eq' && x.kind !== 'compressor');
   return (
     <div className={`snd-strip ${selected ? 'snd-strip--selected' : ''}`} data-automation-id={id}>
       <div className="snd-strip__name" style={roleColor ? { boxShadow: `inset 0 -2px 0 ${roleColor}` } : undefined} onClick={() => run('select.track', { trackId: track.id })} title={track.name ?? track.id}>
@@ -123,46 +161,39 @@ export const TrackStrip: React.FC<{
             </button>
             <div className="snd-strip__gr">{meter && meter.reductionDb < -0.2 ? `GR ${meter.reductionDb.toFixed(1)}` : ''}</div>
           </div>
-        </>
-      )}
-
-      {variant === 'protools' && (
-        <>
-          <InsertSlots target={track.id} inserts={t.inserts} run={run} onEdit={onEdit} editing={editing} idPrefix={id} />
           <div className="snd-strip__section">
-            <span className="snd-strip__label">Sends</span>
-            {Array.from({ length: MAX_SENDS }, (_, i) => {
-              const send = t.sends[i];
-              if (!send) {
-                return (
-                  <select key={i} className="snd-strip__slot snd-strip__slot--empty" value="" data-automation-id={`${id}-send-add-${SLOT_LETTERS[i]}`} aria-label={`Send ${SLOT_LETTERS[i]}`} onChange={(e) => run('mixer.setSend', { trackId: track.id, busId: e.target.value, levelDb: -10 })}>
-                    <option value="">{SLOT_LETTERS[i]} ·</option>
-                    {auxes.filter((b) => !t.sends.some((s) => s.busId === b.id)).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select>
-                );
-              }
-              const bus = mix.buses.find((b) => b.id === send.busId);
-              return (
-                <div key={send.busId} className={`snd-strip__slot ${send.enabled ? '' : 'snd-strip__slot--bypass'}`} data-automation-id={`${id}-send-${SLOT_LETTERS[i]}`}
-                  title="Wheel: level · Click: on/off · ⌥-click: remove · ⇧-click: pre/post"
-                  onClick={(e) => {
-                    if (e.altKey) run('mixer.removeSend', { trackId: track.id, busId: send.busId });
-                    else if (e.shiftKey) run('mixer.setSend', { trackId: track.id, busId: send.busId, preFader: !send.preFader });
-                    else run('mixer.setSend', { trackId: track.id, busId: send.busId, enabled: !send.enabled });
-                  }}
-                  onWheel={(e) => run('mixer.setSend', { trackId: track.id, busId: send.busId, levelDb: Math.max(-60, Math.min(12, send.levelDb + (e.deltaY < 0 ? 1 : -1))) })}
-                >
-                  <b>{SLOT_LETTERS[i]}</b> {bus?.name ?? send.busId} {formatDb(send.levelDb, 0)}{send.preFader ? ' pre' : ''}
-                </div>
-              );
-            })}
+            <span className="snd-strip__label">Effects</span>
+            {extraInserts.map((slot) => (
+              <div
+                key={slot.id}
+                className={`snd-strip__slot ${slot.bypass ? 'snd-strip__slot--bypass' : ''} ${editing?.insertId === slot.id ? 'snd-strip__slot--active' : ''}`}
+                data-automation-id={`${id}-effect-${slot.kind}`}
+                title="Click: edit · ⌘-click: bypass · ⌥-click: remove"
+                onClick={(e) => {
+                  if (e.altKey) run('mixer.removeInsert', { target: track.id, insertId: slot.id });
+                  else if (e.metaKey || e.ctrlKey) run('mixer.bypassInsert', { target: track.id, insertId: slot.id });
+                  else onEdit(editing?.insertId === slot.id ? null : { target: track.id, insertId: slot.id });
+                }}
+              >
+                {INSERT_LABEL[slot.kind]}
+              </div>
+            ))}
+            {t.inserts.length < MAX_INSERTS && (
+              <select
+                className="snd-strip__slot snd-strip__slot--empty" value="" aria-label="Add effect" data-automation-id={`${id}-effect-add`}
+                onChange={(e) => {
+                  const r = run('mixer.addInsert', { target: track.id, kind: e.target.value }) as { insertId?: string } | null;
+                  if (r && typeof r === 'object' && r.insertId) onEdit({ target: track.id, insertId: r.insertId });
+                }}
+              >
+                <option value="">+ Effect</option>
+                <option value="gate">Gate</option>
+                <option value="limiter">Limiter</option>
+                <option value="delay">Delay</option>
+              </select>
+            )}
           </div>
-          <div className="snd-strip__section">
-            <span className="snd-strip__label">Auto</span>
-            <select className="snd-select" data-automation-id={`${id}-automation-mode`} value={t.automationMode} onChange={(e) => run('automation.setMode', { trackId: track.id, mode: e.target.value })}>
-              {(Object.keys(AUTOMATION_LABEL) as AutomationMode[]).map((m) => <option key={m} value={m}>{AUTOMATION_LABEL[m]}</option>)}
-            </select>
-          </div>
+          {sendsAndAuto}
         </>
       )}
 
@@ -178,7 +209,7 @@ export const TrackStrip: React.FC<{
 
       {variant !== 'studio' && (
         <div className="snd-strip__section">
-          <span className="snd-strip__label">{variant === 'protools' ? 'Out' : 'Bus'}</span>
+          <span className="snd-strip__label">Bus</span>
           <select className="snd-select" data-automation-id={`${id}-output`} value={t.outputBusId} onChange={(e) => run('mixer.setOutputBus', { trackId: track.id, busId: e.target.value })}>
             {outputs.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
@@ -207,14 +238,7 @@ export const BusStrip: React.FC<{ bus: BusMix; mix: SoundMix; meter?: MeterReadi
     <div className="snd-strip snd-strip--bus" data-automation-id={id}>
       <div className="snd-strip__name" title={bus.name}>{bus.name}</div>
       <div className="snd-hint" style={{ textAlign: 'center', fontSize: 9 }}>{bus.kind === 'main' ? 'Main' : bus.kind === 'sub' ? 'Submix' : 'Aux'}</div>
-      {variant === 'protools' && <InsertSlots target={bus.id} inserts={bus.inserts} run={run} onEdit={onEdit} editing={editing} idPrefix={id} />}
-      {variant === 'fairlight' && bus.inserts.length > 0 && (
-        <div className="snd-strip__section">
-          {bus.inserts.map((slot) => (
-            <div key={slot.id} className={`snd-strip__slot ${slot.bypass ? 'snd-strip__slot--bypass' : ''}`} onClick={() => onEdit({ target: bus.id, insertId: slot.id })}>{INSERT_LABEL[slot.kind]}</div>
-          ))}
-        </div>
-      )}
+      {variant !== 'studio' && <InsertSlots target={bus.id} inserts={bus.inserts} run={run} onEdit={onEdit} editing={editing} idPrefix={id} />}
       {bus.kind !== 'main' && variant !== 'studio' && (
         <select className="snd-select" data-automation-id={`${id}-output`} value={bus.outputBusId ?? ''} onChange={(e) => run('bus.set', { busId: bus.id, outputBusId: e.target.value })}>
           {mix.buses.filter((b) => b.id !== bus.id && b.kind === 'main').map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}

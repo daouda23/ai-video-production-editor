@@ -1,7 +1,6 @@
 /**
- * "Premiere" layout of the Export page (clean-room after an NLE export mode):
- * Ziele (left) | Einstellungen of the selected destination (centre) | Vorschau with range (right),
- * bottom bar with queue chips, "An Warteschlange senden" and "Exportieren".
+ * Layout of the Export page: Destinations (left) | Settings of the selected destination
+ * (centre) | Preview with range (right), bottom bar with queue chips, "Send to queue" and "Export".
  */
 import React from 'react';
 import { ListPlus, Square, Upload } from 'lucide-react';
@@ -73,7 +72,7 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
     return (
         <>
             <div className="xp-body xp-premiere">
-                {/* ─── Ziele ─── */}
+                {/* ─── Destinations ─── */}
                 <section className="xp-panel" aria-label="Destinations">
                     <div className="xp-panel__head">Destinations</div>
                     <div className="xp-panel__scroll" role="listbox" aria-label="Export destinations">
@@ -102,7 +101,7 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                     </div>
                 </section>
 
-                {/* ─── Einstellungen ─── */}
+                {/* ─── Settings ─── */}
                 <section className="xp-panel" aria-label="Settings">
                     <div className="xp-panel__head">Settings <small>{DESTINATION_LABELS[kind]}</small></div>
                     <div className="xp-panel__scroll">
@@ -180,7 +179,7 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                     </div>
                 </section>
 
-                {/* ─── Vorschau ─── */}
+                {/* ─── Preview ─── */}
                 <section className="xp-panel" aria-label="Preview">
                     <div className="xp-panel__head">Preview <small>{vm.timelineName}</small></div>
                     {vm.viewer}
@@ -240,6 +239,7 @@ const PremiereExportView: React.FC<{ vm: ExportViewModel }> = ({ vm }) => {
                         <Square size={12} />Cancel
                     </button>
                 ) : null}
+                <button type="button" className="xp-btn" data-automation-id="export.queue.clearFinished" disabled={summary.done + summary.error + summary.cancelled === 0} onClick={() => dispatch('export.queue.clearFinished', {})}>Remove completed</button>
                 <button type="button" className="xp-btn" data-automation-id="export.queue.add" disabled={enabledKinds.length === 0} onClick={() => dispatch('export.queue.add', {})} title="Queue the enabled destinations as jobs">
                     <ListPlus size={13} />Send to queue
                 </button>

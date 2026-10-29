@@ -3,10 +3,10 @@ import type { MediaItem, RecentProject, ReferenceItem, ShotPrompt, TimelineTrack
 import type { SharedSequenceProps } from '../components/EditorPageShell';
 import { MusicNoteIcon, PlayIcon, PauseIcon } from '../components/icons';
 import SoundBrowser from './sound-pro/SoundBrowser';
-import { normalizeSoundMix, type SoundMix, type SoundView } from './sound-pro/model';
+import { normalizeSoundMix, type SoundMix } from './sound-pro/model';
 import { useSoundCommands } from './sound-pro/useSoundCommands';
 import { useSoundPlayback } from './sound-pro/useSoundPlayback';
-import { FairlightView, ProToolsView, StudioView, type ViewProps } from './sound-pro/ui/Views';
+import { FairlightView, StudioView, type ViewProps } from './sound-pro/ui/Views';
 import { formatTime } from './sound-pro/ui/widgets';
 import { registerLiveCommands } from '../mcp/liveCommands';
 import { useLibraryAssets } from '../hooks/useLibraryAssets';
@@ -44,11 +44,10 @@ interface SoundWorkspaceProps extends SharedSequenceProps {
   onSoundMixChange?: (mix: SoundMix) => void;
 }
 
-const VIEWS: Array<[SoundView, string, string]> = [
-  ['fairlight', 'Fairlight', 'Console with EQ, dynamics, bus assignment and loudness'],
-  ['protools', 'Pro Tools', 'Edit and Mix windows, tools, edit modes, automation'],
-  ['studio', 'Studio', 'Own view: AI sound, stems, mix check, output'],
-];
+const VIEW_INFO: Record<'mix' | 'studio', [string, string]> = {
+  mix: ['Mix', 'Edit, console with EQ, dynamics, effects, sends, automation and loudness'],
+  studio: ['Voice & Music', 'AI sound, stems, mix check, output'],
+};
 
 const SoundWorkspace: React.FC<SoundWorkspaceProps> = (props) => {
   const {
@@ -75,7 +74,7 @@ const SoundWorkspace: React.FC<SoundWorkspaceProps> = (props) => {
   useEffect(() => {
     const current = mix.ui.view;
     if (props.entryView === 'studio' && current !== 'studio') run('view.set', { view: 'studio' });
-    if (props.entryView === 'mix' && current === 'studio') run('view.set', { view: 'fairlight' });
+    if (props.entryView === 'mix' && current !== 'fairlight') run('view.set', { view: 'fairlight' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.entryView]);
 
@@ -210,33 +209,27 @@ const SoundWorkspace: React.FC<SoundWorkspaceProps> = (props) => {
     mix, tracks: timelineTracks, clips: timelineClips, media: mediaItems, playhead: playheadPosition, isPlaying,
     waveformCache, meters, run, sourcesVersion, callTool, browser,
   };
-  const view = mix.ui.view;
+  // Old projects may still store the retired 'protools' layout: it opens as Mix.
+  const view = mix.ui.view === 'studio' ? 'studio' : 'mix';
 
   return (
     <div className={`snd snd--${view} studio-workspace`} data-automation-id="sound-workspace" data-sound-view={view}>
       <div className="snd-bar">
-        <span className="snd-bar__title"><MusicNoteIcon className="w-4 h-4" />Sound</span>
-        <div className="snd-seg" role="group" aria-label="View">
-          {VIEWS.map(([id, label, hint]) => (
-            <button key={id} type="button" aria-pressed={view === id} title={hint} data-automation-id={`sound-view-${id}`} onClick={() => run('view.set', { view: id })}>{label}</button>
-          ))}
-        </div>
+        <span className="snd-bar__title"><MusicNoteIcon className="w-4 h-4" />{VIEW_INFO[view][0]}</span>
         <button type="button" className={`snd-btn ${isPlaying ? 'snd-btn--on' : ''}`} data-automation-id="sound-transport-toggle" title="Play / Stop (Space)" onClick={() => run('transport.toggle')}>
           {isPlaying ? <PauseIcon className="w-3.5 h-3.5" /> : <PlayIcon className="w-3.5 h-3.5" />}
         </button>
         <span className="snd-bar__tc" data-automation-id="sound-timecode">{formatTime(playheadPosition)}</span>
         <button type="button" className="snd-btn" data-automation-id="sound-track-add" onClick={() => run('track.add')}>+ Track</button>
-        {loading.pending && <span className="snd-hint">Lade Audio…</span>}
-        {loading.missing.length > 0 && <span className="snd-error" title={loading.missing.join(', ')}>{loading.missing.length}Audio file(s) could not be loaded</span>}
+        {loading.pending && <span className="snd-hint">Loading audio…</span>}
+        {loading.missing.length > 0 && <span className="snd-error" title={loading.missing.join(', ')}>{loading.missing.length} audio file(s) could not be loaded</span>}
         {audioError && <span className="snd-error">{audioError}</span>}
         {lastError && <span className="snd-error" role="alert" onClick={clearError} title={lastError}>{lastError}</span>}
         <span className="snd-bar__spacer" />
-        <span className="snd-hint">{VIEWS.find(([id]) => id === view)?.[2]}</span>
-        {props.onSwitchToEdit && <button type="button" className="snd-btn" onClick={props.onSwitchToEdit}>Edit-Seite</button>}
+        <span className="snd-hint">{VIEW_INFO[view][1]}</span>
+        {props.onSwitchToEdit && <button type="button" className="snd-btn" onClick={props.onSwitchToEdit}>Open Timeline</button>}
       </div>
-      {view === 'fairlight' && <FairlightView {...viewProps} />}
-      {view === 'protools' && <ProToolsView {...viewProps} />}
-      {view === 'studio' && <StudioView {...viewProps} />}
+      {view === 'studio' ? <StudioView {...viewProps} /> : <FairlightView {...viewProps} />}
     </div>
   );
 };

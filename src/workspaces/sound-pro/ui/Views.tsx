@@ -1,8 +1,8 @@
 /**
- * The three sound views over one mix document.
- *  - FairlightView: picture + loudness + track index on top, timeline, console below
- *  - ProToolsView:  Edit window (tools, edit modes, automation) ⇄ Mix window (inserts/sends)
- *  - StudioView:    our own condensed layout: AI browser, four stems, timeline, mix check, delivery
+ * The two sound views over one mix document.
+ *  - FairlightView: the Mix page: picture + loudness + track index on top, edit tools,
+ *                   timeline, console below
+ *  - StudioView:    the Voice & Music page: AI browser, four stems, timeline, mix check, delivery
  */
 import React, { useMemo, useState } from 'react';
 import type { MediaItem, TimelineClip, TimelineTrack, WaveformCache } from '../../../types';
@@ -41,7 +41,7 @@ const insertTargetName = (mix: SoundMix, tracks: TimelineTrack[], target: Insert
   return mix.buses.find((b) => b.id === target.target)?.name ?? tracks.find((t) => t.id === target.target)?.name ?? target.target;
 };
 
-const Console: React.FC<ViewProps & { variant: 'fairlight' | 'protools'; editing: InsertTarget; setEditing: (t: InsertTarget) => void }> = (p) => {
+const Console: React.FC<ViewProps & { variant: 'fairlight'; editing: InsertTarget; setEditing: (t: InsertTarget) => void }> = (p) => {
   const strips = audibleTracks(p.tracks, p.clips, p.media);
   return (
     <div className="snd-mixer" style={{ flex: 1 }} data-automation-id={`sound-console-${p.variant}`}>
@@ -111,8 +111,9 @@ export const FairlightView: React.FC<ViewProps> = (p) => {
         </div>
         <div style={{ maxHeight: 160, display: 'flex' }}><AdrPanel mix={p.mix} run={p.run} playhead={p.playhead} /></div>
       </div>
+      <EditToolbar {...p} />
       <SoundTimeline id="sound-fairlight-timeline" mix={p.mix} tracks={p.tracks} clips={p.clips} media={p.media} playhead={p.playhead} isPlaying={p.isPlaying} waveformCache={p.waveformCache} run={p.run} sourcesVersion={p.sourcesVersion} showCues
-        renderHeader={(track) => <HeaderButtons track={track} mix={p.mix} run={p.run} />} />
+        renderHeader={(track) => <HeaderButtons track={track} mix={p.mix} run={p.run} automation={p.mix.ui.showAutomation} />} />
       <div
         className="snd-split-v"
         onPointerDown={(e) => {
@@ -131,67 +132,49 @@ export const FairlightView: React.FC<ViewProps> = (p) => {
   );
 };
 
-/* ─── Pro Tools ─── */
+/* ─── Edit tools (edit modes, tools, grid, automation, clip edits) ─── */
 
 const EDIT_MODES: Array<[EditMode, string, string]> = [['shuffle', 'Shuffle', 'F1'], ['slip', 'Slip', 'F2'], ['spot', 'Spot', 'F3'], ['grid', 'Grid', 'F4']];
 const TOOLS: Array<[EditTool, string, string]> = [['trimmer', 'Trimmer', 'F6'], ['selector', 'Selector', 'F7'], ['grabber', 'Grabber', 'F8'], ['smart', 'Smart', 'F10']];
 
-export const ProToolsView: React.FC<ViewProps> = (p) => {
-  const [editing, setEditing] = useState<InsertTarget>(null);
+const EditToolbar: React.FC<ViewProps> = (p) => {
   const [spotTime, setSpotTime] = useState('');
   const ui = p.mix.ui;
   const selectedClip = p.clips.find((c) => c.id === ui.selectedClipIds[0]);
   return (
-    <div className="snd-body snd-col" style={{ position: 'relative' }}>
-      <div className="snd-bar" style={{ background: 'var(--snd-panel-2)' }}>
-        <div className="snd-seg" role="group" aria-label="Window">
-          <button type="button" aria-pressed={ui.proToolsWindow === 'edit'} data-automation-id="sound-pt-window-edit" onClick={() => p.run('view.toggleMixWindow', { window: 'edit' })}>Edit</button>
-          <button type="button" aria-pressed={ui.proToolsWindow === 'mix'} data-automation-id="sound-pt-window-mix" onClick={() => p.run('view.toggleMixWindow', { window: 'mix' })}>Mix</button>
-        </div>
-        {ui.proToolsWindow === 'edit' && (
-          <>
-            <div className="snd-seg" role="group" aria-label="Edit-Modus">
-              {EDIT_MODES.map(([mode, label, key]) => (
-                <button key={mode} type="button" aria-pressed={ui.editMode === mode} title={`${label} (${key})`} data-automation-id={`sound-edit-mode-${mode}`} onClick={() => p.run('edit.setMode', { mode })}>{label}</button>
-              ))}
-            </div>
-            <div className="snd-seg" role="group" aria-label="Tool">
-              {TOOLS.map(([tool, label, key]) => (
-                <button key={tool} type="button" aria-pressed={ui.tool === tool} title={`${label} (${key})`} data-automation-id={`sound-tool-${tool}`} onClick={() => p.run('edit.setTool', { tool })}>{label}</button>
-              ))}
-            </div>
-            <label className="snd-hint">Grid
-              <select className="snd-select" style={{ marginLeft: 4 }} value={ui.gridSec} data-automation-id="sound-grid" onChange={(e) => p.run('edit.setGrid', { gridSec: Number(e.target.value), nudgeSec: Number(e.target.value) })}>
-                {[0.04, 0.1, 0.25, 0.5, 1, 2, 5].map((g) => <option key={g} value={g}>{g < 0.05 ? '1 Frame' : `${g} s`}</option>)}
-              </select>
-            </label>
-            <button type="button" className={`snd-btn ${ui.showAutomation ? 'snd-btn--on' : ''}`} data-automation-id="sound-toggle-automation" onClick={() => p.run('view.toggleAutomation')}>Automation</button>
-            <button type="button" className="snd-btn" data-automation-id="sound-zoom-out" onClick={() => p.run('view.zoom', { factor: 0.7 })}>−</button>
-            <button type="button" className="snd-btn" data-automation-id="sound-zoom-in" onClick={() => p.run('view.zoom', { factor: 1.4 })}>+</button>
-            {ui.selection && <span className="snd-hint">Selection {formatTime(ui.selection.start)} – {formatTime(ui.selection.end)}</span>}
-            {ui.selection && <button type="button" className="snd-btn" data-automation-id="sound-delete-selection" onClick={() => p.run('edit.deleteSelection')}>Delete selection</button>}
-            {selectedClip && (
-              <>
-                <button type="button" className="snd-btn" data-automation-id="sound-crossfade" onClick={() => p.run('clip.crossfade', { clipId: selectedClip.id, duration: 0.5 })}>Crossfade</button>
-                <button type="button" className="snd-btn" data-automation-id="sound-split" onClick={() => p.run('clip.split', { clipIds: [selectedClip.id], time: p.playhead })}>Split</button>
-              </>
-            )}
-            {ui.editMode === 'spot' && selectedClip && (
-              <span className="snd-hint" data-automation-id="sound-spot-dialog" style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>Spot “{p.media.find((m) => m.id === selectedClip.mediaId)?.name ?? selectedClip.id}” on
-                <input className="snd-input" style={{ width: 70 }} placeholder={selectedClip.start.toFixed(3)} value={spotTime} onChange={(e) => setSpotTime(e.target.value)} data-automation-id="sound-spot-time" />s
-                <button type="button" className="snd-btn snd-btn--primary" data-automation-id="sound-spot-apply" onClick={() => { const t = Number(spotTime.replace(',', '.')); if (Number.isFinite(t)) p.run('clip.move', { clipId: selectedClip.id, start: t, mode: 'spot' }); setSpotTime(''); }}>Place</button>
-              </span>
-            )}
-          </>
-        )}
+    <div className="snd-bar" style={{ background: 'var(--snd-panel-2)' }} data-automation-id="sound-edit-toolbar">
+      <div className="snd-seg" role="group" aria-label="Edit mode">
+        {EDIT_MODES.map(([mode, label, key]) => (
+          <button key={mode} type="button" aria-pressed={ui.editMode === mode} title={`${label} (${key})`} data-automation-id={`sound-edit-mode-${mode}`} onClick={() => p.run('edit.setMode', { mode })}>{label}</button>
+        ))}
       </div>
-      {ui.proToolsWindow === 'edit' ? (
-        <SoundTimeline id="sound-protools-timeline" mix={p.mix} tracks={p.tracks} clips={p.clips} media={p.media} playhead={p.playhead} isPlaying={p.isPlaying} waveformCache={p.waveformCache} run={p.run} sourcesVersion={p.sourcesVersion} headerWidth={210} laneHeight={72}
-          renderHeader={(track) => <HeaderButtons track={track} mix={p.mix} run={p.run} automation />} />
-      ) : (
-        <div style={{ flex: 1, display: 'flex', minHeight: 0 }}><Console {...p} variant="protools" editing={editing} setEditing={setEditing} /></div>
+      <div className="snd-seg" role="group" aria-label="Tool">
+        {TOOLS.map(([tool, label, key]) => (
+          <button key={tool} type="button" aria-pressed={ui.tool === tool} title={`${label} (${key})`} data-automation-id={`sound-tool-${tool}`} onClick={() => p.run('edit.setTool', { tool })}>{label}</button>
+        ))}
+      </div>
+      <label className="snd-hint">Grid
+        <select className="snd-select" style={{ marginLeft: 4 }} value={ui.gridSec} data-automation-id="sound-grid" onChange={(e) => p.run('edit.setGrid', { gridSec: Number(e.target.value), nudgeSec: Number(e.target.value) })}>
+          {[0.04, 0.1, 0.25, 0.5, 1, 2, 5].map((g) => <option key={g} value={g}>{g < 0.05 ? '1 Frame' : `${g} s`}</option>)}
+        </select>
+      </label>
+      <button type="button" className={`snd-btn ${ui.showAutomation ? 'snd-btn--on' : ''}`} data-automation-id="sound-toggle-automation" onClick={() => p.run('view.toggleAutomation')}>Automation</button>
+      <button type="button" className="snd-btn" data-automation-id="sound-zoom-out" onClick={() => p.run('view.zoom', { factor: 0.7 })}>−</button>
+      <button type="button" className="snd-btn" data-automation-id="sound-zoom-in" onClick={() => p.run('view.zoom', { factor: 1.4 })}>+</button>
+      {ui.selection && <span className="snd-hint">Selection {formatTime(ui.selection.start)} – {formatTime(ui.selection.end)}</span>}
+      {ui.selection && <button type="button" className="snd-btn" data-automation-id="sound-delete-selection" onClick={() => p.run('edit.deleteSelection')}>Delete selection</button>}
+      {selectedClip && (
+        <>
+          <button type="button" className="snd-btn" data-automation-id="sound-crossfade" onClick={() => p.run('clip.crossfade', { clipId: selectedClip.id, duration: 0.5 })}>Crossfade</button>
+          <button type="button" className="snd-btn" data-automation-id="sound-split" onClick={() => p.run('clip.split', { clipIds: [selectedClip.id], time: p.playhead })}>Split</button>
+        </>
       )}
-      {editing && <div className="snd-drawer"><InsertEditor mix={p.mix} target={editing} run={p.run} onClose={() => setEditing(null)} targetName={insertTargetName(p.mix, p.tracks, editing)} /></div>}
+      {ui.editMode === 'spot' && selectedClip && (
+        <span className="snd-hint" data-automation-id="sound-spot-dialog" style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>Spot “{p.media.find((m) => m.id === selectedClip.mediaId)?.name ?? selectedClip.id}” on
+          <input className="snd-input" style={{ width: 70 }} placeholder={selectedClip.start.toFixed(3)} value={spotTime} onChange={(e) => setSpotTime(e.target.value)} data-automation-id="sound-spot-time" />s
+          <button type="button" className="snd-btn snd-btn--primary" data-automation-id="sound-spot-apply" onClick={() => { const t = Number(spotTime.replace(',', '.')); if (Number.isFinite(t)) p.run('clip.move', { clipId: selectedClip.id, start: t, mode: 'spot' }); setSpotTime(''); }}>Place</button>
+        </span>
+      )}
     </div>
   );
 };
