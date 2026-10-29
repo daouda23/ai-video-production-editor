@@ -1,6 +1,6 @@
 import React from 'react';
 import { navItemKey, type ResolvedWorkspaceNav, type WorkspaceNavGroup, type WorkspaceNavItem } from '../config/workspaceNav';
-import { ChevronRightIcon, SettingsIcon } from './icons';
+import { ChevronRightIcon, ClipboardCheckIcon, SettingsIcon } from './icons';
 
 /**
  * Workflow bar docked at the bottom of the window, in the spirit of DaVinci
@@ -21,7 +21,11 @@ const WorkflowBar: React.FC<{
   onSelect: (item: WorkspaceNavItem) => void;
   onOpenSettings?: () => void;
   summary?: string;
-}> = ({ nav, lastByGroup, onSelect, onOpenSettings, summary }) => {
+  /** Items waiting for approval at the active stage; shows the "To approve" toggle. */
+  approvalCount?: number;
+  approvalOpen?: boolean;
+  onToggleApprovals?: () => void;
+}> = ({ nav, lastByGroup, onSelect, onOpenSettings, summary, approvalCount, approvalOpen, onToggleApprovals }) => {
   if (nav.stages.length <= 1) return null;
   return (
     <nav className="workflow-bar" aria-label="Workflow stages">
@@ -52,6 +56,13 @@ const WorkflowBar: React.FC<{
         })}
       </ol>
       <div className="workflow-bar__side workflow-bar__side--end">
+        {onToggleApprovals && (
+          <button type="button" className={`workflow-bar__approve ${approvalOpen ? 'workflow-bar__approve--open' : ''}`} onClick={onToggleApprovals} aria-pressed={approvalOpen} title="What waits for approval at this stage">
+            <ClipboardCheckIcon className="workflow-bar__corner-icon" />
+            <span>To approve</span>
+            {Boolean(approvalCount) && <span className="workflow-bar__badge">{approvalCount}</span>}
+          </button>
+        )}
         {onOpenSettings && (
           <button type="button" className="workflow-bar__corner" onClick={onOpenSettings} title="Settings & API keys (⌘,)">
             <SettingsIcon className="workflow-bar__corner-icon" />

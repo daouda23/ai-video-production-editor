@@ -125,6 +125,9 @@ import MicrodramaWorkspace from './workspaces/MicrodramaWorkspace';
 import PluginsWorkspace from './workspaces/PluginsWorkspace';
 import LocalAiWorkspace from './workspaces/LocalAiWorkspace';
 import WorkflowBar, { resolveStageTarget } from './components/WorkflowBar';
+import ApprovalPanel from './components/ApprovalPanel';
+import { buildApprovalQueue } from './services/approvalQueue';
+import { setShotTaskStatus, upsertFeedback } from './services/reviewLogic';
 import PricingScreen from './components/PricingScreen';
 import OptionsModal, { EstimateResult, OptionsModalConfig, PricingResult } from './components/OptionsModal';
 import AuthScreen from './components/AuthScreen';
@@ -972,6 +975,7 @@ function App() {
     const [projectHubRequestedPhase, setProjectHubRequestedPhase] = useState<ProjectHubPhase | null>(null);
     // A hub step opened from the app navigation; the nonce re-applies the same step.
     const [hubPhaseRequest, setHubPhaseRequest] = useState<{ phase: ProjectHubPhase; nonce: number } | null>(null);
+    const [showApprovals, setShowApprovals] = useState(false);
     // Last entry opened in each workflow stage, so a stage reopens where you left it.
     const [lastWorkspaceByStage, setLastWorkspaceByStage] = useState<Record<string, string>>({});
     const workspaceStagesRef = useRef<{ nav: ResolvedWorkspaceNav; lastByStage: Record<string, string>; open: (item: WorkspaceNavItem) => void } | null>(null);
@@ -1104,7 +1108,8 @@ function App() {
     useEffect(() => connectSetDesignSelection(), [projectPath]);
     useEffect(() => connectSetDesignHistory(), []);
     const activeProfile = profiles.find(profile => profile.id === activeProfileId) || profiles[0] || null;
-    const isDirector = activeProfile?.role === 'director';
+    // Working alone (no profile set up) you are your own director: you approve the work.
+    const isDirector = activeProfile ? activeProfile.role === 'director' : true;
     const activeRole = activeProfile?.role || 'artist';
     const canViewPricing = costSettings.visibility?.[activeRole] ?? true;
     const canOpenDesignSystem = uiMode === 'pro';
@@ -9125,6 +9130,7 @@ function App() {
         if (item.phase && isProjectHubPhase(item.phase)) setHubPhaseRequest({ phase: item.phase, nonce: Date.now() });
     };
     workspaceStagesRef.current = { nav: workspaceNav, lastByStage: lastWorkspaceByStage, open: openNavItem };
+    const approvalQueue = buildApprovalQueue(workspaceNav.activeGroup?.utility ? null : workspaceNav.activeGroup?.id, { storyBible, shotPrompts, mediaItems, reviewData });
     const agentStatusMeta = STUDIO_AGENT_STATUS_STYLES[studioAgentState.status];
     const onlineCount = realtimePresence.length;
     const taskSummary = summarizeTasks(taskCenterTasks);
@@ -9306,8 +9312,22 @@ function App() {
                         lastByGroup={lastWorkspaceByStage}
                         onSelect={openNavItem}
                         onOpenSettings={() => setShowSettings(true)}
+                        approvalCount={approvalQueue.pending}
+                        approvalOpen={showApprovals}
+                        onToggleApprovals={workspaceNav.activeGroup && !workspaceNav.activeGroup.utility ? () => setShowApprovals((open) => !open) : undefined}
                         summary={`${timelineClips.length} clip${timelineClips.length === 1 ? '' : 's'} · ${mediaItems.length} media${selectedClipId ? ' · clip selected' : ''}`}
                     />
+                    {showApprovals && workspaceNav.activeGroup && !workspaceNav.activeGroup.utility && (
+                        <ApprovalPanel
+                            stageName={workspaceNav.activeGroup.name}
+                            queue={approvalQueue}
+                            isDirector={isDirector}
+                            onFeedback={(scope, targetId, updates) => setReviewData((prev) => upsertFeedback(prev, scope, targetId, updates))}
+                            onTaskStatus={(taskId, status) => setReviewData((prev) => setShotTaskStatus(prev, taskId, status))}
+                            onOpenFullReview={() => { setShowApprovals(false); handleManualWorkspaceSwitch(isDirector ? 'REVIEW' : 'REQUESTS'); }}
+                            onClose={() => setShowApprovals(false)}
+                        />
+                    )}
                 </div>
             </div>
             {blockForBilling && (
