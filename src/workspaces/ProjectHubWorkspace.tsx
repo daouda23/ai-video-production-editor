@@ -4125,14 +4125,19 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
     );
     const storedUiPrefs = useMemo(() => readProjectHubUiPrefs(uiPrefsScope), [uiPrefsScope]);
 
+    // The request's nonce is its timestamp: only a request made just now opened this hub.
+    const freshPhaseRequest = phaseRequest && !teamMode && Date.now() - phaseRequest.nonce < 3000 ? phaseRequest : null;
     const [activePhase, setActivePhase] = useState<ProductionPhase>(() => {
         if (teamMode) return 'team';
+        if (freshPhaseRequest && allowedPhaseIds.includes(freshPhaseRequest.phase)) return freshPhaseRequest.phase;
         const preferred = storedUiPrefs.activePhase;
         return preferred && allowedPhaseIds.includes(preferred) ? preferred : initialPhaseValue;
     });
     const lastAppliedRequestedPhaseRef = useRef<ProductionPhase | null>(null);
+    // A phase asked for by the workflow bar when the hub opens wins over the phase restored from prefs.
+    const openedForPhaseRequestRef = useRef(Boolean(freshPhaseRequest));
     useEffect(() => {
-        if (teamMode || !phaseRequest) return;
+        if (teamMode || !phaseRequest || Date.now() - phaseRequest.nonce > 3000) return;
         if (allowedPhaseIds.includes(phaseRequest.phase)) setActivePhase(phaseRequest.phase);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [phaseRequest?.nonce]);
@@ -4278,7 +4283,9 @@ const ProjectHubWorkspace: React.FC<ProjectHubWorkspaceProps> = ({
 
     useEffect(() => {
         const prefs = readProjectHubUiPrefs(uiPrefsScope);
-        if (prefs.activePhase && allowedPhaseIds.includes(prefs.activePhase)) {
+        if (openedForPhaseRequestRef.current) {
+            openedForPhaseRequestRef.current = false;
+        } else if (prefs.activePhase && allowedPhaseIds.includes(prefs.activePhase)) {
             setActivePhase(prefs.activePhase);
         }
         if (prefs.conceptEntityTab) {

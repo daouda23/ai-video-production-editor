@@ -9127,7 +9127,11 @@ function App() {
     });
     const openNavItem = (item: WorkspaceNavItem) => {
         handleManualWorkspaceSwitch(item.id);
-        if (item.phase && isProjectHubPhase(item.phase)) setHubPhaseRequest({ phase: item.phase, nonce: Date.now() });
+        if (item.phase && isProjectHubPhase(item.phase)) {
+            setHubPhaseRequest({ phase: item.phase, nonce: Date.now() });
+            // Report the step right away so the stage memory never sees the hub's previous step.
+            setProjectHubActivePhase(item.phase);
+        }
     };
     workspaceStagesRef.current = { nav: workspaceNav, lastByStage: lastWorkspaceByStage, open: openNavItem };
     const approvalQueue = buildApprovalQueue(workspaceNav.activeGroup?.utility ? null : workspaceNav.activeGroup?.id, { storyBible, shotPrompts, mediaItems, reviewData });
